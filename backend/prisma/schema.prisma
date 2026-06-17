@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Driver {
+  id        String   @id @default(cuid())
+  fullName  String
+  phone     String?
+  vehicle   String?
+  createdAt DateTime @default(now())
+
+  imports   WebfleetImport[]
+  documents DriverDocument[]
+}
+
+model WebfleetImport {
+  id        String   @id @default(cuid())
+  fileName  String
+  month     String?
+  createdAt DateTime @default(now())
+
+  driverId String
+  driver   Driver @relation(fields: [driverId], references: [id])
+
+  summary PayrollSummary?
+}
+
+model PayrollSummary {
+  id                   String @id @default(cuid())
+  conduiteHeures       Float
+  travailHeures        Float
+  heuresTravaillees    Float
+  reposHeures          Float
+  disponibiliteHeures  Float
+  totalHeures          Float
+
+  importId String @unique
+  import   WebfleetImport @relation(fields: [importId], references: [id])
+}
+
+model DriverDocument {
+  id             String   @id @default(cuid())
+  type           String
+  expirationDate DateTime?
+  status         String   @default("valid")
+
+  driverId String
+  driver   Driver @relation(fields: [driverId], references: [id])
+}
+
+model ClientAddress {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  createdAt DateTime @default(now())
+}
