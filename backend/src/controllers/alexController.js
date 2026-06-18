@@ -10,6 +10,39 @@ async function getAlexDashboard(req, res) {
         heuresTravaillees: true,
         conduiteHeures: true,
         reposHeures: true,
+        disponibiliteHeures: true,
+      },
+    });
+
+    const totalDocuments = await prisma.driverDocument.count();
+    const totalPlanning = await prisma.planning.count();
+
+    const lastDocuments = await prisma.driverDocument.findMany({
+      orderBy: { expirationDate: 'asc' },
+      take: 5,
+      include: {
+        driver: {
+          select: {
+            fullName: true,
+          },
+        },
+      },
+    });
+
+    const upcomingPlanning = await prisma.planning.findMany({
+      where: {
+        date: {
+          gte: new Date(),
+        },
+      },
+      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+      take: 5,
+      include: {
+        driver: {
+          select: {
+            fullName: true,
+          },
+        },
       },
     });
 
@@ -41,10 +74,29 @@ async function getAlexDashboard(req, res) {
     return res.json({
       totalDrivers,
       totalImports,
+      totalDocuments,
+      totalPlanning,
       totalWorkedHours: totals._sum.heuresTravaillees ?? 0,
       totalDrivingHours: totals._sum.conduiteHeures ?? 0,
       totalRestHours: totals._sum.reposHeures ?? 0,
+      totalAvailableHours: totals._sum.disponibiliteHeures ?? 0,
       lastImports,
+      lastDocuments: lastDocuments.map((document) => ({
+        id: document.id,
+        type: document.type,
+        expirationDate: document.expirationDate,
+        status: document.status,
+        driverName: document.driver?.fullName,
+      })),
+      upcomingPlanning: upcomingPlanning.map((plan) => ({
+        id: plan.id,
+        date: plan.date,
+        startTime: plan.startTime,
+        endTime: plan.endTime,
+        routeName: plan.routeName,
+        status: plan.status,
+        driverName: plan.driver?.fullName,
+      })),
     });
   } catch (error) {
     console.error("Erreur Alex dashboard:", error);
@@ -86,6 +138,31 @@ async function getAlexImports(req, res) {
     console.error("Erreur Alex imports:", error);
     return res.status(500).json({
       error: "Impossible de récupérer les imports Webfleet",
+      details: error.message,
+    });
+  }
+}
+
+async function getAlexImportById(req, res) {
+  try {
+    const { id } = req.params;
+    const webfleetImport = await prisma.webfleetImport.findUnique({
+      where: { id },
+      include: {
+        driver: true,
+        summary: true,
+      },
+    });
+
+    if (!webfleetImport) {
+      return res.status(404).json({ error: "Import introuvable." });
+    }
+
+    return res.json(webfleetImport);
+  } catch (error) {
+    console.error("Erreur Alex import by id:", error);
+    return res.status(500).json({
+      error: "Impossible de récupérer l'import.",
       details: error.message,
     });
   }
@@ -154,5 +231,6 @@ async function getAlexDrivers(req, res) {
 module.exports = {
   getAlexDashboard,
   getAlexImports,
+  getAlexImportById,
   getAlexDrivers,
 };

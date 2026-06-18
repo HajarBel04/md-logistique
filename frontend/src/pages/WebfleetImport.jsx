@@ -20,7 +20,7 @@ export default function WebfleetImport() {
   const [previewRows, setPreviewRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [serverMessage, setServerMessage] = useState(null);
+  const [successVisible, setSuccessVisible] = useState(false);
 
   const loadPreview = async (selectedFile) => {
     if (!selectedFile) {
@@ -42,7 +42,7 @@ export default function WebfleetImport() {
   const handleSelectFile = (selectedFile) => {
     setError(null);
     setResult(null);
-    setServerMessage(null);
+    setSuccessVisible(false);
     setFile(selectedFile);
     loadPreview(selectedFile);
   };
@@ -52,7 +52,7 @@ export default function WebfleetImport() {
 
     setLoading(true);
     setError(null);
-    setServerMessage(null);
+    setSuccessVisible(false);
     setResult(null);
 
     try {
@@ -75,7 +75,7 @@ export default function WebfleetImport() {
       }
 
       setResult(normalizedResult);
-      setServerMessage(payload.message ?? 'Import effectué avec succès.');
+      setSuccessVisible(true);
     } catch (uploadError) {
       setError(
         uploadError.response?.data?.error ||
@@ -111,9 +111,32 @@ export default function WebfleetImport() {
         </div>
       ) : null}
 
-      {serverMessage ? (
-        <div className="rounded-[32px] border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-700 shadow-soft">
-          {serverMessage}
+      {result && successVisible ? (
+        <div className="relative overflow-hidden rounded-[32px] border border-emerald-200 bg-emerald-50 p-6 shadow-soft text-slate-900 dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-100">
+          <button
+            type="button"
+            onClick={() => setSuccessVisible(false)}
+            className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 transition hover:bg-white dark:bg-slate-900/80 dark:text-slate-200"
+          >
+            ×
+          </button>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm uppercase tracking-[0.24em] text-emerald-700 dark:text-emerald-200">Import réussi</p>
+              <p className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">Fichier importé avec succès</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[28px] border border-emerald-200 bg-white/90 p-4 text-sm text-slate-700 dark:border-emerald-400/25 dark:bg-slate-950/75 dark:text-slate-100">
+                ✓ Chauffeur détecté
+              </div>
+              <div className="rounded-[28px] border border-emerald-200 bg-white/90 p-4 text-sm text-slate-700 dark:border-emerald-400/25 dark:bg-slate-950/75 dark:text-slate-100">
+                ✓ Données sauvegardées
+              </div>
+              <div className="rounded-[28px] border border-emerald-200 bg-white/90 p-4 text-sm text-slate-700 dark:border-emerald-400/25 dark:bg-slate-950/75 dark:text-slate-100">
+                <span className="font-semibold">{driverName ?? 'Chauffeur détecté'}</span>
+              </div>
+            </div>
+          </div>
         </div>
       ) : null}
 

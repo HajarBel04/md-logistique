@@ -8,13 +8,14 @@ datasource db {
 
 model Driver {
   id        String   @id @default(cuid())
-  fullName  String @unique
+  fullName  String  @unique
   phone     String?
   vehicle   String?
   createdAt DateTime @default(now())
 
   imports   WebfleetImport[]
   documents DriverDocument[]
+  plannings Planning[]
 }
 
 model WebfleetImport {
@@ -47,6 +48,19 @@ model DriverDocument {
   type           String
   expirationDate DateTime?
   status         String   @default("valid")
+
+  driverId String
+  driver   Driver @relation(fields: [driverId], references: [id])
+}
+
+model Planning {
+  id        String   @id @default(cuid())
+  date      DateTime
+  startTime String
+  endTime   String
+  routeName String
+  status    String   @default("planned")
+  createdAt DateTime @default(now())
 
   driverId String
   driver   Driver @relation(fields: [driverId], references: [id])

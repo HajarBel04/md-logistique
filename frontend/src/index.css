@@ -14,6 +14,15 @@
   --surface-border: rgba(148, 163, 184, 0.3);
 }
 
+.dark {
+  color-scheme: dark;
+  --brand-dark: #e2e8f0;
+  --brand-primary: #f97316;
+  --brand-primary-dark: #ea580c;
+  --brand-muted: #94a3b8;
+  --surface-bg: #0f172a;
+  --surface-border: rgba(148, 163, 184, 0.16);
+}
 
 
 html, body, #root {
@@ -27,6 +36,11 @@ body {
   background-image: radial-gradient(circle at top left, rgba(249, 115, 22, 0.14), transparent 28%), radial-gradient(circle at bottom right, rgba(251, 146, 60, 0.08), transparent 26%);
 }
 
+.dark body {
+  @apply text-slate-100;
+  background-color: #020617;
+  background-image: radial-gradient(circle at top left, rgba(249, 115, 22, 0.12), transparent 26%), radial-gradient(circle at bottom right, rgba(249, 115, 22, 0.05), transparent 18%);
+}
 
 
 button, input, select, textarea {
@@ -53,6 +67,13 @@ input, select, textarea {
   @apply rounded-[32px] border border-slate-200/80 bg-white shadow-soft;
 }
 
+.dark .surface-card {
+  @apply border-slate-800/80 bg-slate-950/95 text-slate-100;
+}
+
+.dark .btn-secondary {
+  @apply bg-slate-900 text-slate-100 hover:bg-slate-800;
+}
 
 
 .shadow-card {

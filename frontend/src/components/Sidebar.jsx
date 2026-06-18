@@ -32,6 +32,16 @@ const navItems = [
     ),
   },
   {
+    path: '/documents',
+    label: 'Documents',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M4 4h16v16H4V4Z" />
+        <path d="M8 8h8M8 12h8M8 16h5" />
+      </svg>
+    ),
+  },
+  {
     path: '/planning',
     label: 'Planning',
     icon: (
@@ -55,18 +65,9 @@ const navItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="hidden w-72 shrink-0 border-r border-slate-200/80 bg-white/80 px-6 py-8 backdrop-blur-xl shadow-soft border-slate-800 bg-slate-950/80 lg:flex lg:flex-col">
-      <div className="mb-10 rounded-[32px] border border-slate-200/70 bg-white/90 p-5 shadow-card border-slate-700/70 bg-slate-950/90">
-        <div className="flex items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-slate-200/80 bg-slate-50 shadow-sm border-slate-700/70 bg-slate-900/80">
-            <img src={logo} alt="MD Logistique" className="h-14 w-14 object-contain" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.34em] text-slate-900 text-slate-100">MD LOGISTIQUE</p>
-            <p className="mt-2 text-sm font-medium leading-tight text-slate-600 text-slate-400">Espace Alex</p>
-          </div>
-        </div>
-        <div className="mt-5 h-px bg-slate-200/70 bg-slate-700/70" />
+    <aside className="hidden w-80 shrink-0 border-r border-slate-200/80 bg-white/85 px-6 py-8 backdrop-blur-xl shadow-soft dark:border-slate-800/70 dark:bg-slate-950/95 lg:flex lg:flex-col">
+      <div className="mb-4 flex items-center justify-center">
+        <img src={logo} alt="MD Logistique" className="h-24 w-24 object-contain" />
       </div>
 
       <nav className="space-y-2">
@@ -76,19 +77,19 @@ export default function Sidebar() {
             to={item.path}
             end={item.path === '/'}
             className={({ isActive }) =>
-              `group flex items-center gap-3 rounded-3xl px-4 py-3 text-sm font-medium transition ${
+              `group flex items-center gap-4 rounded-3xl px-4 py-3 text-sm font-semibold transition ${
                 isActive
-                  ? 'border-l-4 border-orange-500 bg-orange-50/90 text-orange-800 shadow-[0_10px_30px_-20px_rgba(249,115,22,0.7)] bg-orange-500/10 text-orange-200'
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 text-slate-200 hover:bg-slate-800'
+                  ? 'border-l-4 border-orange-400 bg-orange-50/80 text-orange-600 ring-1 ring-orange-200/60 dark:bg-orange-500/10 dark:text-orange-200'
+                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
               }`
             }
           >
             {({ isActive }) => (
               <>
                 <span
-                  className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
-                    isActive ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600 bg-slate-800 text-slate-300'
-                  } transition`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-2xl transition ${
+                    isActive ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
                 >
                   {item.icon}
                 </span>
@@ -99,9 +100,9 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-auto rounded-[28px] bg-slate-50/90 p-5 shadow-soft bg-slate-900/75">
-        <p className="text-xs uppercase tracking-[0.24em] text-slate-500 text-slate-400">Astuce</p>
-        <p className="mt-3 text-sm leading-6 text-slate-700 text-slate-300">
+      <div className="mt-auto rounded-[28px] bg-slate-50/90 p-5 shadow-soft dark:bg-slate-900/75">
+        <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Astuce</p>
+        <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-slate-300">
           Importez vos rapports Webfleet pour générer automatiquement les totaux de conduite, travail et repos.
         </p>
       </div>

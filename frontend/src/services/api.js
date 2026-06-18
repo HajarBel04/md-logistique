@@ -20,6 +20,14 @@ export function getAlexDrivers() {
   return api.get('/alex/drivers');
 }
 
+export function getAlexDocuments() {
+  return api.get('/alex/documents');
+}
+
+export function getAlexPlanning() {
+  return api.get('/alex/planning');
+}
+
 export function getAlexImports() {
   return api.get('/alex/imports');
 }

@@ -5,13 +5,13 @@ export default function PageHeader({ title, description, badge, action, classNam
         <div>
           <div className="flex flex-wrap items-center gap-3">
             {badge ? (
-              <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-700 ring-1 ring-orange-100">
+              <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-700 ring-1 ring-orange-100 dark:bg-orange-500/15 dark:text-orange-200 dark:ring-orange-500/20">
                 {badge}
               </span>
             ) : null}
-            <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl text-slate-50">{title}</h1>
+            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-slate-100">{title}</h1>
           </div>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 text-slate-300">{description}</p>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">{description}</p>
         </div>
 
         {action ? <div className="shrink-0">{action}</div> : null}

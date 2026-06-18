@@ -9,7 +9,7 @@ export default function PremiumCard({ title, description, tag, action, className
                 {tag}
               </span>
             ) : null}
-            {title ? <h2 className="text-xl font-semibold text-slate-900">{title}</h2> : null}
+            {title ? <h2 className="text-2xl font-bold text-slate-900">{title}</h2> : null}
             {description ? <p className="max-w-2xl text-sm leading-6 text-slate-600">{description}</p> : null}
           </div>
           {action ? <div className="shrink-0">{action}</div> : null}
