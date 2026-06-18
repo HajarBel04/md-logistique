@@ -16,4 +16,12 @@ export function getAlexDashboard() {
   return api.get('/alex/dashboard');
 }
 
+export function getAlexDrivers() {
+  return api.get('/alex/drivers');
+}
+
+export function getAlexImports() {
+  return api.get('/alex/imports');
+}
+
 export default api;

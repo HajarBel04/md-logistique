@@ -1,6 +1,6 @@
 export default function PremiumCard({ title, description, tag, action, className = '', children }) {
   return (
-    <section className={`rounded-[32px] border border-slate-200 bg-white/95 p-6 shadow-card transition-colors ${className}`}>
+    <section className={`surface-card p-6 transition-colors ${className}`}>
       {(title || description || action || tag) && (
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">

@@ -1,5 +1,5 @@
 import PageHeader from '../components/PageHeader';
-import PremiumCard from '../components/PremiumCard';
+import GlassCard from '../components/GlassCard';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
 
@@ -60,14 +60,16 @@ export default function Drivers() {
       />
 
       <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        <PremiumCard title="Chauffeurs actifs" description="Nombre total de chauffeurs actuellement en route.">86</PremiumCard>
-        <PremiumCard title="Documents valides" description="Permis, Code 95 et certificats médicaux conformes.">78</PremiumCard>
-        <PremiumCard title="Alertes" description="Documents nécessitant un suivi dans les 30 prochains jours.">5</PremiumCard>
+        <GlassCard title="Chauffeurs actifs" description="Nombre total de chauffeurs actuellement en route.">86</GlassCard>
+        <GlassCard title="Documents valides" description="Permis, Code 95 et certificats médicaux conformes.">78</GlassCard>
+        <GlassCard title="Alertes" description="Documents nécessitant un suivi dans les 30 prochains jours.">5</GlassCard>
       </section>
 
-      <PremiumCard title="Tableau des chauffeurs" description="Statut des documents et de la flotte pour chaque chauffeur.">
-        <DataTable columns={columns} data={drivers} rowKey={(row) => row.name} />
-      </PremiumCard>
+      <GlassCard title="Tableau des chauffeurs" description="Statut des documents et de la flotte pour chaque chauffeur.">
+        <div className="-mx-4 overflow-x-auto px-4">
+          <DataTable columns={columns} data={drivers} rowKey={(row) => row.name} />
+        </div>
+      </GlassCard>
     </div>
   );
 }

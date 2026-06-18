@@ -1,6 +1,6 @@
 export default function UploadDropzone({ file, onSelectFile, onUpload, loading }) {
   return (
-    <div className="rounded-[32px] border border-orange-200 bg-gradient-to-br from-orange-50/80 to-white p-6 shadow-card transition duration-200 hover:border-orange-300">
+    <div className="surface-card border-orange-200/70 bg-orange-50/60 p-6 shadow-card transition duration-200 hover:border-orange-300 border-slate-700 bg-slate-900/75">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-3">
           <div className="inline-flex items-center gap-3 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-700">

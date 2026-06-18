@@ -1,5 +1,5 @@
 import PageHeader from '../components/PageHeader';
-import PremiumCard from '../components/PremiumCard';
+import GlassCard from '../components/GlassCard';
 
 export default function Settings() {
   return (
@@ -11,7 +11,7 @@ export default function Settings() {
       />
 
       <section className="grid gap-6 md:grid-cols-2">
-        <PremiumCard
+        <GlassCard
           title="Adresses clients"
           description="Gérez les points de livraison les plus importants et les clients récurrents."
         >
@@ -25,9 +25,9 @@ export default function Settings() {
               <p className="mt-2 text-sm text-slate-600">Bruxelles, Louvain, Herdecke</p>
             </div>
           </div>
-        </PremiumCard>
+        </GlassCard>
 
-        <PremiumCard
+        <GlassCard
           title="Règles de calcul"
           description="Ajustez les paramètres RH pour le calcul des heures de conduite, repos et disponibilité."
           action={<button type="button" className="btn-secondary">Modifier</button>}
@@ -42,7 +42,7 @@ export default function Settings() {
               <p className="mt-2 text-sm text-slate-600">Validation automatique des rapports importés.</p>
             </div>
           </div>
-        </PremiumCard>
+        </GlassCard>
       </section>
     </div>
   );

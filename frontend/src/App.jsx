@@ -1,3 +1,4 @@
+import React from 'react';
 import { Routes, Route, NavLink } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -31,13 +32,13 @@ const navItems = [
 ];
 
 export default function App() {
-  return (
-    <div className="min-h-screen bg-[#f7f5f0] text-slate-900">
-      <div className="flex min-h-screen">
+    return (
+    <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.15),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.1),_transparent_20%)] text-slate-900 transition-colors duration-500">
+      <div className="relative flex min-h-screen">
         <Sidebar />
         <div className="flex-1">
           <Header />
-          <div className="border-b border-slate-200 bg-white px-4 py-4 lg:hidden">
+          <div className="border-b border-slate-200/80 bg-white/80 px-4 py-4 backdrop-blur-md lg:hidden">
             <div className="flex gap-2 overflow-x-auto pb-1">
               {navItems.map((item) => (
                 <NavLink

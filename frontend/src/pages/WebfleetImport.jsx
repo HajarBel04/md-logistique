@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { read, utils } from 'xlsx';
 import UploadDropzone from '../components/UploadDropzone';
 import PageHeader from '../components/PageHeader';
-import PremiumCard from '../components/PremiumCard';
+import GlassCard from '../components/GlassCard';
 import DataTable from '../components/DataTable';
 import EmptyState from '../components/EmptyState';
 import { uploadWebfleet } from '../services/api';
@@ -91,7 +91,7 @@ export default function WebfleetImport() {
   const driverName = result?.driverName;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         title="Import Webfleet"
         description="Chargez votre rapport Excel puis consultez les totaux calculés automatiquement."
@@ -106,21 +106,22 @@ export default function WebfleetImport() {
       />
 
       {error ? (
-        <div className="rounded-[32px] border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+        <div className="rounded-[32px] border border-red-200 bg-red-50 p-5 text-sm text-red-700 shadow-soft">
           {error}
         </div>
       ) : null}
 
       {serverMessage ? (
-        <div className="rounded-[32px] border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-700">
+        <div className="rounded-[32px] border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-700 shadow-soft">
           {serverMessage}
         </div>
       ) : null}
 
       {result ? (
-        <PremiumCard
+        <GlassCard
           title="Résultat de l'import"
           description="Synthèse des heures calculées et sauvegardées en base de données."
+          tag="Succès"
         >
           <p className="mt-4 text-lg font-semibold text-slate-900">
             Chauffeur : {driverName ?? '-'}
@@ -148,10 +149,10 @@ export default function WebfleetImport() {
               </div>
             ))}
           </div>
-        </PremiumCard>
+        </GlassCard>
       ) : null}
 
-      <PremiumCard
+      <GlassCard
         title="Aperçu du fichier"
         description="Affichez un extrait des premières lignes de votre rapport importé."
       >
@@ -168,7 +169,7 @@ export default function WebfleetImport() {
             icon="📄"
           />
         )}
-      </PremiumCard>
+      </GlassCard>
     </div>
   );
 }
