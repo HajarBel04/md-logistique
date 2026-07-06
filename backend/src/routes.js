@@ -26,32 +26,54 @@ const {
   deletePlanning,
 } = require("./controllers/planningController");
 
+const { findConfig, loadConfigs } = require("./chauffeurConfig");
+const prisma = require("./lib/prisma");
+
 const router = express.Router();
 
 const upload = multer({
   dest: "uploads/",
 });
 
+const requireDB = (req, res, next) => {
+  if (!prisma) {
+    return res.status(503).json({
+      error: "Base de données indisponible. Libère de l'espace disque puis relance : npx prisma generate",
+    });
+  }
+  next();
+};
+
 router.post("/upload-webfleet", upload.single("file"), uploadWebfleet);
 
-router.get("/alex/dashboard", getAlexDashboard);
-router.get("/alex/imports", getAlexImports);
-router.get("/alex/imports/:id", getAlexImportById);
+// Retourne la config domicile/dépôt de tous les chauffeurs
+router.get("/chauffeur-configs", (req, res) => {
+  const configs = loadConfigs();
+  res.json(configs.map(c => ({
+    name: c.sheetName,
+    homeCity: c.homeCity,
+    depotKeyword: c.depotKeyword,
+  })));
+});
 
-router.get("/alex/drivers", getDrivers);
-router.get("/alex/drivers/:id", getDriverById);
-router.post("/alex/drivers", createDriver);
-router.put("/alex/drivers/:id", updateDriver);
-router.delete("/alex/drivers/:id", deleteDriver);
+router.get("/alex/dashboard", requireDB, getAlexDashboard);
+router.get("/alex/imports", requireDB, getAlexImports);
+router.get("/alex/imports/:id", requireDB, getAlexImportById);
 
-router.get("/alex/documents", getDocuments);
-router.post("/alex/documents", createDocument);
-router.put("/alex/documents/:id", updateDocument);
-router.delete("/alex/documents/:id", deleteDocument);
+router.get("/alex/drivers", requireDB, getDrivers);
+router.get("/alex/drivers/:id", requireDB, getDriverById);
+router.post("/alex/drivers", requireDB, createDriver);
+router.put("/alex/drivers/:id", requireDB, updateDriver);
+router.delete("/alex/drivers/:id", requireDB, deleteDriver);
 
-router.get("/alex/planning", getPlanning);
-router.post("/alex/planning", createPlanning);
-router.put("/alex/planning/:id", updatePlanning);
-router.delete("/alex/planning/:id", deletePlanning);
+router.get("/alex/documents", requireDB, getDocuments);
+router.post("/alex/documents", requireDB, createDocument);
+router.put("/alex/documents/:id", requireDB, updateDocument);
+router.delete("/alex/documents/:id", requireDB, deleteDocument);
+
+router.get("/alex/planning", requireDB, getPlanning);
+router.post("/alex/planning", requireDB, createPlanning);
+router.put("/alex/planning/:id", requireDB, updatePlanning);
+router.delete("/alex/planning/:id", requireDB, deletePlanning);
 
 module.exports = router;

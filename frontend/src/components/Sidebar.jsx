@@ -52,6 +52,18 @@ const navItems = [
     ),
   },
   {
+    path: '/payroll',
+    label: 'Fiches de paie',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="3" y="4" width="18" height="16" rx="2"/>
+        <path d="M7 8h10M7 12h6M7 16h4"/>
+        <circle cx="18" cy="16" r="3" fill="none"/>
+        <path d="M18 14.5v1.5l1 1"/>
+      </svg>
+    ),
+  },
+  {
     path: '/parametres',
     label: 'Paramètres',
     icon: (
@@ -66,8 +78,8 @@ const navItems = [
 export default function Sidebar() {
   return (
     <aside className="hidden w-80 shrink-0 border-r border-slate-200/80 bg-white/85 px-6 py-8 backdrop-blur-xl shadow-soft dark:border-slate-800/70 dark:bg-slate-950/95 lg:flex lg:flex-col">
-      <div className="mb-4 flex items-center justify-center">
-        <img src={logo} alt="MD Logistique" className="h-24 w-24 object-contain" />
+      <div className="mb-6 flex items-center justify-center px-2">
+        <img src={logo} alt="MD Logistique" className="w-44 h-auto object-contain drop-shadow-sm" />
       </div>
 
       <nav className="space-y-2">

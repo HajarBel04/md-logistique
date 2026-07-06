@@ -12,6 +12,14 @@ async function uploadWebfleet(req, res) {
     const originalName = req.file.originalname;
     const result = parseWebfleetFile(filePath);
 
+    if (!prisma) {
+      return res.json({
+        message: "Fichier analysé (base de données indisponible — npx prisma generate requis)",
+        result,
+        saved: null,
+      });
+    }
+
     const driver = await prisma.driver.upsert({
       where: { fullName: result.driverName },
       update: {},

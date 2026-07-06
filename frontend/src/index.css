@@ -99,3 +99,17 @@ h1, h2, h3, h4, h5, h6 {
 html {
   scroll-behavior: smooth;
 }
+
+/* Masque la scrollbar tout en gardant le scroll fonctionnel */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Empêche les débordements horizontaux sur mobile */
+* {
+  min-width: 0;
+}

@@ -39,8 +39,16 @@ export default function Dashboard() {
         const response = await getAlexDashboard();
         setDashboard(response.data);
       } catch (err) {
-        console.error(err);
-        setError('Impossible de charger les données du tableau de bord.');
+        const status = err.response?.status;
+        const raw = err.response?.data?.error || err.message || '';
+        const isNetwork = raw === 'Network Error' || raw === 'Load failed' || raw.includes('Failed to fetch');
+        if (isNetwork) {
+          setError('Backend non démarré — lance : cd backend && node src/server.js');
+        } else if (status === 503) {
+          setError('Base de données non configurée (Prisma). Le dashboard sera disponible après la configuration.');
+        } else {
+          setError('Impossible de charger les données du tableau de bord.');
+        }
       } finally {
         setLoading(false);
       }
