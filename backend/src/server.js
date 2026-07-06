@@ -11,6 +11,10 @@ app.use(express.json());
 
 app.use("/api", routes);
 
+const DIST = path.join(__dirname, "../../frontend/dist");
+app.use(express.static(DIST));
+app.get(/(.*)/, (_req, res) => res.sendFile(path.join(DIST, "index.html")));
+
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
