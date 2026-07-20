@@ -107,14 +107,11 @@ function computeDaily(rows, homeCity, depotKeyword) {
 
       const city = homeCity ? homeCity.toLowerCase() : null;
       const depot = depotKeyword ? depotKeyword.toLowerCase() : null;
-      // Exclure UNIQUEMENT le trajet domicile ↔ Albert I-laan (règle Alex),
-      // et le Repos à domicile. Les livraisons à des clients en ville domicile = payées.
-      const isHomeDepotCommute = city && depot && (
-        (depart.includes(city) && arrivee.includes(depot)) ||
-        (depart.includes(depot) && arrivee.includes(city))
-      );
-      const isHomeRest = city && act === 'Repos' && depart.includes(city) && arrivee.includes(city);
-      const isCommute = isHomeDepotCommute || isHomeRest;
+      // Règle Alex : tout trajet PARTANT du domicile = non payé (trajet aller)
+      // Retour : seulement Albert I-laan → domicile (retour dépôt). Ex: Opwijk→Lebbeke = payé.
+      const isCommuteOut = city && depart.includes(city);
+      const isCommuteReturn = city && depot && depart.includes(depot) && arrivee.includes(city);
+      const isCommute = isCommuteOut || isCommuteReturn;
 
       if (act === 'Conduite' || act === 'Travail') {
         map[key].travailRaw += dur;
