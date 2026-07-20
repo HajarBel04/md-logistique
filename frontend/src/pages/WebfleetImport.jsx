@@ -25,17 +25,9 @@ function nightMinutes(start, end) {
   return count;
 }
 
-// Déduction pause obligatoire : 45 min après 4h30 de conduite, 90 min après 9h
-function pauseDeduction(conduiteMin) {
-  if (conduiteMin >= 540) return 90; // ≥ 9h → 2 pauses
-  if (conduiteMin >= 270) return 45; // ≥ 4h30 → 1 pause
-  return 0;
-}
 
 function fmt(mins) {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return `${String(h).padStart(2, '0')}h${String(m).padStart(2, '0')}`;
+  return parseFloat((mins / 60).toFixed(2));
 }
 
 function wordOverlap(a, b) {
@@ -59,54 +51,67 @@ function toTitleCase(str) {
   return str.replace(/\w+/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
 }
 
-function computeDaily(rows, homeCity) {
+function computeDaily(rows, homeCity, depotKeyword) {
   const map = {};
   let commuteMin = 0;
 
-  for (const row of rows) {
-    const act = row['Activité'];
-    const dtStart = parseDT(row['Heure de début']);
-    const dtEnd = parseDT(row['Heure de fin']);
-    if (!act || !dtStart) continue;
+  // Trier toutes les activités par heure de début
+  const sorted = rows
+    .map(r => ({
+      act: r['Activité'],
+      dtStart: parseDT(r['Heure de début']),
+      dtEnd: parseDT(r['Heure de fin']),
+      depart: (r['Position de départ'] || '').toLowerCase(),
+      arrivee: (r['Emplacement de fin'] || '').toLowerCase(),
+    }))
+    .filter(r => r.act && r.dtStart)
+    .sort((a, b) => a.dtStart - b.dtStart);
 
-    const durRaw = dtEnd ? Math.max(0, Math.round((dtEnd - dtStart) / 60000)) : 0;
-    // Activité > 12h = anomalie Webfleet (ex: weekend non scanné) → on l'exclut
-    const isAnomaly = durRaw > 720;
-    const dur = isAnomaly ? 0 : durRaw;
+  // Grouper en shifts : une pause ≥ 6h = nouveau shift
+  const SHIFT_GAP = 9 * 60 * 60 * 1000;
+  const shifts = [];
+  let cur = [];
+  for (const r of sorted) {
+    if (cur.length === 0) { cur.push(r); continue; }
+    const lastEnd = cur[cur.length - 1].dtEnd || cur[cur.length - 1].dtStart;
+    if (r.dtStart - lastEnd >= SHIFT_GAP) { shifts.push(cur); cur = [r]; }
+    else cur.push(r);
+  }
+  if (cur.length) shifts.push(cur);
 
-    const key = dtStart.toLocaleDateString('fr-FR', {
+  // Calculer par shift (date = début du shift)
+  for (const shift of shifts) {
+    const key = shift[0].dtStart.toLocaleDateString('fr-FR', {
       day: '2-digit', month: '2-digit', year: '2-digit',
     }).replace(/\//g, '.');
 
-    if (!map[key]) map[key] = { conduite: 0, conduiteRaw: 0, dispo: 0, night: 0, commute: 0 };
+    if (!map[key]) map[key] = { travail: 0, travailRaw: 0, dispo: 0, night: 0, commute: 0 };
 
-    // Détecter trajet domicile
-    if (homeCity) {
-      const city = homeCity.toLowerCase();
-      const start = (row['Position de départ'] || '').toLowerCase();
-      const end = (row['Emplacement de fin'] || '').toLowerCase();
-      if (start.includes(city) || end.includes(city)) {
-        if (act === 'Conduite') {
-          map[key].conduiteRaw += dur; // conduite brute avant déduction
-          map[key].commute += dur;     // part trajet
+    for (const r of shift) {
+      const { act, dtStart, dtEnd, depart, arrivee } = r;
+      const dur = dtEnd ? Math.max(0, Math.round((dtEnd - dtStart) / 60000)) : 0;
+      if (dur > 720) continue; // anomalie Webfleet
+
+      const city = homeCity ? homeCity.toLowerCase() : null;
+      const isCommute = city && (depart.includes(city) || arrivee.includes(city));
+
+      if (act === 'Conduite' || act === 'Travail') {
+        map[key].travailRaw += dur;
+        if (isCommute) {
+          map[key].commute += dur;
           commuteMin += dur;
+        } else {
+          map[key].travail += dur;
+          if (dtEnd) map[key].night += nightMinutes(dtStart, dtEnd);
         }
-        continue; // exclu du calcul payé
-      }
-    }
-
-    if (!isAnomaly) {
-      if (act === 'Conduite') {
-        map[key].conduite += dur;
-        map[key].conduiteRaw += dur;
-      } else {
+      } else if (act === 'Disponibilité') {
         map[key].dispo += dur;
+        if (dtEnd) map[key].night += nightMinutes(dtStart, dtEnd);
       }
-      if (dtEnd) map[key].night += nightMinutes(dtStart, dtEnd);
+      // Repos → non payé
     }
   }
 
-  // Tri chronologique correct sur "dd.mm.yy"
   function dateKey(s) {
     const [d, m, y] = s.split('.');
     return `20${y}-${m}-${d}`;
@@ -114,19 +119,14 @@ function computeDaily(rows, homeCity) {
 
   const breakdown = Object.entries(map)
     .sort(([a], [b]) => dateKey(a).localeCompare(dateKey(b)))
-    .map(([date, d]) => {
-      const deduction = pauseDeduction(d.conduite);
-      const dispoNet = Math.max(0, d.dispo - deduction);
-      return {
-        date,
-        conduiteAvant: d.commute > 0 ? fmt(d.conduiteRaw) : null, // valeur brute avant exclusion
-        conduite: fmt(d.conduite),
-        trajetExclu: d.commute > 0 ? fmt(d.commute) : null,
-        disponibilite: fmt(dispoNet),
-        pauseDeduite: deduction > 0 ? fmt(deduction) : null,
-        heureNuit: fmt(d.night),
-      };
-    });
+    .map(([date, d]) => ({
+      date,
+      travailAvant: d.commute > 0 ? fmt(d.travailRaw) : null,
+      tempsTravail: fmt(d.travail),
+      trajetExclu: d.commute > 0 ? fmt(d.commute) : null,
+      disponibilite: fmt(d.dispo),
+      heureNuit: fmt(d.night),
+    }));
 
   return { breakdown, commuteMin };
 }
@@ -139,6 +139,7 @@ export default function WebfleetImport() {
   const [commuteInfo, setCommuteInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
   const driverConfigs = useRef([]);
 
   // Charge les configs domicile/dépôt depuis le backend au démarrage
@@ -174,11 +175,22 @@ export default function WebfleetImport() {
       // Chercher la config correspondante pour avoir le vrai nom + domicile
       const cfg = findDriverConfig(rawName, driverConfigs.current);
       const homeCity = cfg?.homeCity ?? null;
+      const depotKeyword = cfg?.depotKeyword ?? null;
       const fullName = cfg ? toTitleCase(cfg.name) : rawName;
 
-      const { breakdown, commuteMin } = computeDaily(rows, homeCity);
+      const { breakdown, commuteMin } = computeDaily(rows, homeCity, depotKeyword);
       setDaily(breakdown);
       setDriverName(fullName);
+      // Auto-sélectionne le mois le plus fréquent dans les données
+      if (breakdown.length) {
+        const monthCounts = {};
+        breakdown.forEach(r => {
+          const key = r.date.slice(3, 8); // "06.26"
+          monthCounts[key] = (monthCounts[key] || 0) + 1;
+        });
+        const dominant = Object.entries(monthCounts).sort((a, b) => b[1] - a[1])[0][0];
+        setSelectedMonth(dominant);
+      }
       if (homeCity) {
         setCommuteInfo({ homeCity, excluded: commuteMin > 0, minutes: commuteMin });
       }
@@ -224,19 +236,24 @@ export default function WebfleetImport() {
 
   const handleExport = () => {
     if (!daily.length) return;
+    const filtered = selectedMonth ? daily.filter(r => r.date.slice(3, 8) === selectedMonth) : daily;
     const wb = utils.book_new();
     const wsData = [
+      ['Prestations'],
       [],
+      ['Code Abs', 'Temps de travail', 'Disponibilité', 'Heures de nuit'],
+      ['', '= Temps de conduite + Travail', '=Disponibilité', '= de 20h00 à 06h00'],
+      ['', 0.27, 0.4, ''],
       [],
-      ['', '', driverName ?? ''],
+      [driverName ?? ''],
       [],
-      ['Date', 'Conduite', 'Disponibilité', 'Pause déduite', 'Heure de nuit'],
-      ...daily.map((r) => [r.date, r.conduite, r.disponibilite, r.pauseDeduite ? `- ${r.pauseDeduite}` : '', r.heureNuit]),
+      ['Date', 'Code Abs', 'Temps de travail', 'Disponibilité', 'Heures de nuit'],
+      ...filtered.map((r) => [r.date, '', r.tempsTravail, r.disponibilite, r.heureNuit]),
     ];
     const ws = utils.aoa_to_sheet(wsData);
-    ws['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 14 }, { wch: 16 }];
-    utils.book_append_sheet(wb, ws, 'Rapport');
-    writeFile(wb, `rapport_${(driverName ?? 'chauffeur').replace(/\s+/g, '_')}.xlsx`);
+    ws['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 18 }, { wch: 16 }, { wch: 16 }];
+    utils.book_append_sheet(wb, ws, 'Prestations');
+    writeFile(wb, `prestations_${(driverName ?? 'chauffeur').replace(/\s+/g, '_')}.xlsx`);
   };
 
   return (
@@ -272,6 +289,26 @@ export default function WebfleetImport() {
             </p>
           ) : null}
 
+          {/* Sélecteur de mois */}
+          {(() => {
+            const months = [...new Set(daily.map(r => r.date.slice(3, 8)))];
+            if (months.length <= 1) return null;
+            const labels = { '01': 'Jan', '02': 'Fév', '03': 'Mar', '04': 'Avr', '05': 'Mai', '06': 'Jun', '07': 'Jul', '08': 'Aoû', '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Déc' };
+            return (
+              <div className="mt-4 flex gap-2 flex-wrap">
+                {months.map(m => {
+                  const [mm, yy] = m.split('.');
+                  return (
+                    <button key={m} onClick={() => setSelectedMonth(m)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${selectedMonth === m ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                      {labels[mm]} 20{yy}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
           {commuteInfo ? (
             <div className={`mt-3 rounded-2xl px-4 py-3 text-sm flex items-center gap-3 ${
               commuteInfo.excluded
@@ -300,45 +337,50 @@ export default function WebfleetImport() {
           </div>
 
           <div className="mt-4 overflow-x-auto">
+            {(() => {
+              const filtered = selectedMonth ? daily.filter(r => r.date.slice(3, 8) === selectedMonth) : daily;
+              return (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200">
                   <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date</th>
-                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Conduite</th>
-                  {daily.some(r => r.trajetExclu) && (
+                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Code Abs</th>
+                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Temps de travail<span className="ml-1 text-slate-400 normal-case font-normal">(×0,27)</span></th>
+                  {filtered.some(r => r.trajetExclu) && (
                     <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-blue-500">Trajet exclu</th>
                   )}
-                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Disponibilité</th>
-                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Pause déduite</th>
-                  <th className="py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Heure de nuit</th>
+                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Disponibilité<span className="ml-1 text-slate-400 normal-case font-normal">(×0,4)</span></th>
+                  <th className="py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Heures de nuit</th>
                 </tr>
               </thead>
               <tbody>
-                {daily.map((row) => (
+                {filtered.map((row) => (
                   <tr key={row.date} className="border-b border-slate-100 hover:bg-slate-50 transition">
                     <td className="py-3 pr-6 font-medium text-slate-800">{row.date}</td>
+                    <td className="py-3 pr-6 text-slate-400">—</td>
                     <td className="py-3 pr-6">
                       {row.trajetExclu ? (
                         <span className="flex items-center gap-2">
-                          <span className="font-mono text-slate-400 line-through text-xs">{row.conduiteAvant}</span>
-                          <span className="font-mono text-slate-800 font-semibold">{row.conduite}</span>
+                          <span className="font-mono text-slate-400 line-through text-xs">{row.travailAvant}</span>
+                          <span className="font-mono text-slate-800 font-semibold">{row.tempsTravail}</span>
                         </span>
                       ) : (
-                        <span className="font-mono text-slate-700">{row.conduite}</span>
+                        <span className="font-mono text-slate-700">{row.tempsTravail}</span>
                       )}
                     </td>
-                    {daily.some(r => r.trajetExclu) && (
+                    {filtered.some(r => r.trajetExclu) && (
                       <td className="py-3 pr-6 font-mono text-xs text-blue-600 font-semibold">
                         {row.trajetExclu ? `− ${row.trajetExclu}` : '—'}
                       </td>
                     )}
                     <td className="py-3 pr-6 font-mono text-slate-700">{row.disponibilite}</td>
-                    <td className="py-3 pr-6 font-mono text-xs text-red-500">{row.pauseDeduite ? `− ${row.pauseDeduite}` : '—'}</td>
                     <td className="py-3 font-mono text-slate-500">{row.heureNuit}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+              );
+            })()}
           </div>
 
           {totals ? (

@@ -1,0 +1,6 @@
+[build]
+buildCommand = "npm --prefix frontend run build && npm --prefix backend install"
+
+[deploy]
+startCommand = "node backend/src/server.js"
+healthcheckPath = "/health"
