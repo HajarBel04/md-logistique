@@ -67,15 +67,28 @@ function computeDaily(rows, homeCity, depotKeyword) {
     .filter(r => r.act && r.dtStart)
     .sort((a, b) => a.dtStart - b.dtStart);
 
-  // Grouper en shifts : une pause ≥ 6h = nouveau shift
+  // Grouper en shifts : pause ≥ 9h entre activités de travail = nouveau shift
+  // On ignore les "Repos" pour calculer le gap — ils remplissent le temps mais ne sont pas du travail
   const SHIFT_GAP = 9 * 60 * 60 * 1000;
   const shifts = [];
   let cur = [];
+  let lastWorkEnd = null;
   for (const r of sorted) {
-    if (cur.length === 0) { cur.push(r); continue; }
-    const lastEnd = cur[cur.length - 1].dtEnd || cur[cur.length - 1].dtStart;
-    if (r.dtStart - lastEnd >= SHIFT_GAP) { shifts.push(cur); cur = [r]; }
-    else cur.push(r);
+    if (cur.length === 0) {
+      cur.push(r);
+      if (r.act !== 'Repos') lastWorkEnd = r.dtEnd || r.dtStart;
+      continue;
+    }
+    const ref = r.act !== 'Repos' && lastWorkEnd
+      ? lastWorkEnd
+      : (cur[cur.length - 1].dtEnd || cur[cur.length - 1].dtStart);
+    if (r.dtStart - ref >= SHIFT_GAP) {
+      shifts.push(cur); cur = [r];
+      lastWorkEnd = r.act !== 'Repos' ? (r.dtEnd || r.dtStart) : null;
+    } else {
+      cur.push(r);
+      if (r.act !== 'Repos') lastWorkEnd = r.dtEnd || r.dtStart;
+    }
   }
   if (cur.length) shifts.push(cur);
 
@@ -226,7 +239,7 @@ export default function WebfleetImport() {
       const isNetwork = raw === 'Network Error' || raw.includes('Failed to fetch') || raw === 'Load failed';
       setError(
         isNetwork
-          ? 'Backend Node.js inaccessible (port 4000). Lance : cd backend && node src/server.js'
+          ? 'Impossible de joindre le serveur. Vérifiez votre connexion.'
           : raw || 'Impossible de joindre le backend.'
       );
     } finally {
