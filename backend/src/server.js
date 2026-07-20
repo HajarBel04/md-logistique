@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const routes = require("./routes");
 
 const app = express();
@@ -15,9 +14,6 @@ app.get("/health", (_req, res) => {
 
 app.use("/api", routes);
 
-const DIST = path.join(__dirname, "../../frontend/dist");
-app.use(express.static(DIST));
-app.get(/(.*)/, (_req, res) => res.sendFile(path.join(DIST, "index.html")));
 
 const PORT = process.env.PORT || 4000;
 
