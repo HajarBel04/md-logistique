@@ -98,7 +98,7 @@ function computeDaily(rows, homeCity, depotKeyword) {
       day: '2-digit', month: '2-digit', year: '2-digit',
     }).replace(/\//g, '.');
 
-    if (!map[key]) map[key] = { travail: 0, travailRaw: 0, dispo: 0, night: 0, commute: 0 };
+    if (!map[key]) map[key] = { travail: 0, travailRaw: 0, conduite: 0, dispo: 0, night: 0, commute: 0 };
 
     for (const r of shift) {
       const { act, dtStart, dtEnd, depart, arrivee } = r;
@@ -106,7 +106,15 @@ function computeDaily(rows, homeCity, depotKeyword) {
       if (dur > 720) continue; // anomalie Webfleet
 
       const city = homeCity ? homeCity.toLowerCase() : null;
-      const isCommute = city && (depart.includes(city) || arrivee.includes(city));
+      const depot = depotKeyword ? depotKeyword.toLowerCase() : null;
+      // Exclure UNIQUEMENT le trajet domicile ↔ Albert I-laan (règle Alex),
+      // et le Repos à domicile. Les livraisons à des clients en ville domicile = payées.
+      const isHomeDepotCommute = city && depot && (
+        (depart.includes(city) && arrivee.includes(depot)) ||
+        (depart.includes(depot) && arrivee.includes(city))
+      );
+      const isHomeRest = city && act === 'Repos' && depart.includes(city) && arrivee.includes(city);
+      const isCommute = isHomeDepotCommute || isHomeRest;
 
       if (act === 'Conduite' || act === 'Travail') {
         map[key].travailRaw += dur;
@@ -115,13 +123,24 @@ function computeDaily(rows, homeCity, depotKeyword) {
           commuteMin += dur;
         } else {
           map[key].travail += dur;
+          if (act === 'Conduite') map[key].conduite += dur;
           if (dtEnd) map[key].night += nightMinutes(dtStart, dtEnd);
         }
-      } else if (act === 'Disponibilité') {
-        map[key].dispo += dur;
-        if (dtEnd) map[key].night += nightMinutes(dtStart, dtEnd);
+      } else if (act === 'Disponibilité' || act === 'Repos') {
+        if (isCommute) {
+          // Repos/Dispo dans périmètre domicile → exclu
+          map[key].commute += dur;
+          commuteMin += dur;
+        } else {
+          map[key].dispo += dur;
+          if (dtEnd) map[key].night += nightMinutes(dtStart, dtEnd);
+        }
       }
-      // Repos → non payé
+    }
+
+    // Après 4h30 de conduite → déduire 45 min de pause obligatoire (non payée)
+    if (map[key].conduite >= 270) {
+      map[key].dispo = Math.max(0, map[key].dispo - 45);
     }
   }
 
@@ -157,7 +176,8 @@ export default function WebfleetImport() {
 
   // Charge les configs domicile/dépôt depuis le backend au démarrage
   useEffect(() => {
-    fetch('/api/chauffeur-configs')
+    const apiBase = import.meta.env.VITE_API_URL ?? '/api';
+    fetch(`${apiBase}/chauffeur-configs`)
       .then(r => r.json())
       .then(data => { driverConfigs.current = data; })
       .catch(() => {});
