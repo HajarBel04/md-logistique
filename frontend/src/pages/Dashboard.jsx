@@ -43,7 +43,7 @@ export default function Dashboard() {
         const raw = err.response?.data?.error || err.message || '';
         const isNetwork = raw === 'Network Error' || raw === 'Load failed' || raw.includes('Failed to fetch');
         if (isNetwork) {
-          setError('Backend non démarré — lance : cd backend && node src/server.js');
+          setError('Impossible de joindre le serveur. Vérifiez votre connexion.');
         } else if (status === 503) {
           setError('Base de données non configurée (Prisma). Le dashboard sera disponible après la configuration.');
         } else {
