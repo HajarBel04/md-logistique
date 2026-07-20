@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { read, utils, writeFile } from 'xlsx';
 import UploadDropzone from '../components/UploadDropzone';
 import PageHeader from '../components/PageHeader';
 import GlassCard from '../components/GlassCard';
 import EmptyState from '../components/EmptyState';
 import { uploadWebfleet } from '../services/api';
+import DRIVER_CONFIGS from '../driverConfigs';
 
 function parseDT(str) {
   if (!str) return null;
@@ -169,16 +170,7 @@ export default function WebfleetImport() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  const driverConfigs = useRef([]);
-
-  // Charge les configs domicile/dépôt depuis le backend au démarrage
-  useEffect(() => {
-    const apiBase = import.meta.env.VITE_API_URL ?? '/api';
-    fetch(`${apiBase}/chauffeur-configs`)
-      .then(r => r.json())
-      .then(data => { driverConfigs.current = data; })
-      .catch(() => {});
-  }, []);
+  const driverConfigs = useRef(DRIVER_CONFIGS);
 
   const handleSelectFile = async (selectedFile) => {
     setError(null);
