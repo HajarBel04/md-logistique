@@ -9,6 +9,7 @@ import Planning from './pages/Planning';
 import Documents from './pages/Documents';
 import Settings from './pages/Settings';
 import Payroll from './pages/Payroll';
+import LbdTracking from './pages/LbdTracking';
 
 const navItems = [
   { path: '/',               label: 'Dashboard'       },
@@ -73,6 +74,7 @@ export default function App() {
               <Route path="/documents" element={<Documents />} />
               <Route path="/planning" element={<Planning />} />
               <Route path="/payroll" element={<Payroll />} />
+              <Route path="/lbd" element={<LbdTracking />} />
               <Route path="/parametres" element={<Settings />} />
             </Routes>
           </main>

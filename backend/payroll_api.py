@@ -199,7 +199,7 @@ async def health():
 # ─── Module A — LBD Tracking (Abdelhakim) ────────────────────────────────────
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
-from process_lbd import process_lbd
+from process_lbd import process_lbd, STATUS_LABELS
 
 HAKIM_DIR = os.path.join(BASE_DIR, 'samples', 'hakim')
 
@@ -249,8 +249,20 @@ async def lbd_process(
         except ValueError as e:
             raise HTTPException(400, str(e))
 
+    rows = [
+        {
+            'tracking':    r['tracking'],
+            'statut':      STATUS_LABELS[r['status']],
+            'client':      r['client'],
+            'adresse':     r['adresse'],
+            'commentaire': r['comment'],
+        }
+        for r in result.get('rows', [])
+    ]
+
     return {
         'summary':       result['summary'],
+        'rows':          rows,
         'download_url':  f'/api/lbd/download/{out_name}',
         'target_date':   target_date,
     }
