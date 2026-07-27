@@ -260,11 +260,13 @@ async def lbd_process(
         for r in result.get('rows', [])
     ]
 
+    summary = result['summary']
     return {
-        'summary':       result['summary'],
-        'rows':          rows,
-        'download_url':  f'/api/lbd/download/{out_name}',
-        'target_date':   target_date,
+        'summary':      summary,
+        'casses':       summary.get('orange', 0),
+        'rows':         rows,
+        'download_url': f'/api/lbd/download/{out_name}',
+        'target_date':  target_date,
     }
 
 

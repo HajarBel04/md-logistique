@@ -4,10 +4,11 @@ MD-Logistique — Module A LBD Tracking (Abdelhakim)
 Analyse les colis OSP MD3449 et colore selon le statut de livraison.
 
 Statuts :
-  VERT  = No Inbound Scan  — colis jamais arrivé physiquement au dépôt
-  JAUNE = Retour dépôt     — chauffeur a pris puis ramené le colis
-  ROUGE = Driver Error     — colis disparu / livré sans scan
-  GRIS  = Future delivery  — livraison planifiée
+  VERT   = No Inbound Scan  — colis jamais arrivé physiquement au dépôt
+  JAUNE  = Retour dépôt     — chauffeur a pris puis ramené le colis
+  ORANGE = Cassé / Damaged  — retourné ET identifié comme endommagé
+  ROUGE  = Driver Error     — colis disparu / livré sans scan
+  GRIS   = Future delivery  — livraison planifiée
 """
 
 import os
@@ -23,32 +24,42 @@ from openpyxl.utils import get_column_letter
 OSP_CODE = 'MD3449'
 
 # Couleurs Excel (ARGB sans alpha)
-BG_VERT  = 'C6EFCE'
-BG_JAUNE = 'FFEB9C'
-BG_ROUGE = 'FFC7CE'
-BG_GRIS  = 'D9D9D9'
+BG_VERT    = 'C6EFCE'
+BG_JAUNE   = 'FFEB9C'
+BG_ORANGE  = 'FFDDC1'
+BG_ROUGE   = 'FFC7CE'
+BG_GRIS    = 'D9D9D9'
 
-FG_VERT  = '006100'
-FG_JAUNE = '9C6500'
-FG_ROUGE = '9C0006'
-FG_GRIS  = '595959'
+FG_VERT    = '006100'
+FG_JAUNE   = '9C6500'
+FG_ORANGE  = '8B3A00'
+FG_ROUGE   = '9C0006'
+FG_GRIS    = '595959'
+
+# Mots-clés détectant un colis endommagé (colonnes "comment" et "status" du LBD)
+DAMAGE_KEYWORDS = {
+    'damaged', 'broken', 'package damaged', 'returned damaged',
+    'endommage', 'endommagé', 'casse', 'cassé', 'broken package',
+}
 
 STATUS_LABELS = {
-    'vert':  'No Inbound Scan',
-    'jaune': 'Retour dépôt',
-    'rouge': 'Driver Error',
-    'gris':  'Future delivery',
+    'vert':   'No Inbound Scan',
+    'jaune':  'Retour dépôt',
+    'orange': 'Cassé / Damaged',
+    'rouge':  'Driver Error',
+    'gris':   'Future delivery',
 }
 
 COLOR_MAP = {
-    'vert':  (BG_VERT,  FG_VERT),
-    'jaune': (BG_JAUNE, FG_JAUNE),
-    'rouge': (BG_ROUGE, FG_ROUGE),
-    'gris':  (BG_GRIS,  FG_GRIS),
+    'vert':   (BG_VERT,   FG_VERT),
+    'jaune':  (BG_JAUNE,  FG_JAUNE),
+    'orange': (BG_ORANGE, FG_ORANGE),
+    'rouge':  (BG_ROUGE,  FG_ROUGE),
+    'gris':   (BG_GRIS,   FG_GRIS),
 }
 
 # Ordre d'affichage dans le rapport
-STATUS_ORDER = {'rouge': 0, 'jaune': 1, 'vert': 2, 'gris': 3}
+STATUS_ORDER = {'rouge': 0, 'orange': 1, 'jaune': 2, 'vert': 3, 'gris': 4}
 
 
 # ─── Loaders ─────────────────────────────────────────────────────────────────
@@ -137,20 +148,30 @@ def _load_future(path: Optional[str]) -> set:
 
 # ─── Logique métier ───────────────────────────────────────────────────────────
 
-def _assign_status(tracking: str, scanning: set, kc_j1: set, future: set) -> str:
+def _is_damaged(pkg: dict) -> bool:
+    """Retourne True si le colis est signalé comme endommagé."""
+    for field in ('comment', 'status', 'detail'):
+        val = str(pkg.get(field) or '').lower().strip()
+        if any(kw in val for kw in DAMAGE_KEYWORDS):
+            return True
+    return False
+
+
+def _assign_status(tracking: str, pkg: dict, scanning: set, kc_j1: set, future: set) -> str:
     """
-    Priorité : GRIS > VERT > JAUNE > ROUGE
-    VERT  = pas dans SCANNING (jamais arrivé au dépôt)
-    JAUNE = dans SCANNING + dans KC J+1 (retourné et re-dispatché)
-    ROUGE = dans SCANNING + absent de KC J+1 (disparu/non livré)
-    GRIS  = dans Future (planifié)
+    Priorité : GRIS > VERT > ORANGE > JAUNE > ROUGE
+    VERT   = pas dans SCANNING (jamais arrivé au dépôt)
+    ORANGE = dans SCANNING + KC J+1 + endommagé (retour dépôt cassé)
+    JAUNE  = dans SCANNING + KC J+1 (retourné et re-dispatché)
+    ROUGE  = dans SCANNING + absent de KC J+1 (disparu/non livré)
+    GRIS   = dans Future (planifié)
     """
     if tracking in future:
         return 'gris'
     if tracking not in scanning:
         return 'vert'
     if tracking in kc_j1:
-        return 'jaune'
+        return 'orange' if _is_damaged(pkg) else 'jaune'
     return 'rouge'
 
 
@@ -176,14 +197,14 @@ def build_excel(
     ws = wb.active
     ws.title = f"LBD {target_date.strftime('%d-%m-%Y')}"
 
-    summary = {'total': 0, 'vert': 0, 'jaune': 0, 'rouge': 0, 'gris': 0}
+    summary = {'total': 0, 'vert': 0, 'jaune': 0, 'orange': 0, 'rouge': 0, 'gris': 0}
     rows_data = []
 
     for pkg in packages:
         tracking = str(pkg.get('Trackingnumber', '')).strip()
         if not tracking:
             continue
-        status = _assign_status(tracking, scanning, kc_j1, future)
+        status = _assign_status(tracking, pkg, scanning, kc_j1, future)
         summary[status] += 1
         summary['total'] += 1
 
@@ -208,11 +229,12 @@ def build_excel(
     ws.append([])
 
     summary_rows = [
-        ('Total',  '',                         summary['total'],  None),
-        ('VERT',   STATUS_LABELS['vert'],       summary['vert'],   (BG_VERT,  FG_VERT)),
-        ('JAUNE',  STATUS_LABELS['jaune'],      summary['jaune'],  (BG_JAUNE, FG_JAUNE)),
-        ('ROUGE',  STATUS_LABELS['rouge'],      summary['rouge'],  (BG_ROUGE, FG_ROUGE)),
-        ('GRIS',   STATUS_LABELS['gris'],       summary['gris'],   (BG_GRIS,  FG_GRIS)),
+        ('Total',   '',                          summary['total'],   None),
+        ('VERT',    STATUS_LABELS['vert'],        summary['vert'],    (BG_VERT,   FG_VERT)),
+        ('JAUNE',   STATUS_LABELS['jaune'],       summary['jaune'],   (BG_JAUNE,  FG_JAUNE)),
+        ('ORANGE',  STATUS_LABELS['orange'],      summary['orange'],  (BG_ORANGE, FG_ORANGE)),
+        ('ROUGE',   STATUS_LABELS['rouge'],       summary['rouge'],   (BG_ROUGE,  FG_ROUGE)),
+        ('GRIS',    STATUS_LABELS['gris'],        summary['gris'],    (BG_GRIS,   FG_GRIS)),
     ]
     for label, desc, count, colors in summary_rows:
         ws.append(['', label, desc, count, '', ''])
@@ -325,6 +347,7 @@ if __name__ == '__main__':
     print(f"  Total  : {s['total']}")
     print(f"  VERT   : {s['vert']:>3}  — {STATUS_LABELS['vert']}")
     print(f"  JAUNE  : {s['jaune']:>3}  — {STATUS_LABELS['jaune']}")
+    print(f"  ORANGE : {s['orange']:>3}  — {STATUS_LABELS['orange']}")
     print(f"  ROUGE  : {s['rouge']:>3}  — {STATUS_LABELS['rouge']}")
     print(f"  GRIS   : {s['gris']:>3}  — {STATUS_LABELS['gris']}")
     print(f"{'='*52}")

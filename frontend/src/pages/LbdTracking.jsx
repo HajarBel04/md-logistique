@@ -5,10 +5,11 @@ import GlassCard from '../components/GlassCard';
 const LBD_API = 'http://localhost:8000';
 
 const STATUS_CONFIG = {
-  'No Inbound Scan': { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300', dot: 'bg-emerald-500' },
-  'Retour dépôt':    { bg: 'bg-amber-50 dark:bg-amber-900/20',   text: 'text-amber-700 dark:text-amber-300',   badge: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',   dot: 'bg-amber-500'   },
-  'Driver Error':    { bg: 'bg-red-50 dark:bg-red-900/20',       text: 'text-red-700 dark:text-red-300',       badge: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300',           dot: 'bg-red-500'     },
-  'Future delivery': { bg: 'bg-slate-50 dark:bg-slate-800/40',   text: 'text-slate-600 dark:text-slate-400',   badge: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',      dot: 'bg-slate-400'   },
+  'No Inbound Scan': { bg: 'bg-emerald-50 dark:bg-emerald-900/20',  text: 'text-emerald-700 dark:text-emerald-300', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300', dot: 'bg-emerald-500' },
+  'Retour dépôt':    { bg: 'bg-amber-50 dark:bg-amber-900/20',      text: 'text-amber-700 dark:text-amber-300',    badge: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',          dot: 'bg-amber-500'   },
+  'Cassé / Damaged': { bg: 'bg-orange-50 dark:bg-orange-900/20',    text: 'text-orange-700 dark:text-orange-300',  badge: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300',      dot: 'bg-orange-500'  },
+  'Driver Error':    { bg: 'bg-red-50 dark:bg-red-900/20',          text: 'text-red-700 dark:text-red-300',        badge: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300',                dot: 'bg-red-500'     },
+  'Future delivery': { bg: 'bg-slate-50 dark:bg-slate-800/40',      text: 'text-slate-600 dark:text-slate-400',    badge: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',            dot: 'bg-slate-400'   },
 };
 
 function FileInput({ label, hint, value, onChange }) {
@@ -155,11 +156,12 @@ export default function LbdTracking() {
         <>
           <GlassCard title="Résumé" tag="Résultat">
             <div className="flex flex-wrap gap-3">
-              <SummaryTile label="Total"           count={s.total}  colorClass="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100" />
-              <SummaryTile label="No Inbound Scan" count={s.vert}   colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
-              <SummaryTile label="Retour dépôt"    count={s.jaune}  colorClass="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" />
-              <SummaryTile label="Driver Error"    count={s.rouge}  colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
-              <SummaryTile label="Future"          count={s.gris}   colorClass="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300" />
+              <SummaryTile label="Total"           count={s.total}   colorClass="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100" />
+              <SummaryTile label="No Inbound Scan" count={s.vert}    colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
+              <SummaryTile label="Retour dépôt"    count={s.jaune}   colorClass="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" />
+              <SummaryTile label="Cassé / Damaged" count={s.orange}  colorClass="bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200" />
+              <SummaryTile label="Driver Error"    count={s.rouge}   colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
+              <SummaryTile label="Future"          count={s.gris}    colorClass="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300" />
             </div>
 
             <div className="mt-5">
