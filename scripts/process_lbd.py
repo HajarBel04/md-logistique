@@ -170,7 +170,7 @@ def build_excel(
     kc_j1: set,
     future: set,
     target_date: datetime,
-) -> Tuple[bytes, dict]:
+) -> Tuple[bytes, dict, list]:
     """Construit le fichier Excel colorisé. Retourne (bytes, summary)."""
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -260,7 +260,7 @@ def build_excel(
 
     buf = BytesIO()
     wb.save(buf)
-    return buf.getvalue(), summary
+    return buf.getvalue(), summary, rows_data
 
 
 # ─── Point d'entrée principal ─────────────────────────────────────────────────
@@ -286,7 +286,7 @@ def process_lbd(
     kc_j1    = _load_kc(kc_j1_path)
     future   = _load_future(future_path)
 
-    excel_bytes, summary = build_excel(packages, scanning, kc_j1, future, target_date)
+    excel_bytes, summary, rows = build_excel(packages, scanning, kc_j1, future, target_date)
 
     if output_path:
         out_dir = os.path.dirname(output_path)
@@ -295,7 +295,7 @@ def process_lbd(
         with open(output_path, 'wb') as f:
             f.write(excel_bytes)
 
-    return {'summary': summary, 'excel_bytes': excel_bytes}
+    return {'summary': summary, 'excel_bytes': excel_bytes, 'rows': rows}
 
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
