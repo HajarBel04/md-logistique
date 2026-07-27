@@ -133,7 +133,7 @@ async def generate_payroll(
             with open(cp140_tmp, 'wb') as f:
                 f.write(content)
         else:
-            cp140_default = os.path.join(SAMPLES_DIR, 'PC140_991163 01-05-2026 - 31-05-2026.xlsx')
+            cp140_default = os.path.join(SAMPLES_DIR, 'alex', 'PC140_991163 01-05-2026 - 31-05-2026.xlsx')
             if not os.path.exists(cp140_default):
                 raise HTTPException(400, "Aucun template CP140 fourni et template par défaut introuvable.")
             cp140_tmp = cp140_default
@@ -194,6 +194,80 @@ async def download_file(filename: str):
 @app.get("/api/payroll/health")
 async def health():
     return {"status": "ok", "service": "payroll"}
+
+
+# ─── Module A — LBD Tracking (Abdelhakim) ────────────────────────────────────
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+from process_lbd import process_lbd
+
+HAKIM_DIR = os.path.join(BASE_DIR, 'samples', 'hakim')
+
+
+@app.post("/api/lbd/process")
+async def lbd_process(
+    lbd_file:      UploadFile = File(...),
+    scanning_file: UploadFile = File(...),
+    kc_j_file:     UploadFile = File(...),
+    kc_j1_file:    UploadFile = File(...),
+    future_file:   UploadFile = File(...),
+    target_date:   str        = Form(...),   # YYYY-MM-DD
+):
+    """
+    Traite les 5 fichiers LBD pour la date cible.
+    Retourne le fichier Excel colorisé + résumé JSON.
+    """
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+
+        async def save(upload: UploadFile, name: str) -> str:
+            path = os.path.join(tmp, name)
+            with open(path, 'wb') as f:
+                f.write(await upload.read())
+            return path
+
+        lbd_path      = await save(lbd_file,      'lbd.xlsx')
+        scanning_path = await save(scanning_file,  'scanning.xlsx')
+        kc_j_path     = await save(kc_j_file,      'kc_j.xlsx')
+        kc_j1_path    = await save(kc_j1_file,     'kc_j1.xlsx')
+        future_path   = await save(future_file,    'future.xlsx')
+
+        out_name = f"LBD_rapport_{target_date}.xlsx"
+        out_path = os.path.join(OUTPUTS_DIR, out_name)
+
+        try:
+            result = process_lbd(
+                lbd_path        = lbd_path,
+                scanning_path   = scanning_path,
+                kc_j_path       = kc_j_path,
+                kc_j1_path      = kc_j1_path,
+                future_path     = future_path,
+                target_date_str = target_date,
+                output_path     = out_path,
+            )
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+
+    return {
+        'summary':       result['summary'],
+        'download_url':  f'/api/lbd/download/{out_name}',
+        'target_date':   target_date,
+    }
+
+
+@app.get("/api/lbd/download/{filename}")
+async def lbd_download(filename: str):
+    safe = os.path.basename(filename)
+    path = os.path.join(OUTPUTS_DIR, safe)
+    if not os.path.exists(path):
+        raise HTTPException(404, f"Fichier '{safe}' introuvable.")
+    return FileResponse(path, filename=safe, media_type='application/octet-stream')
+
+
+@app.get("/api/lbd/health")
+async def lbd_health():
+    return {"status": "ok", "service": "lbd"}
 
 
 # ─── Lancement ────────────────────────────────────────────────────────────────
