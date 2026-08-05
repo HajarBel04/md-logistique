@@ -1,7 +1,2 @@
 [build]
 builder = "DOCKERFILE"
-
-[deploy]
-startCommand = "python backend/payroll_api.py"
-healthcheckPath = "/api/lbd/health"
-restartPolicyType = "ON_FAILURE"
