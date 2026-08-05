@@ -1,2 +1,5 @@
 [build]
 builder = "DOCKERFILE"
+
+[deploy]
+startCommand = "python3 backend/payroll_api.py"
