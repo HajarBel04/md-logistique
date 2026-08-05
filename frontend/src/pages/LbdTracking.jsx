@@ -151,7 +151,7 @@ export default function LbdTracking() {
     } catch (err) {
       const msg = err.message || '';
       if (msg === 'Load failed' || msg.includes('fetch') || msg.includes('Failed')) {
-        setError('Serveur FastAPI inaccessible (port 8000). Lance : python3 backend/payroll_api.py');
+        setError(`Backend inaccessible (${LBD_API || 'URL non configurée'}). Vérifie que le serveur Railway est en ligne.`);
       } else {
         setError(msg);
       }
