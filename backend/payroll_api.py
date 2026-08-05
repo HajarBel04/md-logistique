@@ -16,6 +16,7 @@ from typing import List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # Rendre le dossier scripts/ importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
@@ -37,7 +38,7 @@ app = FastAPI(title="MD-Logistique Payroll API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:4000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -199,23 +200,25 @@ async def health():
 # ─── Module A — LBD Tracking (Abdelhakim) ────────────────────────────────────
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
-from process_lbd import process_lbd, STATUS_LABELS
+from process_lbd import process_lbd, filter_lbd_md3449, STATUS_LABELS
 
 HAKIM_DIR = os.path.join(BASE_DIR, 'samples', 'hakim')
 
 
 @app.post("/api/lbd/process")
 async def lbd_process(
-    lbd_file:      UploadFile = File(...),
-    scanning_file: UploadFile = File(...),
-    kc_j_file:     UploadFile = File(...),
-    kc_j1_file:    UploadFile = File(...),
-    future_file:   UploadFile = File(...),
-    target_date:   str        = Form(...),   # YYYY-MM-DD
+    lbd_file:          UploadFile       = File(...),
+    scanning_j_files:  List[UploadFile] = File(default=[]),
+    scanning_j1_files: List[UploadFile] = File(...),
+    retour_files:      List[UploadFile] = File(...),
+    kc_files:          List[UploadFile] = File(default=[]),
+    future_file:       UploadFile       = File(...),
+    target_date:       str              = Form(...),
 ):
     """
-    Traite les 5 fichiers LBD pour la date cible.
-    Retourne le fichier Excel colorisé + résumé JSON.
+    scanning_j_files  : SCANNING jour J (livraison) — optionnel.
+    scanning_j1_files : SCANNING jour J+1 (retours tour complet).
+    retour_files      : Retours chariot chauffeur.
     """
     import tempfile
 
@@ -227,24 +230,26 @@ async def lbd_process(
                 f.write(await upload.read())
             return path
 
-        lbd_path      = await save(lbd_file,      'lbd.xlsx')
-        scanning_path = await save(scanning_file,  'scanning.xlsx')
-        kc_j_path     = await save(kc_j_file,      'kc_j.xlsx')
-        kc_j1_path    = await save(kc_j1_file,     'kc_j1.xlsx')
-        future_path   = await save(future_file,    'future.xlsx')
+        lbd_path    = await save(lbd_file,    'lbd.xlsx')
+        future_path = await save(future_file, 'future.xlsx')
+        scanning_j_paths  = [await save(f, f'scanj_{i}.xlsx')  for i, f in enumerate(scanning_j_files)]
+        scanning_j1_paths = [await save(f, f'scanj1_{i}.xlsx') for i, f in enumerate(scanning_j1_files)]
+        retour_paths      = [await save(f, f'retour_{i}.xlsx') for i, f in enumerate(retour_files)]
+        kc_paths          = [await save(f, f'kc_{i}.xlsx')     for i, f in enumerate(kc_files)]
 
         out_name = f"LBD_rapport_{target_date}.xlsx"
         out_path = os.path.join(OUTPUTS_DIR, out_name)
 
         try:
             result = process_lbd(
-                lbd_path        = lbd_path,
-                scanning_path   = scanning_path,
-                kc_j_path       = kc_j_path,
-                kc_j1_path      = kc_j1_path,
-                future_path     = future_path,
-                target_date_str = target_date,
-                output_path     = out_path,
+                lbd_path          = lbd_path,
+                scanning_j_paths  = scanning_j_paths,
+                scanning_j1_paths = scanning_j1_paths,
+                retour_paths      = retour_paths,
+                kc_paths          = kc_paths,
+                future_path       = future_path,
+                target_date_str   = target_date,
+                output_path       = out_path,
             )
         except ValueError as e:
             raise HTTPException(400, str(e))
@@ -263,7 +268,6 @@ async def lbd_process(
     summary = result['summary']
     return {
         'summary':      summary,
-        'casses':       summary.get('orange', 0),
         'rows':         rows,
         'download_url': f'/api/lbd/download/{out_name}',
         'target_date':  target_date,
@@ -279,13 +283,125 @@ async def lbd_download(filename: str):
     return FileResponse(path, filename=safe, media_type='application/octet-stream')
 
 
+@app.post("/api/lbd/filter")
+async def lbd_filter(lbd_file: UploadFile = File(...)):
+    """Filtre le LBD pour ne garder que MD3449, en préservant les dropdowns."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, 'lbd.xlsx')
+        with open(path, 'wb') as f:
+            f.write(await lbd_file.read())
+        try:
+            excel_bytes = filter_lbd_md3449(path)
+        except Exception as e:
+            raise HTTPException(400, str(e))
+
+    out_name = f"LBD_MD3449_filtre.xlsx"
+    out_path = os.path.join(OUTPUTS_DIR, out_name)
+    with open(out_path, 'wb') as f:
+        f.write(excel_bytes)
+
+    return FileResponse(
+        out_path,
+        filename=out_name,
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+
+
 @app.get("/api/lbd/health")
 async def lbd_health():
     return {"status": "ok", "service": "lbd"}
+
+
+# ─── Module GPS Analysis ──────────────────────────────────────────────────────
+
+from process_gps import process_gps
+
+@app.post("/api/gps/process")
+async def gps_process(
+    gps_file: UploadFile = File(...),
+    geocode:  str        = Form(default='false'),
+):
+    import tempfile
+    do_geocode = geocode.lower() == 'true'
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, 'gps.xlsx')
+        with open(path, 'wb') as f:
+            f.write(await gps_file.read())
+
+        out_name = 'GPS_rapport.xlsx'
+        out_path = os.path.join(OUTPUTS_DIR, out_name)
+
+        try:
+            result = process_gps(path, output_path=out_path, geocode=do_geocode)
+        except Exception as e:
+            raise HTTPException(400, str(e))
+
+    rows = [
+        {
+            'barcode':      r['barcode'],
+            'driver':       r['driver'],
+            'date':         str(r['date'])[:10] if r['date'] else '',
+            'commit_time':  r['commit_time'],
+            'actual_time':  r['actual_time'],
+            'is_late':      r['is_late'],
+            'is_express':   r['is_express'],
+            'status':       r['status'],
+            'street':       r['street'],
+            'city':         r['city'],
+            'postal':       r['postal'],
+            'consignee':    r['consignee'],
+            'seq':          r['seq'],
+            'loop':         r['loop'],
+            'gps_lat':      str(r['gps_lat']) if r['gps_lat'] else '',
+            'gps_lon':      str(r['gps_lon']) if r['gps_lon'] else '',
+            'dist_m':       round(r['dist_m'], 1) if r['dist_m'] is not None else None,
+            'streetview':   r['streetview'],
+            'route':        r['route'],
+        }
+        for r in result['rows']
+    ]
+
+    return {
+        'summary':      result['summary'],
+        'rows':         rows,
+        'download_url': f'/api/gps/download/{out_name}',
+    }
+
+
+@app.get("/api/gps/download/{filename}")
+async def gps_download(filename: str):
+    safe = os.path.basename(filename)
+    path = os.path.join(OUTPUTS_DIR, safe)
+    if not os.path.exists(path):
+        raise HTTPException(404, f"Fichier '{safe}' introuvable.")
+    return FileResponse(path, filename=safe, media_type='application/octet-stream')
+
+
+@app.get("/api/gps/health")
+async def gps_health():
+    return {"status": "ok", "service": "gps"}
+
+
+# ─── Frontend statique ────────────────────────────────────────────────────────
+
+FRONTEND_DIST = os.path.join(BASE_DIR, 'frontend', 'dist')
+if os.path.isdir(FRONTEND_DIST):
+    from fastapi.responses import HTMLResponse
+
+    app.mount('/assets', StaticFiles(directory=os.path.join(FRONTEND_DIST, 'assets')), name='assets')
+
+    @app.get('/{full_path:path}', include_in_schema=False)
+    async def serve_spa(full_path: str):
+        index = os.path.join(FRONTEND_DIST, 'index.html')
+        with open(index) as f:
+            return HTMLResponse(f.read())
 
 
 # ─── Lancement ────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    port = int(os.environ.get('PORT', 8000))
+    uvicorn.run(app, host='0.0.0.0', port=port)
