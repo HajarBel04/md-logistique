@@ -408,5 +408,12 @@ if os.path.isdir(FRONTEND_DIST):
 
 if __name__ == '__main__':
     import uvicorn
+    import logging
+    logging.basicConfig(level=logging.INFO)
     port = int(os.environ.get('PORT', 8000))
-    uvicorn.run(app, host='0.0.0.0', port=port)
+    print(f"[startup] Starting on port {port}", flush=True)
+    try:
+        uvicorn.run(app, host='0.0.0.0', port=port)
+    except Exception as e:
+        print(f"[FATAL] {e}", flush=True)
+        raise
