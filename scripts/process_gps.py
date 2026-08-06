@@ -33,17 +33,58 @@ BG_YELLOW      = 'FFEB9C'; FG_YELLOW = '9C6500'
 BG_RED         = 'FFC7CE'; FG_RED    = '9C0006'
 BG_GREY        = 'D9D9D9'; FG_GREY   = '595959'
 
-# ─── Codes express (à compléter quand Hakim donne les codes) ─────────────────
-# Format barcode UPS: 1Z + 6 chars account + 2 chars service + ...
-# Express service codes UPS (positions 8-9 dans barcode, index 8-9 après "1Z")
-EXPRESS_SERVICE_CODES = {
-    '01',  # Next Day Air
-    '07',  # Express
-    '08',  # Expedited
-    '54',  # Express Plus
-    '65',  # Express Saver
-    '85',  # Today Express
+# ─── Codes service UPS (positions 8-9 dans barcode 1Z) ───────────────────────
+# Source : UPS Service Level Indicators table
+
+# UPS EXPRESS PLUS
+_EXPRESS_PLUS = {
+    '54', '73', 'G2', 'G6', 'G1', 'G5', 'AK', 'V5', 'AM', 'AL', 'HP', 'N5', '5N', '5P',
+    '34', 'G3', 'G7', 'G4', 'G8', 'N4', 'P3',
 }
+
+# UPS EXPRESS
+_EXPRESS = {
+    '66', '75', 'C6', 'C7', 'D3', 'D4', '85', 'V4', '96', '92', 'AS', 'CQ', '5T', '5W',
+    '69', '76', 'C9', 'CA', 'D6', 'D7', 'Y6', 'Y9', 'Y7', 'Y8', 'AZ', 'CS', '5Y', '6A',
+    'AT', 'GG', 'G9', 'V7',
+    'AV', 'GH', 'GA', 'YA', 'T5', 'AQ',
+}
+
+# UPS WORLDWIDE EXPRESS FREIGHT
+_EXPRESS_FREIGHT = {
+    'E1', 'E3', 'E4', 'E5', 'E9',
+    'E2', 'E6', 'E7', 'E8', 'EA',
+}
+
+# UPS WORLDWIDE EXPRESS FREIGHT MIDDAY
+_EXPRESS_FREIGHT_MIDDAY = {
+    'EQ', 'ES', 'ET', 'EV', 'EZ',
+    'ER', 'EW', 'EX', 'EY', 'F0',
+}
+
+# UPS EXPRESS SAVER
+_EXPRESS_SAVER = {
+    '04', '77', 'CH', 'CJ', 'D9', 'DA', '86', 'V6', '97', '93', 'DS', 'DV', '6G', '6H',
+    'CE', 'CF', 'DD', 'DE',
+}
+
+# UPS EXPRESS 12:00 (Germany only)
+_EXPRESS_1200 = {
+    'QH', 'Q4', 'QA', 'QC', 'QD', 'QE', 'Q5', 'Q8', 'Q6', 'Q7', 'Q2', 'Q3', 'Q0', 'Q1',
+}
+
+# Tous les codes express (livraisons time-sensitive)
+EXPRESS_SERVICE_CODES = (
+    _EXPRESS_PLUS | _EXPRESS | _EXPRESS_FREIGHT |
+    _EXPRESS_FREIGHT_MIDDAY | _EXPRESS_SAVER | _EXPRESS_1200
+)
+
+# Pour info : codes NON-express (standard, economy…)
+# UPS STANDARD      : 68, FX, 79, GJ, CP, GK, CR, GL, DK, FY, DL, FZ, 91, 99, 95, DY, DZ, 6T, 6W
+# UPS ACCESS POINT  : YZ, Z6, Z2, Z5, Z3, Z4, Z7
+# UPS EXPEDITED     : 67, CL, CM, DG, DH, 88, 98, 94, DW, DX, 6N, 6P
+# UPS ECONOMY DDP   : FC
+# UPS ECONOMY DDU   : FD
 
 # ─── Helpers temps ────────────────────────────────────────────────────────────
 
