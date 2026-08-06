@@ -313,6 +313,11 @@ async def lbd_health():
     return {"status": "ok", "service": "lbd"}
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "md-logistique-api"}
+
+
 # ─── Module GPS Analysis ──────────────────────────────────────────────────────
 
 from process_gps import process_gps

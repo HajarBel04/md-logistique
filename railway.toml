@@ -3,3 +3,5 @@ builder = "DOCKERFILE"
 
 [deploy]
 startCommand = "python3 backend/payroll_api.py"
+healthcheckPath = "/api/lbd/health"
+healthcheckTimeout = 120
