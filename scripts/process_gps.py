@@ -89,7 +89,15 @@ EXPRESS_SERVICE_CODES = (
 
 # ─── Helpers temps ────────────────────────────────────────────────────────────
 
-def _commit_time(g_val, t_val: str, postal: str) -> Optional[dtime]:
+def _is_express_by_barcode(barcode: str) -> bool:
+    """Détecte express via les 2 chiffres de service dans le barcode 1Z (pos 8-9)."""
+    bc = str(barcode or '').strip()
+    if len(bc) >= 10:
+        return bc[8:10] in EXPRESS_SERVICE_CODES
+    return False
+
+
+def _commit_time(g_val, t_val: str, postal: str, is_express: bool = False) -> Optional[dtime]:
     """Retourne l'heure limite selon les règles métier."""
     t_val = str(t_val or '').strip().upper()
     postal = str(postal or '').strip()
@@ -101,6 +109,10 @@ def _commit_time(g_val, t_val: str, postal: str) -> Optional[dtime]:
     # CP 2040 → 14h00
     if postal == '2040':
         return dtime(14, 0)
+
+    # Express (détecté par barcode) → midi 12h00
+    if is_express:
+        return dtime(12, 0)
 
     if g_val is None:
         return None
@@ -131,14 +143,51 @@ def _parse_time(t_str) -> Optional[dtime]:
 
 def _is_express(barcode: str, g_val) -> bool:
     """Express = service code dans barcode OU commit time ≤ 14h."""
-    bc = str(barcode or '').strip()
-    if len(bc) >= 10:
-        service_code = bc[8:10]
-        if service_code in EXPRESS_SERVICE_CODES:
-            return True
+    if _is_express_by_barcode(barcode):
+        return True
     if g_val is not None:
         return float(g_val) <= 14.0
     return False
+
+
+def _apply_cluster_rule(rows: list, max_dist_m: float = 200.0, min_cluster: int = 3) -> list:
+    """
+    Règle des 3 express consécutifs :
+    Si 3+ livraisons express se suivent et sont toutes à moins de max_dist_m
+    les unes des autres (adresses côte à côte), le retard n'est pas sanctionné.
+    """
+    n = len(rows)
+    excused = set()
+    i = 0
+    while i < n:
+        r = rows[i]
+        if not r['is_express'] or not r['gps_lat'] or not r['gps_lon']:
+            i += 1
+            continue
+        # Construire cluster de express consécutifs géographiquement proches
+        cluster = [i]
+        j = i + 1
+        while j < n:
+            rj = rows[j]
+            if not rj['is_express'] or not rj['gps_lat'] or not rj['gps_lon']:
+                break
+            prev = rows[cluster[-1]]
+            dist = _haversine(float(prev['gps_lat']), float(prev['gps_lon']),
+                              float(rj['gps_lat']),  float(rj['gps_lon']))
+            if dist <= max_dist_m:
+                cluster.append(j)
+                j += 1
+            else:
+                break
+        if len(cluster) >= min_cluster:
+            for idx in cluster:
+                excused.add(idx)
+        i = j if len(cluster) > 1 else i + 1
+
+    for idx in excused:
+        rows[idx]['excused'] = True
+        rows[idx]['is_late'] = False   # non sanctionné
+    return rows
 
 
 # ─── Géocodage Nominatim avec cache ──────────────────────────────────────────
@@ -297,11 +346,14 @@ def process_gps(
 
         full_street = f'{street} {street_n}'.strip()
 
+        # Détection express par barcode (pour règle midi)
+        is_exp_bc = _is_express_by_barcode(barcode)
+
         # Heure limite et heure réelle
-        commit = _commit_time(g_val, t_val, postal)
+        commit = _commit_time(g_val, t_val, postal, is_express=is_exp_bc)
         actual = _parse_time(l_str)
 
-        is_exp   = _is_express(barcode, g_val)
+        is_exp   = is_exp_bc or (g_val is not None and float(g_val) <= 14.0)
         is_late  = (commit is not None and actual is not None and actual > commit)
 
         summary['total'] += 1
@@ -346,6 +398,7 @@ def process_gps(
             'g_val':       g_val,
             'commit_time': commit.strftime('%H:%M') if commit else '',
             'actual_time': l_str,
+            'excused':     False,
             'street':      full_street,
             'city':        city,
             'postal':      postal,
@@ -364,6 +417,9 @@ def process_gps(
 
     if geocache_dirty:
         _save_geocache(geocache)
+
+    # ── Règle 3 express consécutifs géographiquement proches ─────────────────
+    rows_out = _apply_cluster_rule(rows_out)
 
     # ── Génération Excel ──────────────────────────────────────────────────────
     excel_bytes = _build_excel(rows_out, summary)
@@ -419,7 +475,7 @@ def _build_excel(rows: list, summary: dict) -> bytes:
 
     # ── Données ─────────────────────────────────────────────────────────────────
     for r in rows:
-        late_str    = 'OUI' if r['is_late'] else ''
+        late_str    = 'OUI' if r['is_late'] else ('EXCUSÉ' if r.get('excused') else '')
         express_str = 'EXPRESS' if r['is_express'] else 'STD'
 
         dist_bg, dist_fg, dist_label = _perimeter_color(r['dist_m'])
