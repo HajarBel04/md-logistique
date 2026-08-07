@@ -263,11 +263,36 @@ def _streetview_link(lat, lon) -> str:
     return ''
 
 
-def _route_link(gps_lat, gps_lon, street, city, postal) -> str:
-    """Itinéraire du point GPS → adresse de livraison."""
+def _maps_location(street, city, postal) -> str:
+    """Lien Google Maps vers l'adresse de livraison (épingle)."""
     import urllib.parse
     addr = urllib.parse.quote(f'{street}, {postal} {city}, Belgium')
-    return f'https://www.google.com/maps/dir/{gps_lat},{gps_lon}/{addr}'
+    return f'https://www.google.com/maps/search/{addr}'
+
+
+def _add_consecutive_routes(rows: list) -> list:
+    """
+    Remplace le champ 'route' de chaque ligne par l'itinéraire
+    entre le stop PRÉCÉDENT et le stop COURANT (adresse à adresse).
+    → 1er stop : lien vers l'adresse courante uniquement.
+    """
+    import urllib.parse
+
+    def _addr(r):
+        return f"{r['street']}, {r['postal']} {r['city']}, Belgium"
+
+    for i, row in enumerate(rows):
+        if not row['street']:
+            row['route'] = ''
+            continue
+        curr = urllib.parse.quote(_addr(row))
+        if i == 0 or not rows[i - 1]['street']:
+            # Premier stop : juste l'épingle
+            row['route'] = f'https://www.google.com/maps/search/{curr}'
+        else:
+            prev = urllib.parse.quote(_addr(rows[i - 1]))
+            row['route'] = f'https://www.google.com/maps/dir/{prev}/{curr}'
+    return rows
 
 
 # ─── Traitement principal ─────────────────────────────────────────────────────
@@ -387,9 +412,8 @@ def process_gps(
             else:
                 summary['dist_alarm'] += 1
 
-        # Liens Maps
-        sv_link    = _streetview_link(gps_lat, gps_lon) if gps_lat else ''
-        route_link = _route_link(gps_lat, gps_lon, full_street, city, postal) if gps_lat else ''
+        # Liens Maps (route ajouté en post-traitement)
+        sv_link = _streetview_link(gps_lat, gps_lon) if gps_lat else ''
 
         rows_out.append({
             'date':        v(I_DATE),
@@ -412,7 +436,7 @@ def process_gps(
             'is_late':     is_late,
             'dist_m':      dist_m,
             'streetview':  sv_link,
-            'route':       route_link,
+            'route':       '',          # rempli par _add_consecutive_routes
         })
 
     if geocache_dirty:
@@ -420,6 +444,9 @@ def process_gps(
 
     # ── Règle 3 express consécutifs géographiquement proches ─────────────────
     rows_out = _apply_cluster_rule(rows_out)
+
+    # ── Itinéraire consécutif (stop N-1 → stop N) ────────────────────────────
+    rows_out = _add_consecutive_routes(rows_out)
 
     # ── Génération Excel ──────────────────────────────────────────────────────
     excel_bytes = _build_excel(rows_out, summary)
