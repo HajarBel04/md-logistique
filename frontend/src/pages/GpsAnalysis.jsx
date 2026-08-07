@@ -10,6 +10,16 @@ const STATUS_FILTERS = [
   'NO MONEY 1','NO MONEY 2','LEFT ARS TAG','NI1 ALT DEL',
 ];
 
+/* ─── Badge distance inter-stops ────────────────────────────────────────── */
+function DistBadge({ distM }) {
+  if (distM === null || distM === undefined) return <span className="text-slate-400">—</span>;
+  const d = Number(distM);
+  const fmt = d < 1000 ? `${Math.round(d)}m` : `${(d / 1000).toFixed(1)}km`;
+  if (d <= 200)  return <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">{fmt} ✓</span>;
+  if (d <= 2000) return <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">{fmt}</span>;
+  return          <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800">{fmt} !</span>;
+}
+
 /* ─── GPS Modal avec mini-carte OpenStreetMap ─────────────────────────── */
 function GpsModal({ gps, onClose }) {
   useEffect(() => {
@@ -123,6 +133,7 @@ function SummaryTile({ label, count, colorClass }) {
 /* ─── Page principale ────────────────────────────────────────────────── */
 export default function GpsAnalysis() {
   const [file, setFile]         = useState(null);
+  const [geocode, setGeocode]   = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState(null);
   const [result, setResult]     = useState(null);
@@ -136,7 +147,7 @@ export default function GpsAnalysis() {
     setLoading(true); setError(null); setResult(null);
     const fd = new FormData();
     fd.append('gps_file', file);
-    fd.append('geocode', 'false'); // distance désactivée (GPS = dépôt, pas livraison)
+    fd.append('geocode', geocode ? 'true' : 'false');
     try {
       const res = await fetch(`${GPS_API}/api/gps/process`, { method: 'POST', body: fd });
       if (!res.ok) {
@@ -178,10 +189,26 @@ export default function GpsAnalysis() {
 
       {/* ── Upload ── */}
       <GlassCard title="Fichier GPS" tag="Upload">
-        <FileInput label="Fichier GPS (.xlsx)" hint="GPS MD1 M-D Logistique.xlsx" value={file} onChange={setFile} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <FileInput label="Fichier GPS (.xlsx)" hint="GPS MD1 M-D Logistique.xlsx" value={file} onChange={setFile} />
+          <div className="flex flex-col justify-center gap-3 rounded-[20px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/60">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={geocode} onChange={e => setGeocode(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 accent-orange-500" />
+              <span className="text-sm text-slate-700 dark:text-slate-300">
+                Calculer distances entre stops consécutifs
+              </span>
+            </label>
+            {geocode && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                ⚠ Géocodage Nominatim — environ 15 min pour ~880 adresses uniques (mis en cache après la 1ère fois)
+              </p>
+            )}
+          </div>
+        </div>
 
-        <div className="mt-3 rounded-[16px] border border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-900/20 px-4 py-3 text-xs text-amber-700 dark:text-amber-300">
-          ℹ️ <strong>Note :</strong> La colonne <em>Trigger 3 GPS</em> enregistre la position du véhicule au moment du scan (généralement au dépôt), pas à la porte du client. La comparaison de distance n'est donc pas activée.
+        <div className="mt-3 rounded-[16px] border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+          ℹ️ Distance = écart à vol d'oiseau entre l'adresse du stop N-1 et celle du stop N. <em>Trigger 3 GPS</em> (dépôt) n'est pas utilisé pour le calcul.
         </div>
 
         <div className="mt-5 flex items-center gap-4">
@@ -217,6 +244,10 @@ export default function GpsAnalysis() {
               <SummaryTile label="Total colis"       count={s.total}        colorClass="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100" />
               <SummaryTile label="Retards"           count={s.late}         colorClass="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" />
               <SummaryTile label="Retards Express"   count={s.express_late} colorClass="bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200" />
+              {geocode && <>
+                <SummaryTile label="Stops proches (≤200m)"  count={s.dist_ok}    colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
+                <SummaryTile label="Stops éloignés (>2km)"  count={s.dist_alarm} colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
+              </>}
             </div>
             <div className="mt-5">
               <a
@@ -262,7 +293,7 @@ export default function GpsAnalysis() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
-                    {['Seq','Loop','Barcode','Express?','Commit','Réel','RETARD','Statut (T)','Rue','CP','Destinataire','GPS','Itinéraire'].map(h => (
+                    {['Seq','Loop','Barcode','Express?','Commit','Réel','RETARD','Statut (T)','Rue','CP','Destinataire','GPS','Distance','Itinéraire'].map(h => (
                       <th key={h} className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -326,6 +357,11 @@ export default function GpsAnalysis() {
                           ) : (
                             <span className={lateExpress ? 'text-white/40' : 'text-slate-400'}>—</span>
                           )}
+                        </td>
+
+                        {/* Distance inter-stops */}
+                        <td className="px-3 py-2">
+                          {geocode ? <DistBadge distM={row.dist_m} /> : <span className="text-slate-300 dark:text-slate-600 text-xs italic">—</span>}
                         </td>
 
                         {/* Itinéraire */}
