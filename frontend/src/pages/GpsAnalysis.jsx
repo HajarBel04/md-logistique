@@ -14,10 +14,12 @@ const STATUS_FILTERS = [
 function DistBadge({ distM }) {
   if (distM === null || distM === undefined) return <span className="text-slate-400">—</span>;
   const d = Number(distM);
-  const fmt = d < 1000 ? `${Math.round(d)}m` : `${(d / 1000).toFixed(1)}km`;
-  if (d <= 200)  return <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">{fmt} ✓</span>;
-  if (d <= 2000) return <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">{fmt}</span>;
-  return          <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800">{fmt} !</span>;
+  const fmt = d < 1000 ? `${Math.round(d)}m` : `${(d / 1000).toFixed(2)}km`;
+  if (d <= 10) return <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">{fmt} ✓</span>;
+  if (d <= 15) return <span className="rounded-full bg-green-100  px-2 py-0.5 text-xs font-bold text-green-700">{fmt}</span>;
+  if (d <= 30) return <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-800">{fmt}</span>;
+  if (d <= 50) return <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-800">{fmt}</span>;
+  return        <span className="rounded-full bg-red-100    px-2 py-0.5 text-xs font-bold text-red-800">{fmt} !</span>;
 }
 
 /* ─── GPS Modal avec mini-carte OpenStreetMap ─────────────────────────── */
@@ -245,8 +247,9 @@ export default function GpsAnalysis() {
               <SummaryTile label="Retards"           count={s.late}         colorClass="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" />
               <SummaryTile label="Retards Express"   count={s.express_late} colorClass="bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200" />
               {geocode && <>
-                <SummaryTile label="Stops proches (≤200m)"  count={s.dist_ok}    colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
-                <SummaryTile label="Stops éloignés (>2km)"  count={s.dist_alarm} colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
+                <SummaryTile label="OK ≤10m"   count={s.dist_ok}    colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
+                <SummaryTile label="Warning >30m" count={s.dist_warn}  colorClass="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200" />
+                <SummaryTile label="Alarme >50m"  count={s.dist_alarm} colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
               </>}
             </div>
             <div className="mt-5">
