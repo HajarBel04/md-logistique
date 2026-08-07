@@ -406,7 +406,7 @@ def _build_excel(rows: list, summary: dict) -> bytes:
         'Rue', 'Ville', 'CP', 'Destinataire',
         'GPS Lat', 'GPS Lon',
         'Distance\nGPS→Adresse', 'Périmètre',
-        'Street View', 'Itinéraire GPS→Adresse',
+        'Itinéraire GPS→Adresse',
     ]
     ws.append(col_headers)
     hdr_row = ws.max_row
@@ -446,7 +446,6 @@ def _build_excel(rows: list, summary: dict) -> bytes:
             r['gps_lon'],
             f"{r['dist_m']:.1f}" if r['dist_m'] is not None else '',
             dist_label,
-            r['streetview'],
             r['route'],
         ]
         ws.append(row_data)
@@ -464,18 +463,14 @@ def _build_excel(rows: list, summary: dict) -> bytes:
         dist_cell.font = _font(dist_fg, bold=True)
         dist_cell.alignment = Alignment(horizontal='center')
 
-        # Liens cliquables
-        if r['streetview']:
-            ws.cell(data_row, 19).hyperlink = r['streetview']
-            ws.cell(data_row, 19).value     = 'Street View'
-            ws.cell(data_row, 19).font      = Font(color='0563C1', underline='single')
+        # Lien itinéraire cliquable (colonne 19)
         if r['route']:
-            ws.cell(data_row, 20).hyperlink = r['route']
-            ws.cell(data_row, 20).value     = 'Itinéraire'
-            ws.cell(data_row, 20).font      = Font(color='0563C1', underline='single')
+            ws.cell(data_row, 19).hyperlink = r['route']
+            ws.cell(data_row, 19).value     = 'Itinéraire'
+            ws.cell(data_row, 19).font      = Font(color='0563C1', underline='single')
 
     # ── Largeurs ─────────────────────────────────────────────────────────────
-    widths = [12, 14, 22, 10, 10, 8, 8, 8, 6, 14, 28, 14, 7, 22, 12, 12, 14, 12, 12, 22]
+    widths = [12, 14, 22, 10, 10, 8, 8, 8, 6, 14, 28, 14, 7, 22, 12, 12, 14, 12, 22]
     for i, w in enumerate(widths, 1):
         ws.column_dimensions[get_column_letter(i)].width = w
 
