@@ -26,7 +26,8 @@ GEOCACHE    = os.path.join(BASE_DIR, 'outputs', 'geocache.json')
 
 # ─── Couleurs ────────────────────────────────────────────────────────────────
 
-BG_ORANGE      = 'FFC7CE'; FG_ORANGE = '9C0006'
+BG_ORANGE      = 'FF8C00'; FG_ORANGE = 'FFFFFF'   # fond orange vif
+BG_LATE_EXPRESS = 'FF8C00'; FG_LATE_EXPRESS = 'FF0000'  # fond orange + texte rouge gras
 BG_GREEN       = 'C6EFCE'; FG_GREEN  = '006100'
 BG_GREEN_LIGHT = 'E2EFDA'; FG_GREEN_LIGHT = '375623'
 BG_YELLOW      = 'FFEB9C'; FG_YELLOW = '9C6500'
@@ -451,11 +452,11 @@ def _build_excel(rows: list, summary: dict) -> bytes:
         ws.append(row_data)
         data_row = ws.max_row
 
-        # Couleur de ligne : ORANGE si express EN RETARD
+        # Couleur de ligne : fond ORANGE + texte ROUGE GRAS si express EN RETARD
         if r['is_late'] and r['is_express']:
             for c in range(1, len(col_headers)+1):
-                ws.cell(data_row, c).fill = _fill(BG_ORANGE)
-                ws.cell(data_row, c).font = _font(FG_ORANGE)
+                ws.cell(data_row, c).fill = _fill(BG_LATE_EXPRESS)
+                ws.cell(data_row, c).font = Font(color=FG_LATE_EXPRESS, bold=True, size=10)
 
         # Couleur cellule distance (colonne 18)
         dist_cell = ws.cell(data_row, 18)
