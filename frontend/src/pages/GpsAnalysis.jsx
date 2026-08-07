@@ -201,7 +201,7 @@ export default function GpsAnalysis() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
-                    {['Seq','Loop','Barcode','Express?','Commit','Réel','RETARD','Statut (T)','Rue','CP','Destinataire','Distance','Street View','Itinéraire'].map(h => (
+                    {['Seq','Loop','Barcode','Express?','Commit','Réel','RETARD','Statut (T)','Rue','CP','Destinataire','Distance','Itinéraire'].map(h => (
                       <th key={h} className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -242,12 +242,6 @@ export default function GpsAnalysis() {
                         <td className="px-3 py-2">{row.postal}</td>
                         <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{row.consignee}</td>
                         <td className="px-3 py-2"><DistBadge distM={row.dist_m} /></td>
-                        <td className="px-3 py-2">
-                          {row.streetview
-                            ? <a href={row.streetview} target="_blank" rel="noreferrer"
-                                className="text-blue-600 underline hover:text-blue-800 dark:text-blue-400">📍 View</a>
-                            : '—'}
-                        </td>
                         <td className="px-3 py-2">
                           {row.route
                             ? <a href={row.route} target="_blank" rel="noreferrer"
