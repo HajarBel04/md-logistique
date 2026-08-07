@@ -287,11 +287,11 @@ def _add_consecutive_distances(rows: list, summary: dict) -> list:
             continue
         d = _haversine(prev_coords[0], prev_coords[1], curr_coords[0], curr_coords[1])
         row['dist_m'] = d
-        if d <= 200:
+        if d <= 10:
             summary['dist_ok'] += 1
-        elif d <= 2000:
+        elif d <= 30:
             summary['dist_warn'] += 1
-        else:
+        elif d > 50:
             summary['dist_alarm'] += 1
     return rows
 
