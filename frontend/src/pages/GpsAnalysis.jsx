@@ -22,7 +22,7 @@ function DistBadge({ distM }) {
   return        <span className="rounded-full bg-red-100    px-2 py-0.5 text-xs font-bold text-red-800">{fmt} !</span>;
 }
 
-/* ─── GPS Modal avec mini-carte OpenStreetMap ─────────────────────────── */
+/* ─── GPS Modal — Leaflet injecté via srcDoc ─────────────────────────── */
 function GpsModal({ gps, onClose }) {
   useEffect(() => {
     const handler = e => { if (e.key === 'Escape') onClose(); };
@@ -32,13 +32,37 @@ function GpsModal({ gps, onClose }) {
 
   if (!gps) return null;
   const { lat, lon, label } = gps;
-  const delta = 0.008;
-  const osmEmbed =
-    `https://www.openstreetmap.org/export/embed.html` +
-    `?bbox=${lon - delta},${lat - delta},${lon + delta},${lat + delta}` +
-    `&layer=mapnik&marker=${lat},${lon}`;
   const osmLink  = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=16`;
   const gmapLink = `https://www.google.com/maps?q=${lat},${lon}`;
+
+  // Leaflet injecté directement dans l'iframe (srcDoc) — contourne les problèmes d'iframe OSM
+  const mapDoc = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body, #map { width:100%; height:100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map', { zoomControl: true }).setView([${lat}, ${lon}], 17);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+    L.marker([${lat}, ${lon}])
+      .addTo(map)
+      .bindPopup('<b>Position GPS</b><br>${String(label).replace(/'/g, "\\'")}')
+      .openPopup();
+  </script>
+</body>
+</html>`;
 
   return (
     <div
@@ -66,39 +90,29 @@ function GpsModal({ gps, onClose }) {
           </button>
         </div>
 
-        {/* Map */}
-        <div className="relative mx-4 overflow-hidden rounded-xl" style={{ height: 280 }}>
+        {/* Carte Leaflet */}
+        <div className="mx-4 overflow-hidden rounded-xl" style={{ height: 300 }}>
           <iframe
-            src={osmEmbed}
+            srcDoc={mapDoc}
             width="100%"
-            height="280"
+            height="300"
             style={{ border: 'none', display: 'block' }}
             title="Carte GPS"
-            loading="lazy"
+            sandbox="allow-scripts allow-same-origin"
           />
         </div>
 
         {/* Actions */}
         <div className="flex gap-2 px-5 py-4">
-          <a
-            href={osmLink}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 px-4 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"
-          >
+          <a href={osmLink} target="_blank" rel="noreferrer"
+            className="flex items-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 px-4 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 transition">
             🗺 OpenStreetMap
           </a>
-          <a
-            href={gmapLink}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-xl bg-green-50 dark:bg-green-900/30 px-4 py-2 text-xs font-semibold text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/50 transition"
-          >
+          <a href={gmapLink} target="_blank" rel="noreferrer"
+            className="flex items-center gap-1.5 rounded-xl bg-green-50 dark:bg-green-900/30 px-4 py-2 text-xs font-semibold text-green-700 dark:text-green-300 hover:bg-green-100 transition">
             📍 Google Maps
           </a>
-          <span className="ml-auto flex items-center text-xs text-slate-400 italic">
-            Trigger 3 GPS
-          </span>
+          <span className="ml-auto flex items-center text-xs text-slate-400 italic">Trigger 3 GPS</span>
         </div>
       </div>
     </div>
@@ -364,7 +378,9 @@ export default function GpsAnalysis() {
 
                         {/* Distance inter-stops */}
                         <td className="px-3 py-2">
-                          {geocode ? <DistBadge distM={row.dist_m} /> : <span className="text-slate-300 dark:text-slate-600 text-xs italic">—</span>}
+                          {geocode
+                            ? <DistBadge distM={row.dist_m} />
+                            : <span className="text-slate-300 dark:text-slate-600 text-xs italic" title="Active le géocodage pour calculer les distances">—</span>}
                         </td>
 
                         {/* Itinéraire */}
