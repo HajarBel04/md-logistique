@@ -419,7 +419,8 @@ def process_gps(
         if is_late and is_exp:
             summary['express_late'] += 1
 
-        # Géocodage de l'adresse de livraison (pour distance consécutive en post-traitement)
+        # Distance GPS scan → adresse de livraison (géocodage Nominatim avec cache)
+        dist_m = None
         addr_coords = None
         if full_street or city:
             key = f"{full_street}, {postal} {city}, Belgium"
@@ -431,7 +432,19 @@ def process_gps(
                 geocache_dirty = True
                 time.sleep(1.1)  # Nominatim rate limit
 
-        # Liens Maps (route et distance ajoutés en post-traitement)
+            if addr_coords and gps_lat and gps_lon:
+                dist_m = _haversine(float(gps_lat), float(gps_lon),
+                                    addr_coords[0], addr_coords[1])
+
+        if dist_m is not None:
+            if dist_m <= 10:
+                summary['dist_ok'] += 1
+            elif dist_m <= 30:
+                summary['dist_warn'] += 1
+            elif dist_m > 50:
+                summary['dist_alarm'] += 1
+
+        # Liens Maps (route ajouté en post-traitement)
         sv_link = _streetview_link(gps_lat, gps_lon) if gps_lat else ''
 
         rows_out.append({
@@ -464,10 +477,6 @@ def process_gps(
 
     # ── Règle 3 express consécutifs géographiquement proches ─────────────────
     rows_out = _apply_cluster_rule(rows_out)
-
-    # ── Distance consécutive (adresse N-1 → adresse N) ──────────────────────
-    if geocode:
-        rows_out = _add_consecutive_distances(rows_out, summary)
 
     # ── Itinéraire consécutif (stop N-1 → stop N) ────────────────────────────
     rows_out = _add_consecutive_routes(rows_out)

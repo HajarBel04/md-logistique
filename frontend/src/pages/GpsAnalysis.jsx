@@ -149,7 +149,7 @@ function SummaryTile({ label, count, colorClass }) {
 /* ─── Page principale ────────────────────────────────────────────────── */
 export default function GpsAnalysis() {
   const [file, setFile]         = useState(null);
-  const [geocode, setGeocode]   = useState(false);
+  const [geocode, setGeocode]   = useState(true);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState(null);
   const [result, setResult]     = useState(null);
@@ -212,19 +212,19 @@ export default function GpsAnalysis() {
               <input type="checkbox" checked={geocode} onChange={e => setGeocode(e.target.checked)}
                 className="h-4 w-4 rounded border-slate-300 accent-orange-500" />
               <span className="text-sm text-slate-700 dark:text-slate-300">
-                Calculer distances entre stops consécutifs
+                Calculer distances GPS → Adresse
               </span>
             </label>
-            {geocode && (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                ⚠ Géocodage Nominatim — environ 15 min pour ~880 adresses uniques (mis en cache après la 1ère fois)
-              </p>
-            )}
+            <p className={`text-xs ${geocode ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>
+              {geocode
+                ? '⚠ 1ère exécution : ~15 min (géocodage Nominatim). Instantané ensuite grâce au cache.'
+                : 'Désactivé — distances non calculées.'}
+            </p>
           </div>
         </div>
 
         <div className="mt-3 rounded-[16px] border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
-          ℹ️ Distance = écart à vol d'oiseau entre l'adresse du stop N-1 et celle du stop N. <em>Trigger 3 GPS</em> (dépôt) n'est pas utilisé pour le calcul.
+          ℹ️ Distance = écart à vol d'oiseau entre la position GPS au scan et l'adresse de livraison géocodée.
         </div>
 
         <div className="mt-5 flex items-center gap-4">
@@ -260,10 +260,10 @@ export default function GpsAnalysis() {
               <SummaryTile label="Total colis"       count={s.total}        colorClass="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100" />
               <SummaryTile label="Retards"           count={s.late}         colorClass="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" />
               <SummaryTile label="Retards Express"   count={s.express_late} colorClass="bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200" />
-              {geocode && <>
-                <SummaryTile label="OK ≤10m"   count={s.dist_ok}    colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
-                <SummaryTile label="Warning >30m" count={s.dist_warn}  colorClass="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200" />
-                <SummaryTile label="Alarme >50m"  count={s.dist_alarm} colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
+              {s.dist_ok !== undefined && <>
+                <SummaryTile label="GPS OK ≤10m"    count={s.dist_ok}    colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
+                <SummaryTile label="GPS warn >30m"  count={s.dist_warn}  colorClass="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200" />
+                <SummaryTile label="GPS alarme >50m" count={s.dist_alarm} colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
               </>}
             </div>
             <div className="mt-5">
