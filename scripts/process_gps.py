@@ -300,24 +300,30 @@ def _add_consecutive_routes(rows: list) -> list:
     """
     Remplace le champ 'route' de chaque ligne par l'itinéraire
     entre le stop PRÉCÉDENT et le stop COURANT (adresse à adresse).
-    → 1er stop : lien vers l'adresse courante uniquement.
+    Utilise le format Google Maps API (?api=1&origin=...&destination=...).
+    → 1er stop : lien de recherche vers l'adresse courante uniquement.
     """
     import urllib.parse
 
     def _addr(r):
         return f"{r['street']}, {r['postal']} {r['city']}, Belgium"
 
+    BASE = 'https://www.google.com/maps'
+
     for i, row in enumerate(rows):
         if not row['street']:
             row['route'] = ''
             continue
-        curr = urllib.parse.quote(_addr(row))
+        curr_addr = _addr(row)
         if i == 0 or not rows[i - 1]['street']:
-            # Premier stop : juste l'épingle
-            row['route'] = f'https://www.google.com/maps/search/{curr}'
+            # Premier stop : vue de l'adresse sur Maps
+            q = urllib.parse.quote(curr_addr)
+            row['route'] = f'{BASE}/search/?api=1&query={q}'
         else:
-            prev = urllib.parse.quote(_addr(rows[i - 1]))
-            row['route'] = f'https://www.google.com/maps/dir/{prev}/{curr}'
+            prev_addr = _addr(rows[i - 1])
+            o = urllib.parse.quote(prev_addr)
+            d = urllib.parse.quote(curr_addr)
+            row['route'] = f'{BASE}/dir/?api=1&origin={o}&destination={d}'
     return rows
 
 
