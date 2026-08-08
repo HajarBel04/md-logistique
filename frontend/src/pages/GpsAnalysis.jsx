@@ -151,6 +151,7 @@ export default function GpsAnalysis() {
   const [file, setFile]         = useState(null);
   const [geocode, setGeocode]   = useState(true);
   const [loading, setLoading]   = useState(false);
+  const [progress, setProgress] = useState(null); // {current, total, phase}
   const [error, setError]       = useState(null);
   const [result, setResult]     = useState(null);
   const [filterT, setFilterT]   = useState('');
@@ -160,7 +161,19 @@ export default function GpsAnalysis() {
 
   const handleSubmit = async () => {
     if (!file) return;
-    setLoading(true); setError(null); setResult(null);
+    setLoading(true); setError(null); setResult(null); setProgress(null);
+
+    // Polling progression toutes les 2s pendant le géocodage
+    let pollInterval = null;
+    if (geocode) {
+      pollInterval = setInterval(async () => {
+        try {
+          const r = await fetch(`${GPS_API}/api/gps/progress`);
+          if (r.ok) setProgress(await r.json());
+        } catch {}
+      }, 2000);
+    }
+
     const fd = new FormData();
     fd.append('gps_file', file);
     fd.append('geocode', geocode ? 'true' : 'false');
@@ -179,7 +192,9 @@ export default function GpsAnalysis() {
         setError(msg);
       }
     } finally {
+      clearInterval(pollInterval);
       setLoading(false);
+      setProgress(null);
     }
   };
 
@@ -244,6 +259,42 @@ export default function GpsAnalysis() {
             {loading ? 'Traitement…' : 'Analyser'}
           </button>
         </div>
+
+        {/* Barre de progression géocodage */}
+        {loading && geocode && (
+          <div className="mt-4 rounded-[16px] border border-orange-200 bg-orange-50 dark:border-orange-500/30 dark:bg-orange-900/20 p-4">
+            {progress && progress.total > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-orange-800 dark:text-orange-300">
+                    Géocodage des adresses…
+                  </span>
+                  <span className="text-sm font-mono text-orange-700 dark:text-orange-400">
+                    {progress.current} / {progress.total}
+                  </span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-orange-200 dark:bg-orange-900">
+                  <div
+                    className="h-2 rounded-full bg-orange-500 transition-all duration-500"
+                    style={{ width: `${Math.round((progress.current / progress.total) * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-1.5 text-xs text-orange-600 dark:text-orange-400">
+                  {Math.round((progress.current / progress.total) * 100)}% —
+                  reste ~{Math.round((progress.total - progress.current) * 1.1 / 60)} min
+                </p>
+              </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <svg className="h-4 w-4 animate-spin text-orange-500" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+                </svg>
+                <span className="text-sm text-orange-700 dark:text-orange-300">Lecture du fichier…</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {error && (
           <div className="mt-4 rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-900/30 dark:text-red-300">
