@@ -322,6 +322,15 @@ async def root():
 
 from process_gps import process_gps
 
+# Progression géocodage partagée entre le thread de traitement et l'endpoint /progress
+_gps_progress: dict = {'current': 0, 'total': 0, 'phase': 'idle'}
+
+
+@app.get("/api/gps/progress")
+async def gps_progress_status():
+    return _gps_progress
+
+
 @app.post("/api/gps/process")
 async def gps_process(
     gps_file: UploadFile = File(...),
@@ -329,6 +338,11 @@ async def gps_process(
 ):
     import tempfile
     do_geocode = geocode.lower() == 'true'
+
+    _gps_progress.update({'current': 0, 'total': 0, 'phase': 'lecture'})
+
+    def progress_cb(idx: int, total: int):
+        _gps_progress.update({'current': idx, 'total': total, 'phase': 'geocodage'})
 
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, 'gps.xlsx')
@@ -339,9 +353,13 @@ async def gps_process(
         out_path = os.path.join(OUTPUTS_DIR, out_name)
 
         try:
-            result = process_gps(path, output_path=out_path, geocode=do_geocode)
+            result = process_gps(path, output_path=out_path, geocode=do_geocode,
+                                  progress_cb=progress_cb if do_geocode else None)
         except Exception as e:
+            _gps_progress['phase'] = 'idle'
             raise HTTPException(400, str(e))
+
+    _gps_progress.update({'current': 0, 'total': 0, 'phase': 'idle'})
 
     rows = [
         {
