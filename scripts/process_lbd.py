@@ -67,7 +67,12 @@ def _load_lbd(path: str, target_date: datetime) -> list:
     wb = openpyxl.load_workbook(path, read_only=True)
     sheet_name = _sheet_name_for_date(target_date)
 
-    if sheet_name not in wb.sheetnames:
+    # Recherche insensible à la casse (ex: '7aug' == '7AUG')
+    real_name = next(
+        (s for s in wb.sheetnames if s.lower() == sheet_name.lower()),
+        None
+    )
+    if real_name is None:
         available = ', '.join(wb.sheetnames)
         wb.close()
         raise ValueError(
@@ -75,7 +80,7 @@ def _load_lbd(path: str, target_date: datetime) -> list:
             f"Disponibles : {available}"
         )
 
-    ws = wb[sheet_name]
+    ws = wb[real_name]
     rows = list(ws.iter_rows(values_only=True))
     wb.close()
 
