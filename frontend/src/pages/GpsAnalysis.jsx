@@ -158,6 +158,7 @@ export default function GpsAnalysis() {
   const [filterExpress, setFilterExpress] = useState(false);
   const [filterLate, setFilterLate]       = useState(false);
   const [filterColor, setFilterColor]     = useState(''); // 'orange'|'timing'|'excused'|''
+  const [filterLoop, setFilterLoop]       = useState(''); // 'Q03', 'Q04', …
   const [gpsModal, setGpsModal] = useState(null); // {lat, lon, label}
 
   const handleSubmit = async () => {
@@ -201,8 +202,12 @@ export default function GpsAnalysis() {
 
   const s = result?.summary;
 
+  // Loops disponibles triés (depuis les résultats)
+  const availableLoops = [...new Set((result?.rows ?? []).map(r => r.loop).filter(Boolean))].sort();
+
   const filteredRows = (result?.rows ?? []).filter(r => {
     if (filterT && r.status !== filterT) return false;
+    if (filterLoop && r.loop !== filterLoop) return false;
     if (filterExpress && !r.is_express) return false;
     if (filterLate && !r.is_late) return false;
     if (filterColor === 'orange'  && !(r.is_late && r.is_express && !r.excused)) return false;
@@ -338,6 +343,16 @@ export default function GpsAnalysis() {
           {/* ── Filtres ── */}
           <GlassCard title="Filtres" tag="Table">
             <div className="flex flex-wrap items-center gap-3">
+              {/* Filtre loop */}
+              <select
+                value={filterLoop}
+                onChange={e => setFilterLoop(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              >
+                <option value="">Tous les loops</option>
+                {availableLoops.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+
               <select
                 value={filterT}
                 onChange={e => setFilterT(e.target.value)}
