@@ -154,9 +154,10 @@ export default function GpsAnalysis() {
   const [progress, setProgress] = useState(null); // {current, total, phase}
   const [error, setError]       = useState(null);
   const [result, setResult]     = useState(null);
-  const [filterT, setFilterT]   = useState('');
+  const [filterT, setFilterT]           = useState('');
   const [filterExpress, setFilterExpress] = useState(false);
   const [filterLate, setFilterLate]       = useState(false);
+  const [filterColor, setFilterColor]     = useState(''); // 'orange'|'timing'|'excused'|''
   const [gpsModal, setGpsModal] = useState(null); // {lat, lon, label}
 
   const handleSubmit = async () => {
@@ -204,6 +205,9 @@ export default function GpsAnalysis() {
     if (filterT && r.status !== filterT) return false;
     if (filterExpress && !r.is_express) return false;
     if (filterLate && !r.is_late) return false;
+    if (filterColor === 'orange'  && !(r.is_late && r.is_express && !r.excused)) return false;
+    if (filterColor === 'timing'  && !r.timing_warn) return false;
+    if (filterColor === 'excused' && !r.excused) return false;
     return true;
   });
 
@@ -352,6 +356,19 @@ export default function GpsAnalysis() {
                   className="h-4 w-4 rounded accent-orange-500" />
                 Retards seulement
               </label>
+
+              {/* Filtre par couleur */}
+              <select
+                value={filterColor}
+                onChange={e => setFilterColor(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              >
+                <option value="">Toutes les couleurs</option>
+                <option value="orange">🟠 Retard Express</option>
+                <option value="timing">🔵 Timing &lt;1min20</option>
+                <option value="excused">✅ Excusés (cluster)</option>
+              </select>
+
               <span className="ml-auto text-sm text-slate-500">{filteredRows.length} colis affichés</span>
             </div>
           </GlassCard>
@@ -361,14 +378,14 @@ export default function GpsAnalysis() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
-                    {['Seq','Loop','Barcode','Express?','Commit','Réel','RETARD','Statut (T)','Rue','CP','Destinataire','GPS','Distance','Itinéraire'].map(h => (
+                    {['Seq','Loop','Barcode','Express?','Commit','Réel','RETARD','Timing','Statut (T)','Rue','CP','Destinataire','GPS','Distance','Itinéraire'].map(h => (
                       <th key={h} className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {filteredRows.map((row, i) => {
-                    const lateExpress = row.is_late && row.is_express;
+                    const lateExpress = row.is_late && row.is_express && !row.excused;
                     const hasGps = row.gps_lat && row.gps_lon;
                     return (
                       <tr
@@ -389,9 +406,18 @@ export default function GpsAnalysis() {
                         <td className={`px-3 py-2 font-mono ${lateExpress ? 'font-bold text-red-200' : ''}`}>{row.commit_time || '—'}</td>
                         <td className={`px-3 py-2 font-mono ${lateExpress ? 'font-bold text-red-100' : ''}`}>{row.actual_time}</td>
                         <td className="px-3 py-2">
-                          {row.is_late
+                          {row.is_late && !row.excused
                             ? <span className={`font-bold ${lateExpress ? 'text-red-200' : 'text-red-600 dark:text-red-400'}`}>OUI</span>
-                            : <span className={lateExpress ? 'text-white/50' : 'text-slate-400'}>—</span>}
+                            : row.excused
+                              ? <span className="text-xs text-emerald-600 dark:text-emerald-400">excusé</span>
+                              : <span className={lateExpress ? 'text-white/50' : 'text-slate-400'}>—</span>}
+                        </td>
+
+                        {/* Timing < 1min20 */}
+                        <td className="px-3 py-2">
+                          {row.timing_warn
+                            ? <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" title="Moins de 1min20 avec le stop précédent">⚡ &lt;1'20</span>
+                            : <span className="text-slate-300 dark:text-slate-600">—</span>}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           <span className={`rounded px-1.5 py-0.5 text-xs ${
