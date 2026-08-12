@@ -442,8 +442,8 @@ def process_gps(
         gps_lon  = v(I_R)
         loop_val = str(v(I_U) or '').strip()
 
-        # Exclure les colis du loop Q01
-        if loop_val == 'Q01':
+        # Exclure les colis du loop Q01 (valeur peut être "Q01" ou "Q01 MD")
+        if loop_val.startswith('Q01'):
             continue
 
         full_street = f'{street} {street_n}'.strip()
