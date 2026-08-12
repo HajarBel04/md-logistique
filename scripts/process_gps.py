@@ -273,9 +273,10 @@ def _maps_location(street, city, postal) -> str:
 
 def _check_timing_rule(rows: list, min_seconds: int = 80) -> list:
     """
-    Règle timing : si deux stops CONSÉCUTIFS à des adresses DIFFÉRENTES
-    sont complétés avec moins de min_seconds (1min20 = 80s) d'écart,
-    marquer timing_warn=True (impossible de se déplacer aussi vite).
+    Règle timing : si deux STOPS CONSÉCUTIFS (numéro M différent)
+    à des adresses DIFFÉRENTES sont complétés avec moins de min_seconds
+    (1min20 = 80s) d'écart, marquer timing_warn=True sur toutes les
+    lignes du stop suspect.
     """
     from datetime import datetime as dt
 
@@ -290,23 +291,48 @@ def _check_timing_rule(rows: list, min_seconds: int = 80) -> list:
                 continue
         return None
 
-    for i, row in enumerate(rows):
+    # Initialiser
+    for row in rows:
         row['timing_warn'] = False
-        if i == 0:
+
+    # Regrouper par numéro de stop (colonne M = seq) pour obtenir
+    # le temps de complétion et l'adresse de chaque stop
+    stops = {}   # seq → {time_sec, street, postal}
+    for row in rows:
+        seq = row.get('seq', '').strip()
+        if not seq:
             continue
-        prev = rows[i - 1]
-        # Adresses différentes ?
-        curr_addr = f"{row['street']} {row['postal']}"
-        prev_addr = f"{prev['street']} {prev['postal']}"
-        if curr_addr == prev_addr:
+        t = _to_sec(row['actual_time'])
+        if seq not in stops and t is not None:
+            stops[seq] = {
+                'time': t,
+                'street': row['street'],
+                'postal': row['postal'],
+            }
+
+    # Trier les stops par numéro de séquence
+    sorted_seqs = sorted(stops.keys())
+    flagged_seqs = set()
+
+    for i in range(1, len(sorted_seqs)):
+        curr_seq = sorted_seqs[i]
+        prev_seq = sorted_seqs[i - 1]
+        curr = stops[curr_seq]
+        prev = stops[prev_seq]
+
+        # Même adresse → même stop physique, on passe
+        if curr['street'] == prev['street'] and curr['postal'] == prev['postal']:
             continue
-        t_curr = _to_sec(row['actual_time'])
-        t_prev = _to_sec(prev['actual_time'])
-        if t_curr is None or t_prev is None:
-            continue
-        diff = t_curr - t_prev
+
+        diff = curr['time'] - prev['time']
         if 0 <= diff < min_seconds:
+            flagged_seqs.add(curr_seq)   # le stop qui arrive trop vite
+
+    # Marquer toutes les lignes appartenant aux stops suspects
+    for row in rows:
+        if row.get('seq', '').strip() in flagged_seqs:
             row['timing_warn'] = True
+
     return rows
 
 
