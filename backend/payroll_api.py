@@ -380,6 +380,8 @@ async def gps_process(
             'gps_lat':      str(r['gps_lat']) if r['gps_lat'] else '',
             'gps_lon':      str(r['gps_lon']) if r['gps_lon'] else '',
             'dist_m':       round(r['dist_m'], 1) if r['dist_m'] is not None else None,
+            'excused':      r.get('excused', False),
+            'timing_warn':  r.get('timing_warn', False),
             'streetview':   r['streetview'],
             'route':        r['route'],
         }

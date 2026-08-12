@@ -37,47 +37,47 @@ BG_GREY        = 'D9D9D9'; FG_GREY   = '595959'
 # ─── Codes service UPS (positions 8-9 dans barcode 1Z) ───────────────────────
 # Source : UPS Service Level Indicators table
 
-# UPS EXPRESS PLUS
-_EXPRESS_PLUS = {
+# UPS EXPRESS PLUS → deadline 14h
+EXPRESS_PLUS_CODES = {
     '54', '73', 'G2', 'G6', 'G1', 'G5', 'AK', 'V5', 'AM', 'AL', 'HP', 'N5', '5N', '5P',
     '34', 'G3', 'G7', 'G4', 'G8', 'N4', 'P3',
 }
 
-# UPS EXPRESS
-_EXPRESS = {
+# UPS EXPRESS → deadline 14h
+EXPRESS_CODES = {
     '66', '75', 'C6', 'C7', 'D3', 'D4', '85', 'V4', '96', '92', 'AS', 'CQ', '5T', '5W',
     '69', '76', 'C9', 'CA', 'D6', 'D7', 'Y6', 'Y9', 'Y7', 'Y8', 'AZ', 'CS', '5Y', '6A',
     'AT', 'GG', 'G9', 'V7',
     'AV', 'GH', 'GA', 'YA', 'T5', 'AQ',
 }
 
-# UPS WORLDWIDE EXPRESS FREIGHT
-_EXPRESS_FREIGHT = {
+# UPS WORLDWIDE EXPRESS FREIGHT → deadline 14h
+EXPRESS_FREIGHT_CODES = {
     'E1', 'E3', 'E4', 'E5', 'E9',
     'E2', 'E6', 'E7', 'E8', 'EA',
 }
 
-# UPS WORLDWIDE EXPRESS FREIGHT MIDDAY
-_EXPRESS_FREIGHT_MIDDAY = {
+# UPS WORLDWIDE EXPRESS FREIGHT MIDDAY → deadline 14h
+EXPRESS_FREIGHT_MIDDAY_CODES = {
     'EQ', 'ES', 'ET', 'EV', 'EZ',
     'ER', 'EW', 'EX', 'EY', 'F0',
 }
 
-# UPS EXPRESS SAVER
-_EXPRESS_SAVER = {
+# UPS EXPRESS SAVER (D9) → deadline 17h, traité comme standard (pas express)
+EXPRESS_SAVER_CODES = {
     '04', '77', 'CH', 'CJ', 'D9', 'DA', '86', 'V6', '97', '93', 'DS', 'DV', '6G', '6H',
     'CE', 'CF', 'DD', 'DE',
 }
 
-# UPS EXPRESS 12:00 (Germany only)
-_EXPRESS_1200 = {
+# UPS EXPRESS 12:00 (Germany only) → deadline 14h
+EXPRESS_1200_CODES = {
     'QH', 'Q4', 'QA', 'QC', 'QD', 'QE', 'Q5', 'Q8', 'Q6', 'Q7', 'Q2', 'Q3', 'Q0', 'Q1',
 }
 
-# Tous les codes express (livraisons time-sensitive)
+# Express = Express Plus + Express (deadline 14h) — Saver exclu (17h, pas express)
 EXPRESS_SERVICE_CODES = (
-    _EXPRESS_PLUS | _EXPRESS | _EXPRESS_FREIGHT |
-    _EXPRESS_FREIGHT_MIDDAY | _EXPRESS_SAVER | _EXPRESS_1200
+    EXPRESS_PLUS_CODES | EXPRESS_CODES | EXPRESS_FREIGHT_CODES |
+    EXPRESS_FREIGHT_MIDDAY_CODES | EXPRESS_1200_CODES
 )
 
 # Pour info : codes NON-express (standard, economy…)
@@ -97,35 +97,40 @@ def _is_express_by_barcode(barcode: str) -> bool:
     return False
 
 
-def _commit_time(g_val, t_val: str, postal: str, is_express: bool = False) -> Optional[dtime]:
-    """Retourne l'heure limite selon les règles métier."""
-    t_val = str(t_val or '').strip().upper()
-    postal = str(postal or '').strip()
+def _service_code(barcode: str) -> str:
+    """Extrait les 2 chiffres de service du barcode 1Z (positions 8-9)."""
+    bc = str(barcode or '').strip()
+    return bc[8:10] if len(bc) >= 10 else ''
 
-    # CLOSED 1/2/3 → 17h00
+
+def _commit_time(barcode: str, t_val: str, postal: str) -> Optional[dtime]:
+    """
+    Retourne l'heure limite selon les règles métier :
+      CLOSED 1/2/3          → 17h00
+      CP 2040               → 14h00 (port)
+      Express Plus / Express→ 14h00
+      Express Saver (D9…)  → 17h00 (traité comme standard)
+      Standard              → 17h00
+    """
+    t_val  = str(t_val  or '').strip().upper()
+    postal = str(postal or '').strip()
+    sc     = _service_code(barcode)
+
+    # CLOSED 1/2/3 → 17h
     if t_val in ('CLOSED 1', 'CLOSED 2', 'CLOSED 3'):
         return dtime(17, 0)
 
-    # CP 2040 → 14h00
+    # CP 2040 → 14h (zone port)
     if postal == '2040':
         return dtime(14, 0)
 
-    # Express (détecté par barcode) → midi 12h00
-    if is_express:
-        return dtime(12, 0)
-
-    if g_val is None:
-        return None
-
-    g = float(g_val)
-    if g == 10.5:
-        return dtime(10, 30)
-    if g == 12.0:
-        return dtime(12, 0)
-    if g == 14.0:
+    # Express Plus / Express / Freight → 14h
+    if sc in EXPRESS_SERVICE_CODES:
         return dtime(14, 0)
-    # 23.98 = standard → pas de limite stricte
-    return None
+
+    # Express Saver → 17h (comme standard)
+    # Standard / non-reconnu → 17h
+    return dtime(17, 0)
 
 
 def _parse_time(t_str) -> Optional[dtime]:
@@ -141,13 +146,9 @@ def _parse_time(t_str) -> Optional[dtime]:
     return None
 
 
-def _is_express(barcode: str, g_val) -> bool:
-    """Express = service code dans barcode OU commit time ≤ 14h."""
-    if _is_express_by_barcode(barcode):
-        return True
-    if g_val is not None:
-        return float(g_val) <= 14.0
-    return False
+def _is_express(barcode: str) -> bool:
+    """Express = service code Express Plus ou Express dans barcode (Saver exclu)."""
+    return _is_express_by_barcode(barcode)
 
 
 def _apply_cluster_rule(rows: list, max_dist_m: float = 200.0, min_cluster: int = 3) -> list:
@@ -268,6 +269,45 @@ def _maps_location(street, city, postal) -> str:
     import urllib.parse
     addr = urllib.parse.quote(f'{street}, {postal} {city}, Belgium')
     return f'https://www.google.com/maps/search/{addr}'
+
+
+def _check_timing_rule(rows: list, min_seconds: int = 80) -> list:
+    """
+    Règle timing : si deux stops CONSÉCUTIFS à des adresses DIFFÉRENTES
+    sont complétés avec moins de min_seconds (1min20 = 80s) d'écart,
+    marquer timing_warn=True (impossible de se déplacer aussi vite).
+    """
+    from datetime import datetime as dt
+
+    def _to_sec(t_str):
+        if not t_str:
+            return None
+        for fmt in ('%H:%M:%S', '%H:%M'):
+            try:
+                t = dt.strptime(str(t_str).strip(), fmt)
+                return t.hour * 3600 + t.minute * 60 + t.second
+            except ValueError:
+                continue
+        return None
+
+    for i, row in enumerate(rows):
+        row['timing_warn'] = False
+        if i == 0:
+            continue
+        prev = rows[i - 1]
+        # Adresses différentes ?
+        curr_addr = f"{row['street']} {row['postal']}"
+        prev_addr = f"{prev['street']} {prev['postal']}"
+        if curr_addr == prev_addr:
+            continue
+        t_curr = _to_sec(row['actual_time'])
+        t_prev = _to_sec(prev['actual_time'])
+        if t_curr is None or t_prev is None:
+            continue
+        diff = t_curr - t_prev
+        if 0 <= diff < min_seconds:
+            row['timing_warn'] = True
+    return rows
 
 
 def _add_consecutive_distances(rows: list, summary: dict) -> list:
@@ -400,18 +440,20 @@ def process_gps(
         l_str    = str(v(I_L) or '').strip()
         gps_lat  = v(I_Q)
         gps_lon  = v(I_R)
+        loop_val = str(v(I_U) or '').strip()
+
+        # Exclure les colis du loop Q01
+        if loop_val == 'Q01':
+            continue
 
         full_street = f'{street} {street_n}'.strip()
 
-        # Détection express par barcode (pour règle midi)
-        is_exp_bc = _is_express_by_barcode(barcode)
-
         # Heure limite et heure réelle
-        commit = _commit_time(g_val, t_val, postal, is_express=is_exp_bc)
+        commit = _commit_time(barcode, t_val, postal)
         actual = _parse_time(l_str)
 
-        is_exp   = is_exp_bc or (g_val is not None and float(g_val) <= 14.0)
-        is_late  = (commit is not None and actual is not None and actual > commit)
+        is_exp  = _is_express(barcode)
+        is_late = (commit is not None and actual is not None and actual > commit)
 
         summary['total'] += 1
         if is_late:
@@ -466,8 +508,8 @@ def process_gps(
             'gps_lon':     gps_lon,
             'is_express':  is_exp,
             'is_late':     is_late,
-            'dist_m':      None,        # rempli par _add_consecutive_distances
-            'addr_coords': addr_coords, # coordonnées de l'adresse de livraison
+            'timing_warn': False,       # rempli par _check_timing_rule
+            'dist_m':      dist_m,      # GPS scan → adresse géocodée
             'streetview':  sv_link,
             'route':       '',          # rempli par _add_consecutive_routes
         })
@@ -477,6 +519,9 @@ def process_gps(
 
     # ── Règle 3 express consécutifs géographiquement proches ─────────────────
     rows_out = _apply_cluster_rule(rows_out)
+
+    # ── Règle timing < 1min20 entre stops différents ─────────────────────────
+    rows_out = _check_timing_rule(rows_out)
 
     # ── Itinéraire consécutif (stop N-1 → stop N) ────────────────────────────
     rows_out = _add_consecutive_routes(rows_out)
