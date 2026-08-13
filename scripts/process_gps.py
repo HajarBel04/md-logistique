@@ -241,6 +241,31 @@ def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
 
 
+def _osrm_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> Optional[float]:
+    """
+    Distance ROUTIÈRE en mètres entre deux coordonnées via OSRM (OpenStreetMap).
+    Equivalent à la distance affichée par Google Maps pour le même itinéraire.
+    Retourne None en cas d'erreur.
+    """
+    import urllib.request
+    url = (
+        f'http://router.project-osrm.org/route/v1/driving/'
+        f'{lon1},{lat1};{lon2},{lat2}?overview=false'
+    )
+    req = urllib.request.Request(
+        url,
+        headers={'User-Agent': 'MD-Logistique/1.0 hajarbel325@gmail.com'},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read())
+        if data.get('code') == 'Ok' and data.get('routes'):
+            return data['routes'][0]['distance']   # mètres
+    except Exception:
+        pass
+    return None
+
+
 def _perimeter_color(dist_m: Optional[float]):
     """Retourne (bg, fg, label) selon la distance."""
     if dist_m is None:
@@ -336,12 +361,23 @@ def _check_timing_rule(rows: list, min_seconds: int = 80) -> list:
     return rows
 
 
-def _add_consecutive_distances(rows: list, summary: dict) -> list:
+def _add_consecutive_distances(rows: list, summary: dict, geocache: dict, geocache_ref: list) -> list:
     """
-    Calcule la distance à vol d'oiseau entre l'adresse du stop N-1
-    et l'adresse du stop N.  Met à jour dist_m et les compteurs summary.
+    Calcule la distance ROUTIÈRE (OSRM) entre l'adresse du stop N-1
+    et l'adresse du stop N. Met à jour dist_m et les compteurs summary.
+
+    Seuils (distance routière inter-stops) :
+      ≤ 300m  → OK    (stops proches, facile)
+      ≤ 1 km  → warn  (raisonnable)
+      > 1 km  → alarm (éloigné)
+
+    Les résultats OSRM sont mis en cache dans geocache (préfixe 'osrm:').
     """
     summary.update({'dist_ok': 0, 'dist_warn': 0, 'dist_alarm': 0})
+
+    # Cache en mémoire pour ce run (évite de rappeler OSRM pour la même paire)
+    pair_memo: dict = {}
+
     for i, row in enumerate(rows):
         curr_coords = row.get('addr_coords')
         if i == 0 or curr_coords is None:
@@ -351,14 +387,40 @@ def _add_consecutive_distances(rows: list, summary: dict) -> list:
         if prev_coords is None:
             row['dist_m'] = None
             continue
-        d = _haversine(prev_coords[0], prev_coords[1], curr_coords[0], curr_coords[1])
-        row['dist_m'] = d
-        if d <= 10:
+
+        # Même adresse géocodée → distance 0
+        if curr_coords == prev_coords:
+            row['dist_m'] = 0.0
             summary['dist_ok'] += 1
-        elif d <= 30:
-            summary['dist_warn'] += 1
-        elif d > 50:
-            summary['dist_alarm'] += 1
+            continue
+
+        cache_key = (
+            f"osrm:{prev_coords[0]:.5f},{prev_coords[1]:.5f}"
+            f"→{curr_coords[0]:.5f},{curr_coords[1]:.5f}"
+        )
+
+        if cache_key in pair_memo:
+            d = pair_memo[cache_key]
+        elif cache_key in geocache:
+            raw = geocache[cache_key]
+            d = float(raw) if raw is not None else None
+            pair_memo[cache_key] = d
+        else:
+            d = _osrm_distance(prev_coords[0], prev_coords[1],
+                               curr_coords[0], curr_coords[1])
+            pair_memo[cache_key] = d
+            geocache[cache_key] = d
+            geocache_ref[0] = True   # signaler que le cache doit être sauvegardé
+
+        row['dist_m'] = d
+        if d is not None:
+            if d <= 300:
+                summary['dist_ok'] += 1
+            elif d <= 1000:
+                summary['dist_warn'] += 1
+            else:
+                summary['dist_alarm'] += 1
+
     return rows
 
 
@@ -487,30 +549,17 @@ def process_gps(
         if is_late and is_exp:
             summary['express_late'] += 1
 
-        # Distance GPS scan → adresse de livraison (géocodage Nominatim avec cache)
-        dist_m = None
+        # Géocodage adresse → (lat, lon) pour calcul distance inter-stops
         addr_coords = None
         if full_street or city:
-            key = f"{full_street}, {postal} {city}, Belgium"
-            if key in geocache:
-                raw = geocache[key]
+            geo_key = f"{full_street}, {postal} {city}, Belgium"
+            if geo_key in geocache:
+                raw = geocache[geo_key]
                 addr_coords = tuple(raw) if raw else None
             elif geocode:
                 addr_coords = _geocode(full_street, city, postal, geocache)
                 geocache_dirty = True
                 time.sleep(1.1)  # Nominatim rate limit
-
-            if addr_coords and gps_lat and gps_lon:
-                dist_m = _haversine(float(gps_lat), float(gps_lon),
-                                    addr_coords[0], addr_coords[1])
-
-        if dist_m is not None:
-            if dist_m <= 10:
-                summary['dist_ok'] += 1
-            elif dist_m <= 30:
-                summary['dist_warn'] += 1
-            elif dist_m > 50:
-                summary['dist_alarm'] += 1
 
         # Liens Maps (route ajouté en post-traitement)
         sv_link = _streetview_link(gps_lat, gps_lon) if gps_lat else ''
@@ -535,7 +584,8 @@ def process_gps(
             'is_express':  is_exp,
             'is_late':     is_late,
             'timing_warn': False,       # rempli par _check_timing_rule
-            'dist_m':      dist_m,      # GPS scan → adresse géocodée
+            'dist_m':      None,        # rempli par _add_consecutive_distances (OSRM)
+            'addr_coords': addr_coords, # coordonnées géocodées de l'adresse
             'streetview':  sv_link,
             'route':       '',          # rempli par _add_consecutive_routes
         })
@@ -551,6 +601,16 @@ def process_gps(
 
     # ── Itinéraire consécutif (stop N-1 → stop N) ────────────────────────────
     rows_out = _add_consecutive_routes(rows_out)
+
+    # ── Distance ROUTIÈRE inter-stops via OSRM (cache géocodage) ─────────────
+    # Utilise les coordonnées géocodées stockées dans addr_coords de chaque row.
+    # Les résultats OSRM sont mis en cache dans geocache (préfixe 'osrm:').
+    if geocode:
+        geocache2      = _load_geocache()      # recharger le cache à jour
+        dirty_ref      = [False]
+        rows_out = _add_consecutive_distances(rows_out, summary, geocache2, dirty_ref)
+        if dirty_ref[0]:
+            _save_geocache(geocache2)
 
     # ── Génération Excel ──────────────────────────────────────────────────────
     excel_bytes = _build_excel(rows_out, summary)
@@ -581,9 +641,9 @@ def _build_excel(rows: list, summary: dict) -> bytes:
     ws.append(['Total colis',       summary.get('total', 0)])
     ws.append(['Retards (total)',    summary.get('late', 0)])
     ws.append(['Retards express',    summary.get('express_late', 0)])
-    ws.append(['GPS OK (≤10m)',      summary.get('dist_ok', 0)])
-    ws.append(['GPS warning (≤30m)', summary.get('dist_warn', 0)])
-    ws.append(['GPS alarme (>50m)',  summary.get('dist_alarm', 0)])
+    ws.append(['Route OK (≤300m)',    summary.get('dist_ok', 0)])
+    ws.append(['Route medium (≤1km)', summary.get('dist_warn', 0)])
+    ws.append(['Route long (>1km)',   summary.get('dist_alarm', 0)])
     ws.append([])
 
     # ── Header ──────────────────────────────────────────────────────────────────
@@ -593,8 +653,8 @@ def _build_excel(rows: list, summary: dict) -> bytes:
         'Séquence', 'Loop', 'Statut (T)',
         'Rue', 'Ville', 'CP', 'Destinataire',
         'GPS Lat', 'GPS Lon',
-        'Distance\nGPS→Adresse', 'Périmètre',
-        'Itinéraire GPS→Adresse',
+        'Distance\nRoutière (OSRM)', 'Périmètre',
+        'Itinéraire Stop N-1 → N',
     ]
     ws.append(col_headers)
     hdr_row = ws.max_row
