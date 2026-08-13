@@ -10,16 +10,19 @@ const STATUS_FILTERS = [
   'NO MONEY 1','NO MONEY 2','LEFT ARS TAG','NI1 ALT DEL',
 ];
 
-/* ─── Badge distance inter-stops ────────────────────────────────────────── */
+/* ─── Badge distance routière inter-stops (OSRM = même que Google Maps) ─── */
 function DistBadge({ distM }) {
   if (distM === null || distM === undefined) return <span className="text-slate-400">—</span>;
   const d = Number(distM);
-  const fmt = d < 1000 ? `${Math.round(d)}m` : `${(d / 1000).toFixed(2)}km`;
-  if (d <= 10) return <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">{fmt} ✓</span>;
-  if (d <= 15) return <span className="rounded-full bg-green-100  px-2 py-0.5 text-xs font-bold text-green-700">{fmt}</span>;
-  if (d <= 30) return <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-800">{fmt}</span>;
-  if (d <= 50) return <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-800">{fmt}</span>;
-  return        <span className="rounded-full bg-red-100    px-2 py-0.5 text-xs font-bold text-red-800">{fmt} !</span>;
+  // Formatage : mètres si < 1km, sinon km avec 2 décimales
+  const fmt = d < 1000 ? `${Math.round(d)} m` : `${(d / 1000).toFixed(2)} km`;
+  // Seuils pour distance ROUTIÈRE entre stops consécutifs
+  if (d === 0)    return <span className="rounded-full bg-slate-100  px-2 py-0.5 text-xs font-bold text-slate-500">{fmt}</span>;
+  if (d <= 300)   return <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">{fmt}</span>;
+  if (d <= 1000)  return <span className="rounded-full bg-green-100  px-2 py-0.5 text-xs font-bold text-green-700">{fmt}</span>;
+  if (d <= 3000)  return <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-800">{fmt}</span>;
+  if (d <= 8000)  return <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-800">{fmt}</span>;
+  return          <span className="rounded-full bg-red-100    px-2 py-0.5 text-xs font-bold text-red-800">{fmt} !</span>;
 }
 
 /* ─── GPS Modal — Leaflet injecté via srcDoc ─────────────────────────── */
