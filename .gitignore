@@ -2,6 +2,7 @@ node_modules
 __pycache__
 *.pyc
 outputs/
+!outputs/geocache.json
 samples/
 .DS_Store
 *.xlsx
