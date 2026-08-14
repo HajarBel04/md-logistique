@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import PageHeader from '../components/PageHeader';
 import GlassCard from '../components/GlassCard';
 
-const GPS_API = import.meta.env.VITE_API_URL || '';
+// Toujours utiliser le proxy (Vite en local → port 8000, Vercel en prod → Railway)
+const GPS_API = '';
 
 const STATUS_FILTERS = [
   'CLOSED 1','CLOSED 2','CLOSED 3','NOT IN 1','NOT IN 2','NOT IN 3',
