@@ -11,20 +11,17 @@ const STATUS_FILTERS = [
   'NO MONEY 1','NO MONEY 2','LEFT ARS TAG','NI1 ALT DEL',
 ];
 
-/* ─── Badge distance routière inter-stops (OSRM théorique, sans trafic temps réel) ─── */
+/* ─── Badge distance GPS → adresse de livraison (même ligne) ─── */
 function DistBadge({ distM }) {
   if (distM === null || distM === undefined) return <span className="text-slate-400">—</span>;
   const d = Number(distM);
-  // Formatage : mètres si < 1km, sinon km avec 2 décimales
   const fmt = d < 1000 ? `≈${Math.round(d)} m` : `≈${(d / 1000).toFixed(2)} km`;
-  const title = 'Distance OSRM (données statiques OpenStreetMap). Peut différer de Google Maps en cas de fermetures ou restrictions temporaires.';
-  // Seuils pour distance ROUTIÈRE entre stops consécutifs
-  if (d === 0)    return <span title={title} className="rounded-full bg-slate-100  px-2 py-0.5 text-xs font-bold text-slate-500 cursor-help">{fmt}</span>;
-  if (d <= 300)   return <span title={title} className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800 cursor-help">{fmt}</span>;
-  if (d <= 1000)  return <span title={title} className="rounded-full bg-green-100  px-2 py-0.5 text-xs font-bold text-green-700 cursor-help">{fmt}</span>;
-  if (d <= 3000)  return <span title={title} className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-800 cursor-help">{fmt}</span>;
-  if (d <= 8000)  return <span title={title} className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-800 cursor-help">{fmt}</span>;
-  return          <span title={title} className="rounded-full bg-red-100    px-2 py-0.5 text-xs font-bold text-red-800 cursor-help">{fmt} !</span>;
+  const title = 'Distance entre la position GPS du scan (Trigger 3) et l\'adresse de livraison de cette ligne.';
+  if (d <=  10) return <span title={title} className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800 cursor-help">{fmt} ✓</span>;
+  if (d <=  30) return <span title={title} className="rounded-full bg-green-100   px-2 py-0.5 text-xs font-bold text-green-700  cursor-help">{fmt}</span>;
+  if (d <=  50) return <span title={title} className="rounded-full bg-yellow-100  px-2 py-0.5 text-xs font-bold text-yellow-800 cursor-help">{fmt}</span>;
+  if (d <= 200) return <span title={title} className="rounded-full bg-orange-100  px-2 py-0.5 text-xs font-bold text-orange-800 cursor-help">{fmt}</span>;
+  return         <span title={title} className="rounded-full bg-red-100     px-2 py-0.5 text-xs font-bold text-red-800    cursor-help">{fmt} !</span>;
 }
 
 /* ─── GPS Modal — Leaflet injecté via srcDoc ─────────────────────────── */
@@ -154,7 +151,7 @@ function SummaryTile({ label, count, colorClass }) {
 /* ─── Page principale ────────────────────────────────────────────────── */
 export default function GpsAnalysis() {
   const [file, setFile]         = useState(null);
-  const [geocode, setGeocode]   = useState(true);
+  const [geocode, setGeocode]   = useState(false);
   const [loading, setLoading]   = useState(false);
   const [progress, setProgress] = useState(null); // {current, total, phase}
   const [error, setError]       = useState(null);
@@ -257,7 +254,7 @@ export default function GpsAnalysis() {
         </div>
 
         <div className="mt-3 rounded-[16px] border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
-          ℹ️ Distance OSRM entre stops consécutifs (itinéraire routier, données OpenStreetMap). Peut différer de Google Maps lors de fermetures temporaires.
+          ℹ️ Distance entre la position GPS du scan (Trigger 3, cols Q/R) et l'adresse de livraison (col H) de la <strong>même ligne</strong>. L'itinéraire 🗺 ouvre Google Maps depuis le point GPS vers l'adresse.
         </div>
 
         <div className="mt-5 flex items-center gap-4">
@@ -330,9 +327,9 @@ export default function GpsAnalysis() {
               <SummaryTile label="Retards"           count={s.late}         colorClass="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" />
               <SummaryTile label="Retards Express"   count={s.express_late} colorClass="bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200" />
               {s.dist_ok !== undefined && <>
-                <SummaryTile label="GPS OK ≤10m"    count={s.dist_ok}    colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
-                <SummaryTile label="GPS warn >30m"  count={s.dist_warn}  colorClass="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200" />
-                <SummaryTile label="GPS alarme >50m" count={s.dist_alarm} colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
+                <SummaryTile label="GPS ≤10m ✓"      count={s.dist_ok}    colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
+                <SummaryTile label="GPS 10–50m"       count={s.dist_warn}  colorClass="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200" />
+                <SummaryTile label="GPS >50m ⚠"       count={s.dist_alarm} colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
               </>}
             </div>
             <div className="mt-5">
@@ -406,10 +403,11 @@ export default function GpsAnalysis() {
                       <th key={h} className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-[10px]">{h}</th>
                     ))}
                     <th className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-[10px] cursor-help"
-                        title="Distance OSRM entre stops consécutifs (données statiques OpenStreetMap, sans trafic temps réel). Peut différer de Google Maps en cas de fermetures ou restrictions temporaires.">
-                      Dist.* ℹ
+                        title="Distance entre la position GPS du scan (Trigger 3) et l'adresse de livraison de cette même ligne.">
+                      GPS→Adr. ℹ
                     </th>
-                    <th className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-[10px]">Itinéraire</th>
+                    <th className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-[10px]"
+                        title="Google Maps : depuis la position GPS vers l'adresse de livraison">Itinéraire</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -506,7 +504,7 @@ export default function GpsAnalysis() {
             </div>
             {geocode && (
               <p className="mt-3 text-[11px] text-slate-400 dark:text-slate-500">
-                * Distances OSRM (OpenStreetMap, données statiques). Peut différer de Google Maps en cas de fermetures ou restrictions temporaires de voirie.
+                * Distance (vol d'oiseau) entre la position GPS Trigger 3 (cols Q/R) et l'adresse de livraison géocodée (col H) de la même ligne. 🗺 = itinéraire Google Maps GPS → adresse.
               </p>
             )}
           </GlassCard>
