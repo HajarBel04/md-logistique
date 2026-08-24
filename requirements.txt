@@ -4,4 +4,3 @@ openpyxl>=3.0.10
 python-multipart>=0.0.8
 requests
 geopy
-pdfplumber>=0.10.0
