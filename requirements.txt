@@ -5,4 +5,3 @@ python-multipart>=0.0.8
 requests
 geopy
 pdfplumber>=0.10.0
-pymupdf>=1.23.0
