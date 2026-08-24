@@ -7,9 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend/
 COPY scripts/ ./scripts/
 
-# Geocache pré-rempli (adresses Nominatim + distances OSRM)
-# → distances disponibles immédiatement sans attendre le géocodage
-RUN mkdir -p outputs
-COPY outputs/geocache.json ./outputs/geocache.json
+# Dossier outputs (geocache vide au démarrage — se remplit à l'usage)
+RUN mkdir -p outputs && echo '{}' > outputs/geocache.json
 
 CMD ["python3", "backend/payroll_api.py"]
