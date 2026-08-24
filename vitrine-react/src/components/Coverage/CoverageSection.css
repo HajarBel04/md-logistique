@@ -1,0 +1,276 @@
+/* ── Section ──────────────────────────────────────────── */
+.cov-section {
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── 3-column grid ────────────────────────────────────── */
+.cov-grid {
+  max-width: 1380px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 270px 1fr 258px;
+  align-items: center;
+  padding: 38px 48px;
+  gap: 0;
+}
+
+/* ── LEFT CONTENT ─────────────────────────────────────── */
+.cov-left {
+  z-index: 2;
+  position: relative;
+  padding-right: 16px;
+}
+
+.cov-heading-block { margin-bottom: 16px; }
+
+.cov-heading {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.15;
+  letter-spacing: -.015em;
+}
+
+.cov-or { color: #ff4b0a; }
+
+.cov-rule {
+  display: block;
+  width: 20px; height: 2px;
+  background: #ff4b0a;
+  border-radius: 1px;
+  margin-top: 6px;
+}
+
+.cov-statement {
+  font-size: 29px;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  margin-bottom: 14px;
+}
+
+.cov-desc {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.58;
+  max-width: 220px;
+  margin-bottom: 20px;
+}
+
+/* Country flags */
+.cov-countries {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 26px;
+}
+
+.cov-countries li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cov-countries span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+/* .flag — replaced by inline circular SVG flags */
+
+/* CTA button */
+.cov-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1.5px solid #ff4b0a;
+  border-radius: 7px;
+  background: #fff;
+  color: #ff4b0a;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+  font-family: inherit;
+}
+
+.cov-cta:hover {
+  background: #ff4b0a;
+  color: #fff;
+}
+
+/* ── CENTER MAP ───────────────────────────────────────── */
+.cov-map {
+  position: relative;
+  width: 100%;
+  height: 390px;
+}
+
+.cov-map-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  filter:
+    drop-shadow(0 8px 18px rgba(255,105,35,.20))
+    drop-shadow(0 2px 6px rgba(0,0,0,.07));
+}
+
+/* Edge gradient fades — map blends into white background */
+.cov-fade {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cov-fade--l {
+  inset: 0 auto 0 0;
+  width: 88px;
+  background: linear-gradient(to right, #fff 0%, transparent 100%);
+}
+
+.cov-fade--r {
+  inset: 0 0 0 auto;
+  width: 88px;
+  background: linear-gradient(to left, #fff 0%, transparent 100%);
+}
+
+.cov-fade--t {
+  inset: 0 0 auto 0;
+  height: 32px;
+  background: linear-gradient(to bottom, #fff 0%, transparent 100%);
+}
+
+.cov-fade--b {
+  inset: auto 0 0 0;
+  height: 32px;
+  background: linear-gradient(to top, #fff 0%, transparent 100%);
+}
+
+/* ── CITY PINS ────────────────────────────────────────── */
+.cov-pin {
+  position: absolute;
+  /* Pin tip (bottom-center of SVG) sits at (x%, y%) */
+  transform: translate(-50%, -100%);
+  display: flex;
+  align-items: center;
+  z-index: 3;
+  cursor: default;
+}
+
+.cov-pin svg { flex-shrink: 0; }
+
+/* City label chip */
+.cov-city-label {
+  position: absolute;
+  /* Vertically centered on the pin icon */
+  top: 30%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,.96);
+  color: #111;
+  padding: 4px 9px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0,0,0,.13);
+  white-space: nowrap;
+  letter-spacing: .01em;
+}
+
+/* Label to the right of pin */
+.cov-pin--right .cov-city-label {
+  left: calc(100% + 5px);
+}
+
+/* Label to the left of pin */
+.cov-pin--left .cov-city-label {
+  right: calc(100% + 5px);
+}
+
+/* ── RIGHT INFO CARD ──────────────────────────────────── */
+.cov-card {
+  background: rgba(255,255,255,.97);
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
+  padding: 22px 20px;
+  box-shadow: 0 7px 26px rgba(0,0,0,.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 2;
+  position: relative;
+}
+
+.cov-card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f4f4f4;
+}
+
+.cov-card-row:first-child { padding-top: 4px; }
+.cov-card-row:last-child  { border-bottom: none; padding-bottom: 4px; }
+
+.cov-card-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+}
+
+.cov-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.3;
+}
+
+.cov-card-sub {
+  font-size: 12px;
+  color: #777;
+  font-weight: 400;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .cov-grid {
+    grid-template-columns: 240px 1fr 240px;
+    padding: 32px 28px;
+  }
+}
+
+@media (max-width: 860px) {
+  .cov-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 24px;
+    padding: 32px 24px;
+  }
+  .cov-left  { grid-column: 1; grid-row: 1; }
+  .cov-card  { grid-column: 2; grid-row: 1; }
+  .cov-map   { grid-column: 1 / -1; grid-row: 2; height: 280px; }
+}
+
+@media (max-width: 560px) {
+  .cov-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 20px;
+    padding: 28px 20px;
+  }
+  .cov-left  { grid-column: auto; grid-row: auto; }
+  .cov-card  { grid-column: auto; grid-row: auto; }
+  .cov-map   { grid-column: auto; grid-row: auto; height: 220px; }
+  .cov-statement { font-size: 24px; }
+  .cov-heading   { font-size: 22px; }
+}

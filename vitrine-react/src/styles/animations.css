@@ -1,0 +1,79 @@
+/* ── Entrance ─────────────────────────────────────────────── */
+@keyframes heroReveal {
+  from { opacity: 0; transform: translateY(30px); filter: blur(5px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vanEnter {
+  from { opacity: 0; transform: translateX(90px) scale(.985); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes cardReveal {
+  from { opacity: 0; transform: scale(.96) translateY(14px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+@keyframes statsRise {
+  from { opacity: 0; transform: translate(-50%, 25px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ── Idle loops ──────────────────────────────────────────── */
+@keyframes gpsFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@keyframes pinPulse {
+  0%,100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.18); opacity: .8; }
+}
+
+/* ── GPS route draw ──────────────────────────────────────── */
+@keyframes drawRoute {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ── Green status dot pulse ──────────────────────────────── */
+@keyframes statusPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(39,196,107,.40); }
+  70%  { box-shadow: 0 0 0 7px rgba(39,196,107,0); }
+  100% { box-shadow: 0 0 0 0 rgba(39,196,107,0); }
+}
+
+/* ── Stat item stagger ───────────────────────────────────── */
+@keyframes statFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Process step / badge ────────────────────────────────── */
+@keyframes drawProcessPath {
+  from { stroke-dashoffset: 180; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes badgePop {
+  from { opacity: 0; transform: scale(.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Reduced-motion override ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

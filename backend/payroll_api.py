@@ -356,37 +356,51 @@ async def gps_process(
             result = process_gps(path, output_path=out_path, geocode=do_geocode,
                                   progress_cb=progress_cb if do_geocode else None)
         except Exception as e:
+            import traceback
             _gps_progress['phase'] = 'idle'
-            raise HTTPException(400, str(e))
+            print(f"[GPS ERROR] {e}\n{traceback.format_exc()}", flush=True)
+            raise HTTPException(status_code=400, detail=str(e))
 
     _gps_progress.update({'current': 0, 'total': 0, 'phase': 'idle'})
 
-    rows = [
-        {
-            'barcode':      r['barcode'],
-            'driver':       r['driver'],
-            'date':         str(r['date'])[:10] if r['date'] else '',
-            'commit_time':  r['commit_time'],
-            'actual_time':  r['actual_time'],
-            'is_late':      r['is_late'],
-            'is_express':   r['is_express'],
-            'status':       r['status'],
-            'street':       r['street'],
-            'city':         r['city'],
-            'postal':       r['postal'],
-            'consignee':    r['consignee'],
-            'seq':          r['seq'],
-            'loop':         r['loop'],
-            'gps_lat':      str(r['gps_lat']) if r['gps_lat'] else '',
-            'gps_lon':      str(r['gps_lon']) if r['gps_lon'] else '',
-            'dist_m':       round(r['dist_m'], 1) if r['dist_m'] is not None else None,
-            'excused':      r.get('excused', False),
-            'timing_warn':  r.get('timing_warn', False),
-            'streetview':   r['streetview'],
-            'route':        r['route'],
-        }
-        for r in result['rows']
-    ]
+    try:
+        def safe_dist(v):
+            if v is None:
+                return None
+            f = float(v)
+            import math
+            return round(f, 1) if math.isfinite(f) else None
+
+        rows = [
+            {
+                'barcode':      r['barcode'],
+                'driver':       r['driver'],
+                'date':         str(r['date'])[:10] if r['date'] else '',
+                'commit_time':  r['commit_time'],
+                'actual_time':  r['actual_time'],
+                'is_late':      r['is_late'],
+                'is_express':   r['is_express'],
+                'status':       r['status'],
+                'street':       r['street'],
+                'city':         r['city'],
+                'postal':       r['postal'],
+                'consignee':    r['consignee'],
+                'seq':          r['seq'],
+                'loop':         r['loop'],
+                'gps_lat':      str(r['gps_lat']) if r['gps_lat'] else '',
+                'gps_lon':      str(r['gps_lon']) if r['gps_lon'] else '',
+                'dist_m':       safe_dist(r.get('dist_m')),
+                'excused':      r.get('excused', False),
+                'timing_warn':  r.get('timing_warn', False),
+                'streetview':   r.get('streetview', ''),
+                'route':        r.get('route', ''),
+            }
+            for r in result['rows']
+        ]
+    except Exception as e:
+        import traceback
+        print(f"[GPS SERIALIZE ERROR] {e}\n{traceback.format_exc()}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Erreur sérialisation : {e}")
 
     return {
         'summary':      result['summary'],
@@ -407,6 +421,170 @@ async def gps_download(filename: str):
 @app.get("/api/gps/health")
 async def gps_health():
     return {"status": "ok", "service": "gps"}
+
+
+# ─── Module Chauffeurs ────────────────────────────────────────────────────────
+
+import re
+import urllib.parse
+from fastapi.responses import StreamingResponse
+import io
+
+PERSONNEL_DIR = os.path.join(SAMPLES_DIR, 'MD Personnel roulant')
+
+
+def _resolve_file(driver_type: str, driver_folder: str, filename: str) -> str | None:
+    """Cherche le fichier dans le dossier du chauffeur (recherche flexible)."""
+    type_map = {'camion': 'Chauffeur Camion', 'camionnette': 'Chauffeur Camionnette'}
+    type_dir = os.path.join(PERSONNEL_DIR, type_map.get(driver_type, driver_type))
+    if not os.path.isdir(type_dir):
+        return None
+    # Cherche un sous-dossier contenant le nom du chauffeur
+    target = None
+    for folder in os.listdir(type_dir):
+        if driver_folder.upper() in folder.upper():
+            target = os.path.join(type_dir, folder)
+            break
+    if not target:
+        return None
+    # Cherche le fichier exact ou approchant
+    for f in os.listdir(target):
+        if f == filename or f.lower() == filename.lower():
+            return os.path.join(target, f)
+    return None
+
+
+@app.get("/api/chauffeurs/file")
+async def get_chauffeur_file(type: str, folder: str, filename: str):
+    """
+    Sert un fichier depuis samples/MD Personnel roulant/
+    ?type=camion&folder=ADIB+Abderazak&filename=Carte+d'identité.pdf
+    """
+    folder   = urllib.parse.unquote(folder)
+    filename = urllib.parse.unquote(filename)
+    path = _resolve_file(type, folder, filename)
+    if not path or not os.path.isfile(path):
+        raise HTTPException(404, f"Fichier introuvable : {filename}")
+    return FileResponse(
+        path,
+        media_type='application/octet-stream',
+        filename=filename,
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )
+
+
+def _ocr_pdf(path: str) -> str:
+    """
+    OCR sur chaque page du PDF avec rotation automatique (0/90/180/270°).
+    Retourne le texte le plus riche trouvé.
+    """
+    try:
+        import fitz
+        import pytesseract
+        from PIL import Image
+    except ImportError:
+        return ''
+
+    full_text = ''
+    try:
+        doc = fitz.open(path)
+        for page in doc:
+            pix = page.get_pixmap(dpi=280)
+            img = Image.frombytes('RGB', [pix.width, pix.height], pix.samples)
+            best_text = ''
+            best_dates = 0
+            for angle in [0, 180, 90, 270]:
+                rotated = img.rotate(angle, expand=True) if angle else img
+                t = pytesseract.image_to_string(rotated, lang='fra+eng')
+                n = len(re.findall(r'\b\d{1,2}[./-]\d{1,2}[./-]20\d{2}\b', t))
+                if n > best_dates or (n == best_dates and len(t) > len(best_text)):
+                    best_text, best_dates = t, n
+            full_text += best_text + '\n'
+    except Exception:
+        pass
+    return full_text
+
+
+# Mots-clés indiquant une date d'expiration (FR/NL/DE/EN)
+_EXPIRY_KEYWORDS = re.compile(
+    r'(expir|valide?\s+jusqu|vervaldatum|giltig\s+bis|valid\s+until'
+    r'|date\s+d[\'´]expir|ablaufdatum|expiry|échéance'
+    r'|\b4b\b)',          # champ 4b = expiration sur carte conducteur
+    re.IGNORECASE,
+)
+
+
+def _extract_dates_from_pdf(path: str) -> dict:
+    """
+    Extrait les dates d'un PDF (texte natif ou OCR).
+    Retourne {all_dates, expiry_date (best guess), text_snippet}.
+    """
+    # 1. Essai texte natif
+    text = ''
+    try:
+        import pdfplumber
+        with pdfplumber.open(path) as pdf:
+            text = '\n'.join(p.extract_text() or '' for p in pdf.pages)
+    except Exception:
+        pass
+
+    # 2. Si aucun texte → OCR
+    if len(text.strip()) < 20:
+        text = _ocr_pdf(path)
+
+    DATE_PAT = re.compile(r'\b(\d{1,2})[./-](\d{1,2})[./-](20\d{2})\b')
+
+    all_dates = []
+    for m in DATE_PAT.finditer(text):
+        d, mo, y = m.groups()
+        try:
+            if 1 <= int(d) <= 31 and 1 <= int(mo) <= 12 and 2020 <= int(y) <= 2040:
+                iso = f"{y}-{int(mo):02d}-{int(d):02d}"
+                label = f"{int(d):02d}/{int(mo):02d}/{y}"
+                # Cherche un mot-clé d'expiration dans les 120 chars précédents
+                context = text[max(0, m.start() - 120): m.start() + 30]
+                is_expiry = bool(_EXPIRY_KEYWORDS.search(context))
+                all_dates.append({'date': label, 'iso': iso, 'likely_expiry': is_expiry})
+        except ValueError:
+            pass
+
+    # Déduplique, trie par date croissante
+    seen = set()
+    unique = []
+    for item in sorted(all_dates, key=lambda x: x['iso']):
+        if item['date'] not in seen:
+            seen.add(item['date'])
+            unique.append(item)
+
+    # Best guess expiration = la date la plus lointaine marquée expiry,
+    # sinon la plus lointaine tout court
+    expiry = next((x for x in reversed(unique) if x['likely_expiry']), None)
+    if not expiry and unique:
+        expiry = unique[-1]   # la plus lointaine
+
+    return {
+        'dates': unique,
+        'expiry_date': expiry['date'] if expiry else None,
+        'expiry_iso':  expiry['iso']  if expiry else None,
+        'text_snippet': text[:400].strip(),
+    }
+
+
+@app.get("/api/chauffeurs/extract-dates")
+async def extract_dates(type: str, folder: str, filename: str):
+    """
+    Lit un PDF du dossier chauffeur et retourne les dates trouvées.
+    ?type=camion&folder=ADIB+Abderazak&filename=Permis.pdf
+    """
+    folder   = urllib.parse.unquote(folder)
+    filename = urllib.parse.unquote(filename)
+    path = _resolve_file(type, folder, filename)
+    if not path or not os.path.isfile(path):
+        raise HTTPException(404, "Fichier introuvable")
+    if not filename.lower().endswith('.pdf'):
+        return {"dates": [], "message": "Extraction disponible pour les PDF uniquement"}
+    result = _extract_dates_from_pdf(path)
+    return result
 
 
 # ─── Frontend statique ────────────────────────────────────────────────────────

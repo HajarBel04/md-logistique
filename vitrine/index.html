@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MD Logistique — Livraison Express Europe</title>
+  <meta name="description" content="MD Logistique : distribution de colis rapide et fiable en France, Belgique, Benelux et partout en Europe. Suivi GPS en temps réel."/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>"/>
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --or:      #FF5A00;
+      --or-glow: rgba(255,90,0,.20);
+      --or-pale: #FFF3ED;
+      --txt:     #1C1C2A;
+      --mid:     #52526A;
+      --muted:   #8A8AA8;
+      --white:   #FFFFFF;
+      --surf:    #F6F7FA;
+      --surf2:   #F0F1F8;
+      --bdr:     #E4E5EF;
+      --shadow:  rgba(22,22,48,.09);
+      --font:    'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+      --radius:  18px;
+    }
+
+    /* ── RESET ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: var(--font);
+      background: var(--white);
+      color: var(--txt);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; cursor: pointer; border: none; }
+    img { max-width: 100%; }
+
+    /* ── UTILITIES ──────────────────────────────────────── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 48px; }
+    .orange { color: var(--or); }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--or); margin-bottom: 16px;
+    }
+    .section-tag::before {
+      content: ''; display: block; width: 20px; height: 2px;
+      background: var(--or); border-radius: 2px;
+    }
+    .section-title {
+      font-size: 40px; font-weight: 900; line-height: 1.1;
+      letter-spacing: -1.5px; text-wrap: balance;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 16px; line-height: 1.7; color: var(--mid); max-width: 560px;
+    }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 70px; padding: 0 52px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--bdr);
+    }
+    .logo { display: flex; align-items: center; gap: 11px; }
+    .logo-words { display: flex; flex-direction: column; line-height: 1.1; }
+    .logo-md  { font-size: 23px; font-weight: 900; color: var(--or); letter-spacing: -.5px; }
+    .logo-sub { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 30px; list-style: none; }
+    .nav-links a {
+      font-size: 13.5px; font-weight: 500; color: var(--mid);
+      transition: color .15s; white-space: nowrap; padding: 4px 0;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--or); }
+    .nav-links a.active { border-bottom: 2px solid var(--or); }
+    .btn-nav {
+      background: var(--or); color: #fff;
+      padding: 11px 22px; border-radius: 50px;
+      font-size: 13.5px; font-weight: 600;
+      box-shadow: 0 2px 14px var(--or-glow);
+      transition: background .15s, transform .1s;
+    }
+    .btn-nav:hover { background: #e84e00; transform: translateY(-1px); }
+
+    /* ── HERO ────────────────────────────────────────────── */
+    .hero {
+      display: grid; grid-template-columns: 46% 54%;
+      min-height: 570px; overflow: hidden;
+    }
+    .hero-l {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 60px 44px 96px 60px;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--or); margin-bottom: 22px;
+    }
+    .eyebrow::before {
+      content: ''; display: block; width: 22px; height: 2px;
+      background: var(--or); border-radius: 2px;
+    }
+    h1 {
+      font-size: 56px; font-weight: 900; line-height: 1.06;
+      letter-spacing: -2.5px; text-wrap: balance; margin-bottom: 20px;
+    }
+    .hero-body {
+      font-size: 16px; line-height: 1.68; color: var(--mid);
+      max-width: 400px; margin-bottom: 34px;
+    }
+    .ctas { display: flex; gap: 13px; align-items: center; margin-bottom: 26px; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--or); color: #fff;
+      padding: 14px 28px; border-radius: 50px;
+      font-size: 14.5px; font-weight: 700;
+      box-shadow: 0 4px 22px var(--or-glow);
+      transition: all .18s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { background: #e84e00; transform: translateY(-2px); box-shadow: 0 6px 28px var(--or-glow); }
+    .btn-secondary {
+      background: transparent; color: var(--txt);
+      border: 1.5px solid var(--bdr); padding: 14px 26px; border-radius: 50px;
+      font-size: 14.5px; font-weight: 600; transition: all .18s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-secondary:hover { border-color: var(--or); color: var(--or); }
+    .trust { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+
+    /* Hero right — real photo */
+    .hero-r {
+      position: relative; overflow: hidden;
+      background: #DCEEFA; /* fallback sky colour while image loads */
+    }
+    .hero-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center center;
+    }
+    /* Gradient mask: white bleeds over left edge → photo reads cleanly */
+    .hero-fade {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to right,
+        #ffffff 0%,
+        rgba(255,255,255,.55) 28%,
+        rgba(255,255,255,0) 52%
+      );
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* GPS card */
+    .gps-card {
+      position: absolute; top: 30px; left: 38%; transform: translateX(-50%);
+      background: #fff; border: 1px solid var(--bdr); border-radius: 16px;
+      padding: 13px 18px; box-shadow: 0 10px 40px rgba(0,0,0,.15);
+      display: flex; align-items: center; gap: 14px; z-index: 10; min-width: 252px;
+    }
+    .gps-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #22C55E; flex-shrink: 0;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+      50%      { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+    }
+    .gps-status {
+      font-size: 10.5px; font-weight: 700; letter-spacing: .5px;
+      color: #22C55E; text-transform: uppercase; margin-bottom: 4px;
+    }
+    .gps-title { font-size: 13px; font-weight: 700; color: var(--txt); line-height: 1.35; }
+
+    /* ── STATS BAR ───────────────────────────────────────── */
+    .stats {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      background: #fff; border: 1px solid var(--bdr); border-radius: 22px;
+      margin: -46px 52px 0; position: relative; z-index: 10;
+      box-shadow: 0 12px 50px var(--shadow);
+    }
+    .stat {
+      display: flex; align-items: center; gap: 16px; padding: 26px 30px;
+      border-right: 1px solid var(--bdr);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-ico { width: 46px; height: 46px; flex-shrink: 0; }
+    .stat-val {
+      font-size: 30px; font-weight: 900; color: var(--or);
+      letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums;
+    }
+    .stat-lbl { font-size: 12.5px; color: var(--muted); font-weight: 500; margin-top: 3px; line-height: 1.3; }
+
+    /* ── SERVICES ─────────────────────────────────────────── */
+    .services-section { padding: 54px 0 64px; background: #fff; }
+    .section-head { text-align: center; margin-bottom: 40px; }
+    .section-head h2 { font-size: 33px; font-weight: 900; letter-spacing: -.8px; margin-bottom: 11px; }
+    .section-head .or { color: var(--or); }
+    .head-accent { display: inline-block; width: 36px; height: 3px; background: var(--or); border-radius: 2px; }
+    .svc-cards { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; }
+    .svc-card {
+      border-radius: 14px; overflow: hidden; background: #fff;
+      border: 1px solid #E8E9F2; box-shadow: 0 2px 18px rgba(22,22,48,.07);
+      display: flex; flex-direction: column;
+    }
+    .svc-photo { height: 168px; position: relative; overflow: hidden; flex-shrink: 0; }
+    .svc-photo svg { display: block; width: 100%; height: 100%; }
+    .svc-body {
+      margin-top: -16px; background: #fff; border-radius: 16px 16px 0 0;
+      padding: 16px 15px 20px; position: relative; flex: 1;
+    }
+    .svc-ico { width: 32px; height: 32px; margin-bottom: 9px; }
+    .svc-title { font-size: 13px; font-weight: 800; margin-bottom: 6px; color: #1C1C2A; line-height: 1.25; }
+    .svc-desc  { font-size: 11.5px; line-height: 1.55; color: #52526A; }
+
+    /* ── HOW IT WORKS ────────────────────────────────────── */
+    .how-section { padding: 54px 0 76px; background: #fff; }
+    .how-diagram {
+      position: relative; display: flex; align-items: flex-start;
+      justify-content: center; margin-top: 46px; padding: 0 24px;
+    }
+    .how-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; width: 148px; flex-shrink: 0; }
+    .how-circle {
+      width: 116px; height: 116px; border-radius: 50%; background: #fff;
+      border: 1.5px solid #E4E5EF; box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      display: flex; align-items: center; justify-content: center; position: relative;
+    }
+    .how-num {
+      position: absolute; top: -7px; left: -7px;
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--or); color: #fff;
+      font-size: 13px; font-weight: 800; font-family: var(--font);
+      display: flex; align-items: center; justify-content: center; z-index: 3;
+    }
+    .how-label { margin-top: 13px; font-size: 13px; font-weight: 700; color: #1C1C2A; text-align: center; line-height: 1.35; }
+    .how-arrow { font-size: 20px; color: #1C1C2A; font-weight: 900; margin: 0 4px; align-self: center; padding-bottom: 42px; flex-shrink: 0; }
+    .how-dots-l { position: absolute; left: 0;  top: -2px; pointer-events: none; }
+    .how-dots-r { position: absolute; right: 0; top: -2px; pointer-events: none; }
+
+    /* ── ZONES COUVERTES ─────────────────────────────────── */
+    .zones-section { padding: 100px 0; background: var(--white); }
+    .zones-layout { display: grid; grid-template-columns: 1fr 420px; gap: 64px; align-items: start; margin-top: 60px; }
+
+    /* Map SVG container */
+    .map-wrap {
+      background: var(--surf); border: 1px solid var(--bdr);
+      border-radius: var(--radius); overflow: hidden;
+      position: relative;
+    }
+    .map-legend {
+      display: flex; gap: 20px; padding: 16px 24px;
+      border-top: 1px solid var(--bdr); background: var(--white);
+      flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--mid); }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .legend-dot.hub    { background: #FF5A00; }
+    .legend-dot.benelux{ background: #FF9A60; }
+    .legend-dot.europe { background: #FFCFA8; }
+
+    /* Right panel */
+    .zones-right {}
+    .zones-focus {
+      background: linear-gradient(135deg, #FF5A00 0%, #FF7A30 100%);
+      border-radius: var(--radius); padding: 30px 28px; color: #fff;
+      margin-bottom: 20px;
+    }
+    .zones-focus-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: .8; margin-bottom: 10px; }
+    .zones-focus-name  { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+    .zones-focus-desc  { font-size: 14px; line-height: 1.55; opacity: .88; }
+    .focus-flags { display: flex; gap: 10px; margin-top: 16px; }
+    .flag-chip {
+      background: rgba(255,255,255,.18); border-radius: 50px;
+      padding: 6px 14px; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .country-list { display: flex; flex-direction: column; gap: 8px; }
+    .country-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; background: var(--surf);
+      border: 1px solid var(--bdr); border-radius: 12px;
+      transition: border-color .15s;
+    }
+    .country-row:hover { border-color: var(--or); }
+    .country-row.highlight { border-color: var(--or); background: var(--or-pale); }
+    .country-name-wrap { display: flex; align-items: center; gap: 10px; }
+    .country-flag { font-size: 20px; }
+    .country-name { font-size: 14px; font-weight: 700; }
+    .country-detail { font-size: 12px; color: var(--mid); margin-top: 1px; }
+    .country-badge {
+      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 50px;
+      background: var(--or); color: #fff;
+    }
+    .country-badge.eu { background: var(--surf2); color: var(--mid); }
+
+    /* ── WHY MD ──────────────────────────────────────────── */
+    .why-section { padding: 90px 0; background: var(--surf); border-top: 1px solid var(--bdr); }
+    .why-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 52px; }
+    .why-card {
+      background: var(--white); border: 1px solid var(--bdr);
+      border-radius: var(--radius); padding: 30px 28px;
+    }
+    .why-ico-wrap {
+      width: 48px; height: 48px; border-radius: 13px;
+      background: var(--or-pale); display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+    }
+    .why-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .why-desc  { font-size: 14px; line-height: 1.6; color: var(--mid); }
+
+    /* ── CONTACT ─────────────────────────────────────────── */
+    .contact-section { padding: 100px 0; background: var(--white); }
+    .contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; margin-top: 56px; }
+    .contact-info { display: flex; flex-direction: column; gap: 20px; }
+    .contact-block { display: flex; gap: 16px; align-items: flex-start; }
+    .contact-ico-wrap {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      background: var(--or-pale); display: flex; align-items: center; justify-content: center;
+    }
+    .contact-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .contact-value { font-size: 15px; font-weight: 700; color: var(--txt); }
+    .contact-value a { color: var(--or); }
+
+    /* Form */
+    .form { display: flex; flex-direction: column; gap: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 12.5px; font-weight: 600; color: var(--mid); }
+    .form-input, .form-select, .form-textarea {
+      padding: 12px 16px; border: 1.5px solid var(--bdr); border-radius: 12px;
+      font-size: 14px; font-family: var(--font); color: var(--txt);
+      background: var(--surf); transition: border-color .15s;
+      outline: none; width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--or); background: #fff; }
+    .form-textarea { resize: vertical; min-height: 110px; }
+    .btn-submit {
+      background: var(--or); color: #fff; border: none;
+      padding: 15px 28px; border-radius: 50px;
+      font-size: 15px; font-weight: 700; font-family: var(--font);
+      box-shadow: 0 4px 22px var(--or-glow);
+      cursor: pointer; transition: all .18s; text-align: center;
+    }
+    .btn-submit:hover { background: #e84e00; transform: translateY(-2px); }
+
+    /* ── FOOTER ──────────────────────────────────────────── */
+    .footer {
+      background: var(--txt); color: rgba(255,255,255,.55);
+      padding: 44px 52px 28px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 40px;
+      font-size: 13.5px;
+    }
+    .footer-brand .logo-md  { font-size: 22px; color: var(--or); margin-bottom: 10px; }
+    .footer-brand .logo-sub { font-size: 10px; color: rgba(255,255,255,.4); }
+    .footer-brand p { margin-top: 14px; line-height: 1.6; color: rgba(255,255,255,.45); font-size: 13px; }
+    .footer-col h4 { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 14px; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-col ul a { color: rgba(255,255,255,.6); transition: color .15s; }
+    .footer-col ul a:hover { color: var(--or); }
+    .footer-bottom {
+      background: var(--txt); border-top: 1px solid rgba(255,255,255,.08);
+      padding: 18px 52px; display: flex; justify-content: space-between; align-items: center;
+      font-size: 12.5px; color: rgba(255,255,255,.35);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     NAV
+═══════════════════════════════════════════════════════════ -->
+<nav class="nav">
+  <a href="#accueil" class="logo">
+    <img src="logo1.png" alt="MD Logistique" style="height:48px;width:auto;object-fit:contain;"/>
+    <div class="logo-words">
+      <span class="logo-md">MD</span>
+      <span class="logo-sub">logistique</span>
+    </div>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#accueil"  class="active">Accueil</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#comment">Comment ça marche</a></li>
+    <li><a href="#zones">Zones couvertes</a></li>
+    <li><a href="#pourquoi">Pourquoi MD ?</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+
+  <a href="#contact" class="btn-nav">Demander un devis</a>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════ -->
+<section id="accueil" class="hero">
+  <!-- LEFT -->
+  <div class="hero-l">
+    <span class="eyebrow">Livraison &amp; Logistique Europe</span>
+    <h1>Votre livraison,<br>notre <span class="orange">priorité</span></h1>
+    <p class="hero-body">
+      MD Logistique assure la distribution de vos colis avec précision,
+      rapidité et traçabilité GPS — en Belgique, au Benelux et partout en Europe.
+    </p>
+    <div class="ctas">
+      <a href="#contact"  class="btn-primary">Demander un devis &nbsp;→</a>
+      <a href="#services" class="btn-secondary">Nos services &nbsp;↓</a>
+    </div>
+    <div class="trust">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+      Livraison sécurisée &nbsp;•&nbsp; Suivi GPS temps réel &nbsp;•&nbsp; 7j/7
+    </div>
+  </div>
+
+  <!-- RIGHT: van scene -->
+  <div class="hero-r">
+    <img src="hero.png" class="hero-img" alt="MD Logistique — Van de livraison en Europe"/>
+    <div class="hero-fade"></div>
+
+    <!-- GPS card -->
+    <div class="gps-card">
+      <div class="gps-dot"></div>
+      <div>
+        <div class="gps-status">Suivi GPS en temps réel</div>
+        <div class="gps-title">Votre colis est en cours<br>de livraison</div>
+      </div>
+      <svg width="78" height="50" viewBox="0 0 78 50" fill="none">
+        <circle cx="8" cy="42" r="5.5" fill="#22C55E"/>
+        <circle cx="8" cy="42" r="3"   fill="white"/>
+        <line x1="8" y1="36" x2="8" y2="10" stroke="#D0D0E0" stroke-width="2" stroke-dasharray="3,3"/>
+        <path d="M 14,38 Q 38,20 66,14" stroke="#FF5A00" stroke-width="1.5" stroke-dasharray="4,3" fill="none"/>
+        <path d="M 66,8 C 61,8 57,12 57,16 C 57,21 66,28 66,28 C 66,28 75,21 75,16 C 75,12 71,8 66,8 Z" fill="#FF5A00"/>
+        <circle cx="66" cy="16" r="3" fill="white"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats">
+  <div class="stat">
+    <svg class="stat-ico" viewBox="0 0 46 46" fill="none">
+      <rect x="5" y="12" width="36" height="28" rx="3.5" stroke="#FF5A00" stroke-width="2"/>
+      <path d="M 5,22 L 41,22" stroke="#FF5A00" stroke-width="1.6"/>
+      <rect x="9" y="7" width="5" height="10" rx="1.5" fill="#FF5A00"/>
+      <rect x="32" y="7" width="5" height="10" rx="1.5" fill="#FF5A00"/>
+      <path d="M 15,29 L 31,29 M 18,33.5 L 28,33.5" stroke="#FF5A00" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <div><div class="stat-val">+2&thinsp;000</div><div class="stat-lbl">Colis livrés / jour</div></div>
+  </div>
+  <div class="stat">
+    <svg class="stat-ico" viewBox="0 0 50 42" fill="none">
+      <rect x="2" y="10" width="28" height="20" rx="2.5" stroke="#FF5A00" stroke-width="2"/>
+      <path d="M 30,16 L 48,16 L 48,30 L 30,30" stroke="#FF5A00" stroke-width="2"/>
+      <circle cx="11" cy="34" r="5" stroke="#FF5A00" stroke-width="2"/>
+      <circle cx="38" cy="34" r="5" stroke="#FF5A00" stroke-width="2"/>
+      <line x1="16" y1="34" x2="33" y2="34" stroke="#FF5A00" stroke-width="1.6"/>
+    </svg>
+    <div><div class="stat-val">+50</div><div class="stat-lbl">Chauffeurs actifs</div></div>
+  </div>
+  <div class="stat">
+    <svg class="stat-ico" viewBox="0 0 46 46" fill="none">
+      <circle cx="23" cy="23" r="18" stroke="#FF5A00" stroke-width="2"/>
+      <path d="M 23,11 L 23,23 L 31,23" stroke="#FF5A00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="23" cy="23" r="2.5" fill="#FF5A00"/>
+    </svg>
+    <div><div class="stat-val">98%</div><div class="stat-lbl">Taux de livraison en délai</div></div>
+  </div>
+  <div class="stat">
+    <svg class="stat-ico" viewBox="0 0 42 48" fill="none">
+      <path d="M 21,3 C 11,3 3,11 3,20 C 3,31 21,45 21,45 C 21,45 39,31 39,20 C 39,11 31,3 21,3 Z" stroke="#FF5A00" stroke-width="2"/>
+      <circle cx="21" cy="20" r="7" stroke="#FF5A00" stroke-width="2"/>
+      <circle cx="21" cy="20" r="2.5" fill="#FF5A00"/>
+    </svg>
+    <div><div class="stat-val">30+</div><div class="stat-lbl">Pays desservis</div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SERVICES
+═══════════════════════════════════════════════════════════ -->
+<section id="services" class="services-section">
+  <div class="container">
+    <div class="section-head">
+      <h2>Nos <span class="or">services</span></h2>
+      <div class="head-accent"></div>
+    </div>
+    <div class="svc-cards">
+
+      <!-- ── Card 1: Livraison colis ── -->
+      <div class="svc-card">
+        <div class="svc-photo">
+          <svg viewBox="0 0 260 168" xmlns="http://www.w3.org/2000/svg">
+            <rect width="260" height="168" fill="#181A20"/>
+            <radialGradient id="wl1" cx="75%" cy="0%" r="70%"><stop offset="0%" stop-color="#C07010" stop-opacity=".25"/><stop offset="100%" stop-color="#C07010" stop-opacity="0"/></radialGradient>
+            <rect width="260" height="168" fill="url(#wl1)"/>
+            <!-- Van rear -->
+            <rect x="108" y="12" width="142" height="148" fill="#21252D" rx="5"/>
+            <rect x="116" y="20" width="126" height="110" fill="#181B22" rx="3"/>
+            <line x1="179" y1="20" x2="179" y2="130" stroke="#2C3040" stroke-width="2.5"/>
+            <rect x="155" y="72" width="24" height="4" fill="#383D4C" rx="2"/>
+            <rect x="179" y="72" width="24" height="4" fill="#383D4C" rx="2"/>
+            <rect x="108" y="128" width="142" height="14" fill="#2A2E38" rx="2"/>
+            <rect x="145" y="131" width="72" height="11" rx="1.5" fill="#F2F2F2"/>
+            <text x="153" y="140" font-family="monospace" font-size="6.5" fill="#333" font-weight="bold">MD LOG 75</text>
+            <!-- Driver figure (back) -->
+            <circle cx="62" cy="46" r="19" fill="#252930"/>
+            <rect x="41" y="65" width="42" height="66" fill="#252930" rx="4"/>
+            <!-- MD uniform badge -->
+            <rect x="51" y="79" width="23" height="13" rx="2.5" fill="#FF5A00" opacity=".92"/>
+            <text x="54" y="89" font-family="Arial" font-size="9" font-weight="900" fill="white">MD</text>
+            <!-- Arm reaching to van -->
+            <rect x="83" y="76" width="30" height="10" fill="#252930" rx="5"/>
+            <!-- Boxes -->
+            <rect x="108" y="100" width="42" height="32" fill="#7A5810" rx="2"/>
+            <rect x="114" y="92"  width="32" height="34" fill="#8C6818" rx="2"/>
+            <line x1="112" y1="108" x2="150" y2="108" stroke="#C89010" stroke-width="1"/>
+            <line x1="130" y1="92"  x2="130" y2="126" stroke="#C89010" stroke-width="1"/>
+            <rect x="6"  y="118" width="38" height="30" fill="#7A5810" rx="2"/>
+            <rect x="12" y="110" width="28" height="32" fill="#8C6818" rx="2"/>
+            <line x1="10"  y1="126" x2="44"  y2="126" stroke="#C89010" stroke-width="1"/>
+            <line x1="26"  y1="110" x2="26"  y2="142" stroke="#C89010" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="svc-body">
+          <svg class="svc-ico" viewBox="0 0 32 32" fill="none" stroke="#FF5A00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="9" width="22" height="17" rx="2"/><path d="M24,13 L30,13 L30,26 L24,26"/><circle cx="8" cy="29" r="3"/><circle cx="26" cy="29" r="3"/><line x1="11" y1="29" x2="23" y2="29"/>
+          </svg>
+          <div class="svc-title">Livraison colis</div>
+          <div class="svc-desc">Distribution aux particuliers et entreprises, J+1 ou J+2.</div>
+        </div>
+      </div>
+
+      <!-- ── Card 2: Express & même jour ── -->
+      <div class="svc-card">
+        <div class="svc-photo">
+          <svg viewBox="0 0 260 168" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6AAAD0"/><stop offset="100%" stop-color="#AAD0E8"/></linearGradient>
+              <linearGradient id="road2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#72787E"/><stop offset="100%" stop-color="#585E64"/></linearGradient>
+            </defs>
+            <rect width="260" height="168" fill="url(#sky2)"/>
+            <!-- Buildings -->
+            <rect x="0"   y="42" width="25" height="82" fill="#94B8CC" opacity=".55"/>
+            <rect x="29"  y="54" width="18" height="70" fill="#88AABC" opacity=".5"/>
+            <rect x="52"  y="36" width="20" height="88" fill="#96B4C6" opacity=".5"/>
+            <rect x="185" y="46" width="28" height="78" fill="#90B2C4" opacity=".5"/>
+            <rect x="218" y="36" width="42" height="88" fill="#9ABAC8" opacity=".5"/>
+            <!-- Road -->
+            <rect x="0" y="114" width="260" height="54" fill="url(#road2)"/>
+            <rect x="30"  y="136" width="44" height="4" fill="#CCBA38" opacity=".55" rx="2"/>
+            <rect x="106" y="136" width="44" height="4" fill="#CCBA38" opacity=".55" rx="2"/>
+            <rect x="182" y="136" width="44" height="4" fill="#CCBA38" opacity=".55" rx="2"/>
+            <!-- Van body 3/4 front -->
+            <rect x="52" y="62" width="165" height="100" fill="#111418" rx="6"/>
+            <!-- Roof -->
+            <path d="M64,48 L217,48 L217,62 L52,62 Z" fill="#181B20"/>
+            <!-- Windshield -->
+            <rect x="66" y="52" width="92" height="54" fill="#1A2838" rx="4" opacity=".92"/>
+            <rect x="70" y="56" width="38" height="18" fill="white" rx="2" opacity=".04"/>
+            <!-- Side window -->
+            <rect x="166" y="52" width="48" height="40" fill="#182030" rx="3" opacity=".9"/>
+            <!-- Headlights -->
+            <rect x="58" y="68" width="70" height="22" fill="#10161E" rx="3"/>
+            <rect x="60" y="69" width="66" height="4.5" fill="#FFDC70" opacity=".88"/>
+            <!-- Grille -->
+            <rect x="68" y="128" width="78" height="26" fill="#1A1D24"/>
+            <line x1="70" y1="138" x2="144" y2="138" stroke="#303644" stroke-width="1.2"/>
+            <line x1="70" y1="145" x2="144" y2="145" stroke="#303644" stroke-width="1.2"/>
+            <!-- Orange stripe -->
+            <rect x="52" y="140" width="165" height="13" fill="#FF5A00" opacity=".88"/>
+            <rect x="52" y="140" width="165" height="3"  fill="white" opacity=".14"/>
+            <!-- MD text on side -->
+            <text x="178" y="130" font-family="Arial Black" font-size="18" font-weight="900" fill="#FF5A00" opacity=".88">MD</text>
+            <!-- Bumper -->
+            <rect x="52" y="153" width="165" height="9" fill="#1C2028"/>
+            <!-- Front wheel -->
+            <ellipse cx="90" cy="162" rx="22" ry="10" fill="#0E1014"/>
+            <ellipse cx="90" cy="162" rx="13" ry="6"  fill="#585E66"/>
+          </svg>
+        </div>
+        <div class="svc-body">
+          <svg class="svc-ico" viewBox="0 0 32 32" fill="none" stroke="#FF5A00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13,2 22,16 13,16 22,30 5,14 13,14"/>
+          </svg>
+          <div class="svc-title">Express &amp; même jour</div>
+          <div class="svc-desc">Livraisons urgentes avec fenêtre horaire garantie.</div>
+        </div>
+      </div>
+
+      <!-- ── Card 3: Logistique B2B ── -->
+      <div class="svc-card">
+        <div class="svc-photo">
+          <svg viewBox="0 0 260 168" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="whBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#16140C"/><stop offset="100%" stop-color="#241E10"/></linearGradient>
+              <radialGradient id="wLight" cx="50%" cy="5%" r="65%"><stop offset="0%" stop-color="#F8A020" stop-opacity=".32"/><stop offset="100%" stop-color="#F8A020" stop-opacity="0"/></radialGradient>
+            </defs>
+            <rect width="260" height="168" fill="url(#whBg)"/>
+            <rect width="260" height="168" fill="url(#wLight)"/>
+            <!-- Ceiling beam -->
+            <rect x="0" y="18" width="260" height="8" fill="#2A2418"/>
+            <!-- Ceiling lights -->
+            <rect x="28"  y="12" width="18" height="8" fill="#F8D870" rx="2" opacity=".9"/>
+            <rect x="118" y="12" width="18" height="8" fill="#F8D870" rx="2" opacity=".9"/>
+            <rect x="208" y="12" width="18" height="8" fill="#F8D870" rx="2" opacity=".9"/>
+            <line x1="37"  y1="26" x2="37"  y2="12" stroke="#888" stroke-width="1"/>
+            <line x1="127" y1="26" x2="127" y2="12" stroke="#888" stroke-width="1"/>
+            <line x1="217" y1="26" x2="217" y2="12" stroke="#888" stroke-width="1"/>
+            <!-- Left shelving -->
+            <rect x="0"  y="28" width="5"  height="132" fill="#2C2618"/>
+            <rect x="64" y="28" width="5"  height="132" fill="#2C2618"/>
+            <rect x="0"  y="44" width="69" height="4"  fill="#382E1C"/>
+            <rect x="0"  y="68" width="69" height="4"  fill="#382E1C"/>
+            <rect x="0"  y="92" width="69" height="4"  fill="#382E1C"/>
+            <rect x="0"  y="116" width="69" height="4" fill="#382E1C"/>
+            <rect x="2"  y="30" width="62" height="14" fill="#7A5810"/>
+            <rect x="2"  y="50" width="30" height="14" fill="#8C6818"/>
+            <rect x="34" y="50" width="30" height="14" fill="#7A5810"/>
+            <rect x="2"  y="74" width="20" height="14" fill="#8C6818"/>
+            <rect x="24" y="74" width="38" height="14" fill="#7A5810"/>
+            <!-- Floor -->
+            <rect x="0" y="152" width="260" height="16" fill="#1A1810"/>
+            <line x1="0" y1="152" x2="260" y2="152" stroke="#2A2418" stroke-width="1.5"/>
+            <!-- Forklift (bright orange!) -->
+            <rect x="88" y="98" width="84" height="54" fill="#E88800" rx="3"/>
+            <rect x="88" y="88" width="84" height="18" fill="#D07800" rx="2"/>
+            <!-- Cab -->
+            <rect x="132" y="70" width="40" height="36" fill="#F09000" rx="3"/>
+            <rect x="136" y="74" width="32" height="22" fill="#1A1A2A" rx="2" opacity=".8"/>
+            <!-- Mast -->
+            <rect x="86"  y="38" width="5" height="72" fill="#C88000"/>
+            <rect x="170" y="38" width="5" height="72" fill="#C88000"/>
+            <rect x="86"  y="38" width="89" height="6" fill="#D89400"/>
+            <!-- Load on forks -->
+            <rect x="92"  y="44" width="82" height="22" fill="#7A5810"/>
+            <rect x="92"  y="32" width="82" height="22" fill="#8C6818"/>
+            <line x1="92"  y1="44" x2="174" y2="44" stroke="#C89010" stroke-width="1"/>
+            <line x1="133" y1="32" x2="133" y2="54" stroke="#C89010" stroke-width="1"/>
+            <!-- Wheels -->
+            <circle cx="100" cy="152" r="10" fill="#1C1C24"/><circle cx="100" cy="152" r="5" fill="#3A3A48"/>
+            <circle cx="162" cy="152" r="10" fill="#1C1C24"/><circle cx="162" cy="152" r="5" fill="#3A3A48"/>
+            <!-- Right shelving -->
+            <rect x="200" y="28" width="5"  height="132" fill="#2C2618"/>
+            <rect x="255" y="28" width="5"  height="132" fill="#2C2618"/>
+            <rect x="200" y="44" width="60" height="4"   fill="#382E1C"/>
+            <rect x="200" y="68" width="60" height="4"   fill="#382E1C"/>
+            <rect x="200" y="92" width="60" height="4"   fill="#382E1C"/>
+            <rect x="202" y="30" width="56" height="14"  fill="#8C6818"/>
+            <rect x="202" y="50" width="56" height="14"  fill="#7A5810"/>
+            <rect x="202" y="74" width="30" height="14"  fill="#8C6818"/>
+            <rect x="234" y="74" width="22" height="14"  fill="#7A5810"/>
+          </svg>
+        </div>
+        <div class="svc-body">
+          <svg class="svc-ico" viewBox="0 0 32 32" fill="none" stroke="#FF5A00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="14" width="28" height="16" rx="2"/><path d="M8,14 L8,9 L24,9 L24,14"/><path d="M12,9 L12,6 L20,6 L20,9"/><line x1="2" y1="21" x2="30" y2="21"/>
+          </svg>
+          <div class="svc-title">Logistique B2B</div>
+          <div class="svc-desc">Flux de livraisons récurrents pour vos sites professionnels.</div>
+        </div>
+      </div>
+
+      <!-- ── Card 4: Suivi GPS ── -->
+      <div class="svc-card">
+        <div class="svc-photo">
+          <svg viewBox="0 0 260 168" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="gpsBg" cx="50%" cy="100%" r="80%"><stop offset="0%" stop-color="#18182C"/><stop offset="100%" stop-color="#08080E"/></radialGradient>
+            </defs>
+            <rect width="260" height="168" fill="url(#gpsBg)"/>
+            <!-- Hand -->
+            <ellipse cx="130" cy="148" rx="65" ry="24" fill="#C89070"/>
+            <rect x="80" y="120" width="100" height="50" fill="#C89070" rx="8"/>
+            <!-- Phone frame -->
+            <rect x="90" y="8" width="82" height="142" fill="#18181E" rx="11" stroke="#28283C" stroke-width="1.5"/>
+            <rect x="94" y="12" width="74" height="128" fill="#0C0C1A" rx="9"/>
+            <!-- Map bg -->
+            <rect x="94" y="12" width="74" height="128" fill="#0E1522" rx="9"/>
+            <!-- Road grid -->
+            <line x1="94" y1="60"  x2="168" y2="60"  stroke="#1E2D44" stroke-width="7"/>
+            <line x1="94" y1="95"  x2="168" y2="95"  stroke="#1E2D44" stroke-width="7"/>
+            <line x1="125" y1="12" x2="125" y2="140" stroke="#1E2D44" stroke-width="7"/>
+            <line x1="148" y1="12" x2="148" y2="140" stroke="#1A2840" stroke-width="5"/>
+            <!-- City blocks -->
+            <rect x="95"  y="13"  width="28" height="45" fill="#111E30" rx="1"/>
+            <rect x="127" y="13"  width="19" height="45" fill="#111E30" rx="1"/>
+            <rect x="150" y="13"  width="17" height="45" fill="#111E30" rx="1"/>
+            <rect x="95"  y="63"  width="28" height="30" fill="#111E30" rx="1"/>
+            <rect x="127" y="63"  width="19" height="30" fill="#111E30" rx="1"/>
+            <rect x="150" y="63"  width="17" height="30" fill="#111E30" rx="1"/>
+            <rect x="95"  y="98"  width="28" height="40" fill="#111E30" rx="1"/>
+            <rect x="127" y="98"  width="19" height="40" fill="#111E30" rx="1"/>
+            <!-- Route -->
+            <path d="M110,128 L110,98 Q110,85 122,85 Q134,85 134,72 Q134,56 148,50 L162,44"
+                  fill="none" stroke="#FF5A00" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="110" cy="128" r="5.5" fill="#22C55E"/>
+            <circle cx="110" cy="128" r="3"   fill="white"/>
+            <path d="M162,39 C158,39 154,43 154,47 C154,52 162,58 162,58 C162,58 170,52 170,47 C170,43 166,39 162,39 Z" fill="#FF5A00"/>
+            <circle cx="162" cy="47" r="3" fill="white"/>
+            <!-- Status bar overlay -->
+            <rect x="94" y="12" width="74" height="22" fill="#0C1421" rx="8" opacity=".9"/>
+            <circle cx="102" cy="23" r="4.5" fill="#22C55E" opacity=".9"/>
+            <text x="110" y="20" font-family="Arial" font-size="5.5" fill="#7AACCC" font-weight="600">Suivi GPS actif</text>
+            <text x="110" y="29" font-family="Arial" font-size="4.5" fill="#4A6A88">En cours · 12 min</text>
+            <!-- ETA -->
+            <rect x="95" y="102" width="48" height="13" fill="#1A2840" rx="2.5" opacity=".9"/>
+            <text x="99" y="111" font-family="Arial" font-size="5.5" fill="#FF5A00" font-weight="700">ETA 12 min</text>
+            <!-- Home bar -->
+            <rect x="112" y="135" width="38" height="4" rx="2" fill="#222232"/>
+          </svg>
+        </div>
+        <div class="svc-body">
+          <svg class="svc-ico" viewBox="0 0 32 32" fill="none" stroke="#FF5A00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16,3 C9,3 3,9 3,16 C3,24 16,29 16,29 C16,29 29,24 29,16 C29,9 23,3 16,3Z"/><circle cx="16" cy="16" r="5"/>
+          </svg>
+          <div class="svc-title">Suivi GPS</div>
+          <div class="svc-desc">Visibilité en temps réel sur chaque tournée et chaque livreur.</div>
+        </div>
+      </div>
+
+      <!-- ── Card 5: Reporting ── -->
+      <div class="svc-card">
+        <div class="svc-photo">
+          <svg viewBox="0 0 260 168" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="deskBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#DCDEE8"/><stop offset="100%" stop-color="#C8CAD8"/></linearGradient>
+            </defs>
+            <rect width="260" height="168" fill="url(#deskBg)"/>
+            <!-- Desk surface -->
+            <rect x="0" y="126" width="260" height="42" fill="#B8BACA"/>
+            <line x1="0" y1="126" x2="260" y2="126" stroke="#A8AAB8" stroke-width="2"/>
+            <!-- Laptop base -->
+            <rect x="28" y="116" width="204" height="14" fill="#C0C0CA" rx="3"/>
+            <rect x="95" y="119" width="70" height="8" fill="#B0B0BA" rx="2"/>
+            <rect x="30" y="112" width="200" height="6" fill="#ACACB8" rx="1.5"/>
+            <!-- Screen frame -->
+            <rect x="40" y="20" width="180" height="96" fill="#1E1E28" rx="6"/>
+            <!-- Screen -->
+            <rect x="44" y="24" width="172" height="88" fill="#F8F9FC" rx="4"/>
+            <!-- Top bar -->
+            <rect x="44" y="24" width="172" height="16" fill="#F0F2F8" rx="4"/>
+            <circle cx="53" cy="32" r="4" fill="#FF5A00" opacity=".8"/>
+            <rect x="63" y="29" width="40" height="5" fill="#CCD0E0" rx="2"/>
+            <rect x="168" y="29" width="30" height="5" fill="#FF5A00" rx="2" opacity=".6"/>
+            <!-- KPI chips -->
+            <rect x="46"  y="44" width="36" height="18" fill="#FFF0E8" rx="3"/>
+            <text x="49"  y="53" font-family="Arial" font-size="7" fill="#FF5A00" font-weight="800">+2 000</text>
+            <text x="49"  y="60" font-family="Arial" font-size="4" fill="#8A8AA8">Colis/jour</text>
+            <rect x="86"  y="44" width="32" height="18" fill="#FFF0E8" rx="3"/>
+            <text x="89"  y="53" font-family="Arial" font-size="8" fill="#FF5A00" font-weight="800">98%</text>
+            <text x="89"  y="60" font-family="Arial" font-size="4" fill="#8A8AA8">En délai</text>
+            <rect x="122" y="44" width="32" height="18" fill="#EEF4FF" rx="3"/>
+            <text x="125" y="53" font-family="Arial" font-size="7" fill="#3080C0" font-weight="700">+50</text>
+            <text x="125" y="60" font-family="Arial" font-size="4" fill="#8A8AA8">Livreurs</text>
+            <rect x="158" y="44" width="50" height="18" fill="#F0FFF4" rx="3"/>
+            <text x="161" y="53" font-family="Arial" font-size="5.5" fill="#22A050" font-weight="700">GPS Live</text>
+            <text x="161" y="60" font-family="Arial" font-size="4" fill="#8A8AA8">Actif</text>
+            <!-- Bar chart -->
+            <rect x="46" y="66" width="88" height="42" fill="#F4F6FC" rx="3"/>
+            <rect x="52"  y="80" width="8" height="24" fill="#FF5A00" opacity=".7"  rx="1"/>
+            <rect x="64"  y="74" width="8" height="30" fill="#FF5A00" opacity=".85" rx="1"/>
+            <rect x="76"  y="78" width="8" height="26" fill="#FF5A00" opacity=".7"  rx="1"/>
+            <rect x="88"  y="70" width="8" height="34" fill="#FF5A00" opacity=".92" rx="1"/>
+            <rect x="100" y="76" width="8" height="28" fill="#FF5A00" opacity=".75" rx="1"/>
+            <rect x="112" y="72" width="8" height="32" fill="#FF5A00" opacity=".8"  rx="1"/>
+            <line x1="46" y1="108" x2="134" y2="108" stroke="#D8DAE8" stroke-width="1"/>
+            <!-- Donut chart -->
+            <circle cx="172" cy="87" r="20" fill="#F4F6FC" stroke="#E0E2EC" stroke-width="1.5"/>
+            <circle cx="172" cy="87" r="20" fill="none" stroke="#FF5A00"  stroke-width="8" stroke-dasharray="75,53" stroke-dashoffset="-6"/>
+            <circle cx="172" cy="87" r="20" fill="none" stroke="#C8CCE0" stroke-width="8" stroke-dasharray="32,96"/>
+            <circle cx="172" cy="87" r="11" fill="#F8F9FC"/>
+            <text x="168" y="90" font-family="Arial" font-size="6.5" fill="#FF5A00" font-weight="800">75%</text>
+            <!-- Sparkline -->
+            <line x1="46" y1="112" x2="208" y2="112" stroke="#E0E2EC" stroke-width="1"/>
+            <polyline points="46,108 66,102 86,106 106,98 126,103 146,96 166,100 186,93 206,96 210,95"
+                      fill="none" stroke="#FF5A00" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="210" cy="95" r="3" fill="#FF5A00"/>
+          </svg>
+        </div>
+        <div class="svc-body">
+          <svg class="svc-ico" viewBox="0 0 32 32" fill="none" stroke="#FF5A00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7,2 L25,2 Q30,2 30,7 L30,25 Q30,30 25,30 L7,30 Q2,30 2,25 L2,7 Q2,2 7,2Z"/>
+            <line x1="9" y1="12" x2="23" y2="12"/><line x1="9" y1="17" x2="23" y2="17"/><line x1="9" y1="22" x2="17" y2="22"/>
+            <polyline points="18,24 23,21 18,18"/>
+          </svg>
+          <div class="svc-title">Reporting</div>
+          <div class="svc-desc">Tableaux de bord, preuves de livraison, exports Excel.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════════════════════ -->
+<section id="comment" class="how-section">
+  <div class="container">
+    <div class="section-head">
+      <h2>Comment ça <span class="or">marche</span></h2>
+      <div class="head-accent"></div>
+    </div>
+
+    <div class="how-diagram">
+
+      <!-- Dotted curve entering from left -->
+      <svg class="how-dots-l" width="92" height="80" viewBox="0 0 92 80">
+        <path d="M0,40 Q46,68 88,52" fill="none" stroke="#FF5A00" stroke-width="2.5" stroke-dasharray="6,5" stroke-linecap="round"/>
+      </svg>
+
+      <!-- Step 1 -->
+      <div class="how-step">
+        <div class="how-circle">
+          <div class="how-num">1</div>
+          <svg width="50" height="50" viewBox="0 0 50 50" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="14" width="38" height="30" rx="3"/>
+            <path d="M6,24 L44,24"/>
+            <rect x="15" y="8" width="7" height="12" rx="1.5" fill="#FF5A00" stroke="none"/>
+            <rect x="28" y="8" width="7" height="12" rx="1.5" fill="#FF5A00" stroke="none"/>
+          </svg>
+        </div>
+        <div class="how-label">Réception</div>
+      </div>
+
+      <div class="how-arrow">→</div>
+
+      <!-- Step 2 -->
+      <div class="how-step">
+        <div class="how-circle">
+          <div class="how-num">2</div>
+          <svg width="50" height="50" viewBox="0 0 50 50" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="25" cy="25" r="5"/>
+            <circle cx="8"  cy="11" r="4.5"/>
+            <circle cx="42" cy="11" r="4.5"/>
+            <circle cx="8"  cy="39" r="4.5"/>
+            <circle cx="42" cy="39" r="4.5"/>
+            <line x1="12" y1="14" x2="21" y2="21"/>
+            <line x1="38" y1="14" x2="29" y2="21"/>
+            <line x1="12" y1="36" x2="21" y2="29"/>
+            <line x1="38" y1="36" x2="29" y2="29"/>
+          </svg>
+        </div>
+        <div class="how-label">Tri &amp; affectation</div>
+      </div>
+
+      <div class="how-arrow">→</div>
+
+      <!-- Step 3 -->
+      <div class="how-step">
+        <div class="how-circle">
+          <div class="how-num">3</div>
+          <svg width="50" height="50" viewBox="0 0 50 50" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="18" width="30" height="22" rx="2.5"/>
+            <path d="M32,24 L48,24 L48,40 L32,40"/>
+            <circle cx="10" cy="43" r="5"/>
+            <circle cx="38" cy="43" r="5"/>
+            <line x1="15" y1="43" x2="33" y2="43"/>
+            <path d="M16,18 C16,18 13,9 22,7 C31,5 32,16 32,18" fill="none" stroke="#FF5A00" stroke-width="1.8"/>
+            <circle cx="22" cy="7" r="3.5" fill="#FF5A00" stroke="none"/>
+          </svg>
+        </div>
+        <div class="how-label">Livraison<br>GPS-tracée</div>
+      </div>
+
+      <div class="how-arrow">→</div>
+
+      <!-- Step 4 -->
+      <div class="how-step">
+        <div class="how-circle">
+          <div class="how-num">4</div>
+          <svg width="50" height="50" viewBox="0 0 50 50" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="25" cy="25" r="19"/>
+            <polyline points="15,25 22,32 35,18"/>
+          </svg>
+        </div>
+        <div class="how-label">Confirmation</div>
+      </div>
+
+      <!-- Dotted curve exiting to right -->
+      <svg class="how-dots-r" width="92" height="80" viewBox="0 0 92 80">
+        <path d="M4,52 Q46,68 92,40" fill="none" stroke="#FF5A00" stroke-width="2.5" stroke-dasharray="6,5" stroke-linecap="round"/>
+      </svg>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ZONES COUVERTES
+═══════════════════════════════════════════════════════════ -->
+<section id="zones" class="zones-section">
+  <div class="container">
+    <div class="section-tag">Zones couvertes</div>
+    <h2 class="section-title">France, Benelux<br>&amp; toute l'Europe</h2>
+    <p class="section-sub">Nos tournées couvrent l'ensemble du territoire français et s'étendent à toute l'Europe, avec une expertise particulière sur la Belgique, les Pays-Bas et le Luxembourg.</p>
+
+    <div class="zones-layout">
+
+      <!-- MAP SVG -->
+      <div class="map-wrap">
+        <svg viewBox="0 0 500 460" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#F0F4F8">
+
+          <!-- Ocean / background -->
+          <rect width="500" height="460" fill="#E8F2F9"/>
+
+          <!-- ── SIMPLIFIED EUROPE COUNTRY SHAPES ─── -->
+          <!-- All Europe countries in pale orange (covered) -->
+
+          <!-- Portugal -->
+          <path d="M 72,230 L 80,225 L 82,240 L 85,255 L 80,270 L 74,265 L 70,250 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <!-- Spain -->
+          <path d="M 82,215 L 115,205 L 140,208 L 148,220 L 145,240 L 130,248 L 115,252 L 95,248 L 80,240 L 80,225 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <!-- Andorra tiny -->
+          <circle cx="142" cy="220" r="3" fill="#FFCFA8"/>
+
+          <!-- France — HIGHLIGHTED orange -->
+          <path d="M 148,180 L 168,168 L 195,165 L 215,172 L 218,185 L 210,200 L 198,210 L 185,215 L 168,218 L 155,210 L 145,200 L 148,190 Z"
+                fill="#FF9A60" stroke="#fff" stroke-width="1.5"/>
+          <!-- France label -->
+          <text x="183" y="195" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">France</text>
+          <!-- Paris hub dot -->
+          <circle cx="188" cy="188" r="5" fill="#FF5A00" stroke="white" stroke-width="1.5"/>
+          <circle cx="188" cy="188" r="9" fill="#FF5A00" opacity=".25"/>
+
+          <!-- Corsica -->
+          <ellipse cx="210" cy="230" rx="6" ry="9" fill="#FF9A60" stroke="#fff" stroke-width="1"/>
+
+          <!-- Belgium — HIGHLIGHTED (Benelux) -->
+          <path d="M 195,165 L 215,158 L 228,162 L 230,172 L 218,178 L 215,172 Z"
+                fill="#FF7A40" stroke="#fff" stroke-width="1.5"/>
+          <text x="213" y="169" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">Belgique</text>
+          <!-- Brussels hub -->
+          <circle cx="215" cy="167" r="4" fill="#FF5A00" stroke="white" stroke-width="1.5"/>
+          <circle cx="215" cy="167" r="8" fill="#FF5A00" opacity=".25"/>
+
+          <!-- Netherlands — HIGHLIGHTED (Benelux) -->
+          <path d="M 215,145 L 238,138 L 248,145 L 245,155 L 230,158 L 215,158 Z"
+                fill="#FF7A40" stroke="#fff" stroke-width="1.5"/>
+          <text x="232" y="150" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">Pays-Bas</text>
+          <!-- Amsterdam hub -->
+          <circle cx="235" cy="146" r="4" fill="#FF5A00" stroke="white" stroke-width="1.5"/>
+
+          <!-- Luxembourg — HIGHLIGHTED (Benelux) -->
+          <ellipse cx="225" cy="174" rx="7" ry="6" fill="#FF7A40" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="225" cy="174" r="3" fill="#FF5A00" stroke="white" stroke-width="1"/>
+
+          <!-- Germany -->
+          <path d="M 230,135 L 265,128 L 278,140 L 275,165 L 258,175 L 240,172 L 230,158 L 228,145 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <text x="254" y="155" font-family="Arial,sans-serif" font-size="8" fill="#CC5500" text-anchor="middle">Allemagne</text>
+
+          <!-- Switzerland -->
+          <path d="M 218,185 L 238,182 L 245,192 L 235,200 L 218,198 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Austria -->
+          <path d="M 245,180 L 278,175 L 290,185 L 280,195 L 255,195 L 245,190 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Italy -->
+          <path d="M 218,198 L 240,200 L 255,195 L 268,205 L 270,225 L 258,248 L 248,268 L 238,282 L 230,275 L 232,258 L 240,242 L 235,225 L 220,215 L 215,205 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <!-- Sardinia -->
+          <ellipse cx="220" cy="260" rx="7" ry="11" fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <!-- Sicily -->
+          <ellipse cx="250" cy="288" rx="10" ry="7" fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- United Kingdom -->
+          <path d="M 152,118 L 172,112 L 185,120 L 180,140 L 168,148 L 155,145 L 148,132 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <text x="167" y="133" font-family="Arial,sans-serif" font-size="8" fill="#CC5500" text-anchor="middle">UK</text>
+          <!-- Ireland -->
+          <path d="M 128,120 L 142,115 L 148,125 L 142,135 L 130,132 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Denmark -->
+          <path d="M 230,108 L 245,102 L 252,115 L 240,120 L 228,118 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Norway -->
+          <path d="M 220,68 L 255,55 L 280,62 L 278,88 L 258,100 L 238,105 L 220,95 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <text x="250" y="83" font-family="Arial,sans-serif" font-size="8" fill="#CC5500" text-anchor="middle">Norvège</text>
+
+          <!-- Sweden -->
+          <path d="M 255,55 L 290,45 L 305,60 L 300,90 L 285,108 L 265,112 L 252,100 L 258,80 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <text x="282" y="80" font-family="Arial,sans-serif" font-size="8" fill="#CC5500" text-anchor="middle">Suède</text>
+
+          <!-- Finland -->
+          <path d="M 295,45 L 318,38 L 335,52 L 330,80 L 310,92 L 295,85 L 298,65 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Poland -->
+          <path d="M 278,128 L 315,122 L 325,138 L 315,155 L 290,158 L 275,150 L 275,138 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <text x="300" y="142" font-family="Arial,sans-serif" font-size="8" fill="#CC5500" text-anchor="middle">Pologne</text>
+
+          <!-- Czech Republic -->
+          <path d="M 275,155 L 300,152 L 308,162 L 295,170 L 275,168 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Slovakia -->
+          <path d="M 300,162 L 320,158 L 330,165 L 318,172 L 302,172 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Hungary -->
+          <path d="M 290,172 L 318,170 L 330,180 L 318,192 L 295,190 L 285,182 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Romania -->
+          <path d="M 320,160 L 355,155 L 368,170 L 360,195 L 338,200 L 318,192 L 318,178 L 330,172 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Greece -->
+          <path d="M 295,235 L 318,228 L 325,242 L 315,258 L 302,262 L 295,252 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+          <!-- Crete -->
+          <ellipse cx="320" cy="278" rx="14" ry="5" fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Croatia / Slovenia / Serbia area -->
+          <path d="M 258,192 L 292,188 L 298,205 L 285,218 L 265,215 L 255,205 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Bulgaria -->
+          <path d="M 325,200 L 358,197 L 362,215 L 342,222 L 322,218 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Estonia / Latvia / Lithuania -->
+          <path d="M 295,90 L 318,85 L 322,102 L 305,108 L 292,105 Z"
+                fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- Malta -->
+          <circle cx="248" cy="295" r="4" fill="#FFCFA8" stroke="#fff" stroke-width="1"/>
+
+          <!-- ── HUBS / CITIES ─── -->
+          <!-- Lyon -->
+          <circle cx="200" cy="205" r="3.5" fill="#FF5A00" stroke="white" stroke-width="1.2"/>
+          <!-- Marseille -->
+          <circle cx="202" cy="220" r="3" fill="#FF5A00" stroke="white" stroke-width="1.2"/>
+          <!-- Antwerp -->
+          <circle cx="210" cy="162" r="3.5" fill="#FF5A00" stroke="white" stroke-width="1.2"/>
+          <!-- Amsterdam -->
+          <circle cx="220" cy="148" r="3.5" fill="#FF5A00" stroke="white" stroke-width="1.2"/>
+          <!-- Rotterdam -->
+          <circle cx="215" cy="155" r="3" fill="#FF5A00" stroke="white" stroke-width="1.2"/>
+          <!-- Frankfurt -->
+          <circle cx="248" cy="155" r="3" fill="#FF5A00" stroke="white" stroke-width="1.2"/>
+
+          <!-- ── BENELUX LABEL ─── -->
+          <text x="218" y="140" font-family="Arial,sans-serif" font-size="7.5" font-weight="700" fill="#FF5A00" text-anchor="middle">BENELUX</text>
+          <line x1="218" y1="141" x2="218" y2="145" stroke="#FF5A00" stroke-width="1"/>
+
+          <!-- ── LEGEND ─── -->
+          <rect x="10" y="380" width="14" height="14" rx="3" fill="#FF7A40"/>
+          <text x="28" y="391" font-family="Arial,sans-serif" font-size="9" fill="#52526A">Zone prioritaire (France + Benelux)</text>
+          <rect x="10" y="400" width="14" height="14" rx="3" fill="#FFCFA8"/>
+          <text x="28" y="411" font-family="Arial,sans-serif" font-size="9" fill="#52526A">Europe entière couverte</text>
+          <circle cx="17" cy="425" r="5" fill="#FF5A00" stroke="white" stroke-width="1.5"/>
+          <text x="28" y="429" font-family="Arial,sans-serif" font-size="9" fill="#52526A">Hub / Point de collecte</text>
+        </svg>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="zones-right">
+        <!-- Focus Benelux -->
+        <div class="zones-focus">
+          <div class="zones-focus-title">⭐ Zone prioritaire</div>
+          <div class="zones-focus-name">France &amp; Benelux</div>
+          <p class="zones-focus-desc">Notre cœur de métier. Des tournées quotidiennes reliant la France à la Belgique, aux Pays-Bas et au Luxembourg avec une maîtrise totale du dernier kilomètre.</p>
+          <div class="focus-flags">
+            <span class="flag-chip">🇫🇷 France</span>
+            <span class="flag-chip">🇧🇪 Belgique</span>
+            <span class="flag-chip">🇳🇱 Pays-Bas</span>
+            <span class="flag-chip">🇱🇺 Luxembourg</span>
+          </div>
+        </div>
+
+        <!-- Country list -->
+        <div class="country-list">
+          <div class="country-row highlight">
+            <div class="country-name-wrap">
+              <span class="country-flag">🇧🇪</span>
+              <div>
+                <div class="country-name">Belgique</div>
+                <div class="country-detail">Bruxelles · Anvers · Liège · Gand</div>
+              </div>
+            </div>
+            <span class="country-badge">Prioritaire</span>
+          </div>
+          <div class="country-row highlight">
+            <div class="country-name-wrap">
+              <span class="country-flag">🇳🇱</span>
+              <div>
+                <div class="country-name">Pays-Bas</div>
+                <div class="country-detail">Amsterdam · Rotterdam · La Haye</div>
+              </div>
+            </div>
+            <span class="country-badge">Prioritaire</span>
+          </div>
+          <div class="country-row highlight">
+            <div class="country-name-wrap">
+              <span class="country-flag">🇱🇺</span>
+              <div>
+                <div class="country-name">Luxembourg</div>
+                <div class="country-detail">Livraisons J+1 depuis Paris</div>
+              </div>
+            </div>
+            <span class="country-badge">Prioritaire</span>
+          </div>
+          <div class="country-row">
+            <div class="country-name-wrap">
+              <span class="country-flag">🇩🇪</span>
+              <div>
+                <div class="country-name">Allemagne</div>
+                <div class="country-detail">Frankfurt · Berlin · Cologne</div>
+              </div>
+            </div>
+            <span class="country-badge eu">Europe</span>
+          </div>
+          <div class="country-row">
+            <div class="country-name-wrap">
+              <span class="country-flag">🇪🇸</span>
+              <div>
+                <div class="country-name">Espagne</div>
+                <div class="country-detail">Madrid · Barcelone</div>
+              </div>
+            </div>
+            <span class="country-badge eu">Europe</span>
+          </div>
+          <div class="country-row">
+            <div class="country-name-wrap">
+              <span class="country-flag">🌍</span>
+              <div>
+                <div class="country-name">30+ pays</div>
+                <div class="country-detail">Toute l'Union Européenne + UK, Suisse, Norvège</div>
+              </div>
+            </div>
+            <span class="country-badge eu">Europe</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     POURQUOI MD
+═══════════════════════════════════════════════════════════ -->
+<section id="pourquoi" class="why-section">
+  <div class="container">
+    <div class="section-tag">Pourquoi MD ?</div>
+    <h2 class="section-title">Ce qui nous distingue</h2>
+    <p class="section-sub">Nous ne sommes pas un transporteur généraliste. Chaque décision est prise pour maximiser votre satisfaction.</p>
+    <div class="why-grid">
+
+      <div class="why-card">
+        <div class="why-ico-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/>
+          </svg>
+        </div>
+        <div class="why-title">Suivi GPS en temps réel</div>
+        <p class="why-desc">Chaque chauffeur est géolocalisé en continu. Vous visualisez chaque tournée en direct sur votre portail client.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-ico-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="why-title">Alertes retard automatiques</div>
+        <p class="why-desc">Tout écart de planning déclenche une alerte immédiate. Vous êtes toujours informé avant votre client final.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-ico-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div class="why-title">Équipe 7j/7</div>
+        <p class="why-desc">Notre service client est disponible tous les jours de la semaine, week-end inclus. Réponse garantie sous 2h.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-ico-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+          </svg>
+        </div>
+        <div class="why-title">Expertise Benelux</div>
+        <p class="why-desc">Connaissance approfondie du territoire belge, néerlandais et luxembourgeois. Chauffeurs multilingues FR/NL/EN.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-ico-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <div class="why-title">Tarifs transparents</div>
+        <p class="why-desc">Devis clair sans frais cachés. Facturation au colis ou au volume selon votre modèle opérationnel.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-ico-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            <polyline points="16 13 12 17 8 13"/><line x1="12" y1="12" x2="12" y2="17"/>
+          </svg>
+        </div>
+        <div class="why-title">Rapports personnalisés</div>
+        <p class="why-desc">Exports Excel, PDF, tableaux de bord sur mesure. Toutes vos données logistiques centralisées et exploitables.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     CONTACT
+═══════════════════════════════════════════════════════════ -->
+<section id="contact" class="contact-section">
+  <div class="container">
+    <div class="section-tag">Contact</div>
+    <h2 class="section-title">Demandez votre devis<br>en moins de 5 minutes</h2>
+    <p class="section-sub">Notre équipe vous répond sous 24h avec une proposition adaptée à vos volumes et destinations.</p>
+
+    <div class="contact-layout">
+      <!-- Info -->
+      <div class="contact-info">
+        <div class="contact-block">
+          <div class="contact-ico-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67 2 2 0 012-2.18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 7a16 16 0 006.29 6.29l1.42-1.42a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="contact-label">Téléphone</div>
+            <div class="contact-value"><a href="tel:+33XXXXXXXXX">+33 X XX XX XX XX</a></div>
+          </div>
+        </div>
+        <div class="contact-block">
+          <div class="contact-ico-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="contact-label">Email</div>
+            <div class="contact-value"><a href="mailto:contact@md-logistique.fr">contact@md-logistique.fr</a></div>
+          </div>
+        </div>
+        <div class="contact-block">
+          <div class="contact-ico-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <div class="contact-label">Horaires</div>
+            <div class="contact-value">Lundi – Dimanche, 7h – 20h</div>
+          </div>
+        </div>
+        <div class="contact-block">
+          <div class="contact-ico-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="contact-label">Siège social</div>
+            <div class="contact-value">Paris, Île-de-France</div>
+          </div>
+        </div>
+
+        <!-- Quick facts -->
+        <div style="margin-top:20px;padding:22px 24px;background:var(--surf);border:1px solid var(--bdr);border-radius:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--txt)">Réponse garantie sous :</div>
+          <div style="display:flex;gap:16px;">
+            <div style="text-align:center;flex:1;background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:14px 8px;">
+              <div style="font-size:22px;font-weight:900;color:var(--or)">2h</div>
+              <div style="font-size:11.5px;color:var(--muted)">Jours ouvrés</div>
+            </div>
+            <div style="text-align:center;flex:1;background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:14px 8px;">
+              <div style="font-size:22px;font-weight:900;color:var(--or)">24h</div>
+              <div style="font-size:11.5px;color:var(--muted)">Week-end</div>
+            </div>
+            <div style="text-align:center;flex:1;background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:14px 8px;">
+              <div style="font-size:22px;font-weight:900;color:var(--or)">€0</div>
+              <div style="font-size:11.5px;color:var(--muted)">Devis gratuit</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form class="form" onsubmit="event.preventDefault(); this.innerHTML='<div style=\'text-align:center;padding:40px;\'><div style=\'font-size:48px\'>✅</div><div style=\'font-size:18px;font-weight:700;margin-top:12px\'>Demande envoyée !</div><p style=\'color:var(--mid);margin-top:8px\'>Notre équipe vous contacte sous 2h.</p></div>'">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="nom">Nom complet *</label>
+            <input class="form-input" id="nom" type="text" placeholder="Jean Dupont" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="societe">Société</label>
+            <input class="form-input" id="societe" type="text" placeholder="Mon Entreprise SAS"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="email">Email *</label>
+            <input class="form-input" id="email" type="email" placeholder="jean@exemple.fr" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tel">Téléphone</label>
+            <input class="form-input" id="tel" type="tel" placeholder="+33 6 XX XX XX XX"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="zone">Zone de livraison *</label>
+          <select class="form-select" id="zone" required>
+            <option value="">Sélectionnez une zone...</option>
+            <option>France (Île-de-France)</option>
+            <option>France (régions)</option>
+            <option>Belgique</option>
+            <option>Pays-Bas</option>
+            <option>Luxembourg</option>
+            <option>Benelux complet</option>
+            <option>Allemagne</option>
+            <option>Espagne / Portugal</option>
+            <option>Europe du Nord</option>
+            <option>Europe entière</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="volume">Volume estimé *</label>
+          <select class="form-select" id="volume" required>
+            <option value="">Sélectionnez un volume...</option>
+            <option>Moins de 50 colis/semaine</option>
+            <option>50 – 200 colis/semaine</option>
+            <option>200 – 500 colis/semaine</option>
+            <option>500 – 2 000 colis/semaine</option>
+            <option>Plus de 2 000 colis/semaine</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="message">Votre besoin</label>
+          <textarea class="form-textarea" id="message" placeholder="Décrivez votre besoin : type de marchandise, fréquence, délais souhaités..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Envoyer ma demande de devis →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-brand">
+    <div class="logo-md">MD</div>
+    <div class="logo-sub">logistique</div>
+    <p>Votre partenaire logistique en France, au Benelux et partout en Europe.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Services</h4>
+    <ul>
+      <li><a href="#services">Livraison B2C</a></li>
+      <li><a href="#services">Express & Same-Day</a></li>
+      <li><a href="#services">Logistique B2B</a></li>
+      <li><a href="#services">Suivi GPS</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Zones</h4>
+    <ul>
+      <li><a href="#zones">France</a></li>
+      <li><a href="#zones">Belgique</a></li>
+      <li><a href="#zones">Pays-Bas</a></li>
+      <li><a href="#zones">Luxembourg</a></li>
+      <li><a href="#zones">Europe entière</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Contact</h4>
+    <ul>
+      <li><a href="mailto:contact@md-logistique.fr">contact@md-logistique.fr</a></li>
+      <li><a href="#contact">Demander un devis</a></li>
+      <li><a href="#comment">Comment ça marche</a></li>
+      <li><a href="#pourquoi">Pourquoi MD ?</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span>© 2026 MD Logistique. Tous droits réservés.</span>
+  <span>Paris, France &nbsp;·&nbsp; Bruxelles, Belgique &nbsp;·&nbsp; Amsterdam, Pays-Bas</span>
+</div>
+
+</body>
+</html>

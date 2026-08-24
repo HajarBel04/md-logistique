@@ -1,0 +1,4 @@
+/* ── Services section needs top padding to clear the floating stats card */
+.home > *:nth-child(3) {
+  padding-top: calc(56px + 50px); /* normal section padding + extra for stats card bottom */
+}

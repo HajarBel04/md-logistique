@@ -1,0 +1,154 @@
+/* ════════════════════════════════════════════════════════════
+   PRE-FOOTER CTA
+════════════════════════════════════════════════════════════ */
+
+/* Outer wrapper — white bg, tighter spacing */
+.pf-outer {
+  background: #ffffff;
+  padding: 36px 40px 0;
+}
+
+/* Floating white card */
+.pf {
+  width: min(1420px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.4fr .65fr .65fr;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #eceef1;
+  border-radius: 18px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .07);
+  padding: 20px 28px;
+
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .6s cubic-bezier(.22,.61,.36,1),
+              transform .6s cubic-bezier(.22,.61,.36,1);
+}
+
+.pf--vis { opacity: 1; transform: translateY(0); }
+
+/* ── Left block ──────────────────────────────────────────── */
+.pf-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-right: 24px;
+}
+
+.pf-icon-wrap {
+  flex-shrink: 0;
+  display: flex;
+}
+
+/* Scale the headset icon down via CSS */
+.pf-icon-wrap svg {
+  width: 46px;
+  height: 46px;
+}
+
+.pf-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pf-title {
+  font-size: clamp(18px, 1.8vw, 24px);
+  font-weight: 700;
+  letter-spacing: -.025em;
+  color: #111318;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.pf-orange { color: #ff5a00; }
+
+.pf-desc {
+  font-size: 14px;
+  color: #62676d;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 420px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.pf-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 50px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform .22s, box-shadow .22s;
+}
+
+/* Col-2 button: visual left separator */
+.pf-btn--outline {
+  background: #ffffff;
+  border: 1px solid #e5e7ea;
+  color: #111318;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
+  position: relative;
+  margin-left: 4px;
+  padding-left: 24px;
+}
+
+.pf-btn--outline::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 52px;
+  background: #e7e8ea;
+}
+
+.pf-btn--outline:hover {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .09);
+  transform: translateY(-2px);
+}
+
+.pf-btn--phone {
+  background: linear-gradient(105deg, #ff5a00, #ff6a10);
+  border: 0;
+  color: #fff;
+  font-size: 15px;
+  box-shadow: 0 6px 18px rgba(255, 90, 0, .22);
+}
+
+.pf-btn--phone:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(255, 90, 0, .28);
+}
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1100px) {
+  .pf {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    text-align: center;
+  }
+  .pf-left { justify-content: center; }
+  .pf-desc { max-width: 100%; }
+  .pf-btn--outline::before { display: none; }
+  .pf-btn { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .pf-outer { padding: 40px 20px 0; }
+  .pf { padding: 24px 20px; }
+  .pf-left { flex-direction: column; gap: 12px; }
+}

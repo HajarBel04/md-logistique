@@ -1,0 +1,326 @@
+/* ════════════════════════════════════════════════════════════════
+   WHY US — "Pourquoi choisir MD Logistique ?"
+════════════════════════════════════════════════════════════════ */
+
+.why-section {
+  width: 100%;
+  background: #fff;
+  padding: 38px 0 48px;
+}
+
+.why-container {
+  width: min(1200px, calc(100% - 64px));
+  margin: 0 auto;
+}
+
+/* ── Title ───────────────────────────────────────────────────── */
+.why-title-block {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.why-title {
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  color: #111;
+  margin: 0;
+}
+
+.why-title-brand {
+  color: #ff4b0a;
+}
+
+/* Short underline beneath the title */
+.why-title-rule {
+  display: block;
+  width: 28px;
+  height: 2px;
+  background: #ff4b0a;
+  border-radius: 1px;
+  margin: 10px auto 0;
+}
+
+/* ── Benefits row ────────────────────────────────────────────── */
+.why-benefits {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.why-benefit {
+  min-height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  padding: 0 22px;
+}
+
+/* Right-hand separator on every item except the last */
+.why-benefit--sep {
+  border-right: 1px solid #e9e9e9;
+}
+
+/* Icon — controlled entirely by the inline props; this class is a hook */
+.why-benefit-icon {
+  flex-shrink: 0;
+}
+
+.why-benefit-text {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #151515;
+  white-space: nowrap;          /* keep each item compact on desktop */
+}
+
+/* ── B2B Banner ──────────────────────────────────────────────── */
+.why-banner {
+  position: relative;
+  width: 100%;
+  min-height: 198px;
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, #f9f9f9 0%, #ffffff 48%, #f8f8f8 100%);
+  display: grid;
+  grid-template-columns: 36% 35% 29%;
+  align-items: center;
+}
+
+/* Left ─────────────────────────────────────────────────────── */
+.why-banner-left {
+  padding: 36px 12px 36px 46px;
+  z-index: 2;
+  position: relative;
+}
+
+.why-banner-title {
+  font-size: 19px;
+  font-weight: 600;
+  color: #181818;
+  line-height: 1.25;
+  margin: 0 0 11px;
+}
+
+.why-banner-desc {
+  font-size: 13px;
+  line-height: 1.58;
+  color: #555;
+  margin: 0 0 20px;
+  max-width: 340px;
+}
+
+.why-banner-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1.5px solid #ff4b0a;
+  border-radius: 7px;
+  background: transparent;
+  color: #ff4b0a;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .2s, color .2s;
+}
+
+.why-banner-cta:hover {
+  background: #ff4b0a;
+  color: #fff;
+}
+
+/* Center photo ─────────────────────────────────────────────── */
+.why-banner-photo-wrap {
+  position: relative;
+  height: 100%;
+  min-height: 198px;
+}
+
+.why-banner-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+/* Fade masks — blend photo into background on both sides */
+.why-banner-fade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.why-banner-fade--l {
+  background: linear-gradient(
+    to right,
+    #f9f9f9 0%,
+    rgba(249, 249, 249, .6) 30%,
+    transparent 68%
+  );
+}
+
+.why-banner-fade--r {
+  background: linear-gradient(
+    to left,
+    #f8f8f8 0%,
+    rgba(248, 248, 248, .6) 30%,
+    transparent 68%
+  );
+}
+
+/* Right features ────────────────────────────────────────────── */
+.why-banner-right {
+  padding: 36px 40px 36px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  z-index: 2;
+  position: relative;
+}
+
+.why-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.why-feature-icon-wrap {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 75, 10, .05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.why-feature-text {
+  font-size: 12px;
+  line-height: 1.48;
+  color: #333;
+}
+
+.why-feature-text strong {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════════════ */
+
+/* Tablet — 3+2 benefits, banner adapts */
+@media (max-width: 1024px) {
+  .why-benefits {
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 8px;
+  }
+
+  /* Reset separators */
+  .why-benefit--sep { border-right: none; }
+
+  /* Re-apply separators for first 2 of each row */
+  .why-benefit:nth-child(1),
+  .why-benefit:nth-child(2),
+  .why-benefit:nth-child(4) {
+    border-right: 1px solid #e9e9e9;
+  }
+
+  .why-banner {
+    grid-template-columns: 42% 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .why-banner-photo-wrap {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 180px;
+  }
+
+  .why-banner-right {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    padding: 16px 28px 28px;
+    gap: 24px;
+  }
+
+  .why-feature { flex: 1; }
+}
+
+@media (max-width: 768px) {
+  .why-container { width: min(100%, calc(100% - 32px)); }
+
+  .why-benefits {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 6px;
+  }
+
+  .why-benefit {
+    justify-content: flex-start;
+    padding: 10px 16px;
+  }
+
+  /* Reset all separators on mobile */
+  .why-benefit--sep,
+  .why-benefit:nth-child(1),
+  .why-benefit:nth-child(2),
+  .why-benefit:nth-child(4) {
+    border-right: none;
+  }
+
+  /* Right separator for first column items only */
+  .why-benefit:nth-child(odd):not(:last-child) {
+    border-right: 1px solid #e9e9e9;
+  }
+
+  .why-benefit-text { white-space: normal; }
+
+  .why-banner {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .why-banner-photo-wrap {
+    grid-column: auto;
+    grid-row: auto;
+    height: 220px;
+    min-height: 220px;
+  }
+
+  .why-banner-photo-wrap .why-banner-fade--l,
+  .why-banner-photo-wrap .why-banner-fade--r {
+    display: none;
+  }
+
+  .why-banner-photo {
+    object-position: center 20%;
+  }
+
+  .why-banner-left  { padding: 28px 24px 16px; }
+  .why-banner-right {
+    grid-column: auto;
+    flex-direction: column;
+    padding: 12px 24px 28px;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .why-title      { font-size: 21px; }
+  .why-benefits   { grid-template-columns: 1fr; }
+  .why-benefit:nth-child(odd):not(:last-child) { border-right: none; }
+  .why-banner-title { font-size: 17px; }
+}
