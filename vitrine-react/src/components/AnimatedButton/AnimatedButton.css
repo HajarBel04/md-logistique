@@ -1,0 +1,83 @@
+/* ── Base ─────────────────────────────────────── */
+.anim-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 28px;
+  border-radius: 11px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .22s ease, box-shadow .22s ease, background .18s ease, color .18s ease;
+  white-space: nowrap;
+  will-change: transform;
+  opacity: 0;
+  animation: fadeUp .55s cubic-bezier(.22,.61,.36,1) forwards;
+  border: none;
+  letter-spacing: -.01em;
+}
+
+.anim-btn__icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Primary ──────────────────────────────────── */
+.anim-btn--primary {
+  background: var(--md-orange);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(255, 75, 10, .24);
+}
+
+.anim-btn--primary:hover {
+  background: var(--md-orange-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(255, 75, 10, .30);
+}
+
+/* ── Secondary ────────────────────────────────── */
+.anim-btn--secondary {
+  background: var(--white);
+  color: var(--text-primary);
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+}
+
+.anim-btn--secondary:hover {
+  border-color: var(--md-orange);
+  color: var(--md-orange);
+  transform: translateY(-2px);
+}
+
+/* ── Outline (header) ─────────────────────────── */
+.anim-btn--outline {
+  background: var(--white);
+  color: var(--text-primary);
+  border: 1px solid #e2e2e2;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  height: 44px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 10px;
+}
+
+.anim-btn--outline:hover {
+  border-color: var(--md-orange);
+  color: var(--md-orange);
+}
+
+/* ── Ghost (hero secondary) ───────────────────── */
+.anim-btn--ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+  padding: 0 6px;
+  height: 52px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.anim-btn--ghost:hover { color: var(--md-orange); }

@@ -1,0 +1,224 @@
+/* ════════════════════════════════════════════════════════════
+   HOW IT WORKS — "Comment ça marche"
+════════════════════════════════════════════════════════════ */
+
+/* ── Section ───────────────────────────────────────────────── */
+.how-section {
+  background: #ffffff;
+  padding: 62px 40px 72px;
+  overflow: hidden;
+}
+
+/* ── Heading ───────────────────────────────────────────────── */
+.how-title {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 600;
+  color: #111111;
+  letter-spacing: -.01em;
+  margin-bottom: 48px;
+}
+
+.how-accent {
+  color: #ff4b0a;
+  position: relative;
+  display: inline-block;
+}
+
+/* Thin orange underline below "marche" */
+.how-accent::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 2px;
+  background: #ff4b0a;
+  border-radius: 1px;
+}
+
+/* ── Grid row ──────────────────────────────────────────────── */
+/*
+  Layout: 1fr  44px  1fr  44px  1fr  44px  1fr
+  Step columns (1fr) flex-center the circle + label.
+  Arrow columns (44px) flex-center the SVG arrow.
+  DecorPaths is position:absolute → outside grid flow.
+*/
+.how-row {
+  position: relative;               /* anchor for DecorPaths */
+  display: grid;
+  grid-template-columns: 1fr 44px 1fr 44px 1fr 44px 1fr;
+  align-items: center;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ── Decorative dotted curves ──────────────────────────────── */
+.how-decor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+.how-decor-path {
+  /* Paths start invisible; animate on .how-decor--draw */
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+}
+
+.how-decor--draw .how-decor-path {
+  animation: drawProcessPath 1.2s ease 0.3s forwards;
+}
+
+/* ── Individual step column ────────────────────────────────── */
+.how-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 2;
+
+  /* Entrance animation */
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity  .50s cubic-bezier(.22,.61,.36,1),
+    transform .50s cubic-bezier(.22,.61,.36,1);
+  transition-delay: var(--step-delay, 420ms);
+}
+
+.how-step--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── White circle ──────────────────────────────────────────── */
+.how-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  transition:
+    box-shadow .28s ease,
+    transform  .28s cubic-bezier(.22,.61,.36,1);
+}
+
+.how-step:hover .how-circle {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px) scale(1.03);
+}
+
+/* ── Numbered badge ────────────────────────────────────────── */
+.how-badge {
+  position: absolute;
+  top: -7px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ff4b0a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 9px rgba(255, 75, 10, 0.38);
+  line-height: 1;
+  z-index: 3;
+
+  /* Start invisible; pop in after step reveals */
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.how-badge--pop {
+  animation: badgePop .40s cubic-bezier(.34,1.56,.64,1) var(--badge-delay, 520ms) forwards;
+}
+
+/* ── Label below circle ────────────────────────────────────── */
+.how-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+}
+
+.how-label-line {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #333333;
+  line-height: 1.45;
+  text-align: center;
+}
+
+/* ── Arrow column (44px) ───────────────────────────────────── */
+.how-arrow-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  /* Push up to align with circle centres, not label text */
+  padding-bottom: 36px;
+}
+
+.how-arrow-svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════════ */
+
+@media (max-width: 860px) {
+  .how-decor { display: none; }
+  .how-row {
+    /* Collapse to 2 per row: each pair side-by-side, wrap after */
+    grid-template-columns: 1fr 44px 1fr;
+    gap: 0 0;
+    max-width: 520px;
+    row-gap: 32px;
+  }
+  /* Hide arrows in the 3rd and 4th positions */
+  .how-row > .how-arrow-col:nth-of-type(2) {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .how-section { padding: 52px 20px 64px; }
+
+  /* Single column vertical timeline */
+  .how-row {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+    row-gap: 0;
+  }
+
+  .how-arrow-col {
+    justify-content: center;
+    padding: 4px 0;
+    padding-bottom: 4px;
+  }
+
+  /* Rotate arrow to point down */
+  .how-arrow-svg {
+    transform: rotate(90deg);
+  }
+}

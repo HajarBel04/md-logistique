@@ -113,3 +113,16 @@ html {
 * {
   min-width: 0;
 }
+
+/* Icon button (DocRow actions) */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+  flex-shrink: 0;
+}

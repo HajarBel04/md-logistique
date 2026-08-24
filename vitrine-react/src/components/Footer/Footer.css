@@ -1,0 +1,429 @@
+/* ════════════════════════════════════════════════════════════
+   SITE FOOTER — dark, charcoal-blue, MD Logistique
+════════════════════════════════════════════════════════════ */
+
+:root {
+  --md-orange:      #ff5a00;
+  --footer-bg:      #071018;
+  --footer-text:    #f4f5f6;
+  --footer-muted:   #aeb6be;
+  --footer-link:    #c1c7cd;
+  --footer-line:    rgba(255,255,255,.12);
+}
+
+/* ── Shell ─────────────────────────────────────────────────── */
+.site-footer {
+  position: relative;
+  background: var(--footer-bg);
+  color: var(--footer-text);
+  padding: 72px 0 30px;
+  overflow: hidden;
+}
+
+/* Subtle centre radial warm glow */
+.site-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 900px 500px at 50% 0%,
+      rgba(255,90,0,.045) 0%,
+      transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Background map decoration ────────────────────────────── */
+.f-bgmap {
+  position: absolute;
+  right: -80px;
+  top: 80px;
+  width: 500px;
+  height: 600px;
+  opacity: .12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Container ─────────────────────────────────────────────── */
+.f-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ── Main 5-column grid ────────────────────────────────────── */
+.f-grid {
+  display: grid;
+  grid-template-columns: 1.35fr .8fr .8fr .8fr 1.3fr;
+  gap: 60px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COLUMN ENTRANCE ANIMATIONS
+═══════════════════════════════════════════════════════════ */
+
+.f-grid > div {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity  .6s cubic-bezier(.22,.61,.36,1),
+    transform .6s cubic-bezier(.22,.61,.36,1);
+  transition-delay: var(--col-delay, 0ms);
+}
+
+.f--vis .f-grid > div {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COLUMN 1 — BRAND
+═══════════════════════════════════════════════════════════ */
+
+.f-logo {
+  width: 190px;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.f-tagline {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--footer-text);
+  line-height: 1.45;
+  margin: 0 0 14px;
+}
+
+.f-orange-rule {
+  display: block;
+  width: 36px;
+  height: 2.5px;
+  background: var(--md-orange);
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+
+.f-brand-desc {
+  font-size: 13.5px;
+  color: var(--footer-muted);
+  line-height: 1.65;
+  margin: 0 0 22px;
+}
+
+/* Benefits list */
+.f-benefits {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.f-benefit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--footer-muted);
+}
+
+.f-benefit-icon {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Social */
+.f-social-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.f-social-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--footer-text);
+}
+
+.f-social-links {
+  display: flex;
+  gap: 10px;
+}
+
+.f-social {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 50%;
+  color: #fff;
+  transition: background .22s, border-color .22s, transform .22s;
+  text-decoration: none;
+}
+
+.f-social:hover {
+  background: var(--md-orange);
+  border-color: var(--md-orange);
+  transform: translateY(-3px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COLUMNS 2-4 — NAV
+═══════════════════════════════════════════════════════════ */
+
+.f-navcol {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.f-group { /* each heading + links block */ }
+
+/* Heading with animated orange underline */
+.f-heading {
+  font-size: 13.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.f-heading::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 2px;
+  margin-top: 12px;
+  margin-bottom: 20px;
+  background: var(--md-orange);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .45s cubic-bezier(.22,.61,.36,1);
+}
+
+.f--vis .f-heading::after {
+  transform: scaleX(1);
+  transition-delay: calc(var(--col-delay, 0ms) + 100ms);
+}
+
+/* Links */
+.f-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.f-link {
+  display: block;
+  margin-bottom: 11px;
+  color: var(--footer-link);
+  font-size: 13.5px;
+  text-decoration: none;
+  transition: color .2s ease, transform .2s ease;
+}
+
+.f-link:hover {
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COLUMN 5 — CONTACT
+═══════════════════════════════════════════════════════════ */
+
+.f-contactcol { display: flex; flex-direction: column; }
+
+/* Contact info rows */
+.f-crows {
+  list-style: none;
+  margin: 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.f-crow {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.f-crow-icon {
+  display: flex;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.f-crow-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.f-crow-line {
+  display: block;
+  font-size: 13px;
+  color: var(--footer-link);
+  line-height: 1.5;
+}
+
+.f-crow-line:first-child {
+  font-weight: 600;
+  color: var(--footer-text);
+}
+
+/* ── Newsletter card ─────────────────────────────────────── */
+.nl-card {
+  margin-top: 28px;
+  padding: 22px 22px 20px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+}
+
+.nl-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 5px;
+}
+
+.nl-desc {
+  font-size: 12.5px;
+  color: var(--footer-muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.nl-form { display: block; }
+
+.nl-row {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  overflow: hidden;
+  padding-left: 14px;
+  transition: border-color .2s;
+}
+
+.nl-row:focus-within {
+  border-color: rgba(255, 90, 0, .7);
+}
+
+.nl-input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  color: var(--footer-text);
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  padding: 13px 8px 13px 0;
+}
+
+.nl-input::placeholder { color: #576470; }
+
+.nl-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  background: var(--md-orange);
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.nl-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 20px rgba(255, 90, 0, .28);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DIVIDER + LEGAL BAR
+═══════════════════════════════════════════════════════════ */
+
+.f-divider {
+  border: 0;
+  border-top: 1px solid var(--footer-line);
+  margin: 48px 0 28px;
+}
+
+.f-legal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.f-copyright {
+  font-size: 13px;
+  color: var(--footer-muted);
+  margin: 0;
+}
+
+.f-legal-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.f-legal-link {
+  font-size: 13px;
+  color: var(--footer-muted);
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.f-legal-link:hover { color: #fff; }
+
+.f-legal-sep {
+  color: rgba(255,255,255,.25);
+  font-size: 12px;
+  user-select: none;
+}
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1200px) {
+  .f-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+  .f-brand { grid-column: 1 / -1; }
+  .f-bgmap { opacity: .07; }
+}
+
+@media (max-width: 860px) {
+  .f-container { padding: 0 28px; }
+  .f-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 36px;
+  }
+  .f-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 560px) {
+  .site-footer { padding-top: 52px; }
+  .f-container { padding: 0 20px; }
+  .f-grid { grid-template-columns: 1fr; gap: 32px; }
+  .f-legal { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .f-bgmap { display: none; }
+}

@@ -26,33 +26,37 @@ OSP_CODE = 'MD3449'
 # Couleurs Excel (ARGB sans alpha)
 BG_VERT    = 'C6EFCE'
 BG_JAUNE   = 'FFEB9C'
+BG_ORANGE  = 'FCE4D6'  # Retour dépôt (fichier Retours chauffeur)
 BG_ROUGE   = 'FFC7CE'
 BG_BLEU    = 'BDD7EE'
 BG_GRIS    = 'D9D9D9'
 
 FG_VERT    = '006100'
 FG_JAUNE   = '9C6500'
+FG_ORANGE  = 'C55A11'  # Retour dépôt
 FG_ROUGE   = '9C0006'
 FG_BLEU    = '1F4E79'
 FG_GRIS    = '595959'
 
 STATUS_LABELS = {
-    'vert':  'No Inbound Scan',
-    'jaune': 'Retour dépôt',
-    'rouge': 'Driver Error',
-    'bleu':  'Fermeture',
-    'gris':  'Future delivery',
+    'vert':   'No Inbound Scan',
+    'jaune':  'Retour scanning J+1',
+    'orange': 'Retour dépôt',
+    'rouge':  'Driver Error',
+    'bleu':   'Fermeture',
+    'gris':   'Future delivery',
 }
 
 COLOR_MAP = {
-    'vert':  (BG_VERT,  FG_VERT),
-    'jaune': (BG_JAUNE, FG_JAUNE),
-    'rouge': (BG_ROUGE, FG_ROUGE),
-    'bleu':  (BG_BLEU,  FG_BLEU),
-    'gris':  (BG_GRIS,  FG_GRIS),
+    'vert':   (BG_VERT,   FG_VERT),
+    'jaune':  (BG_JAUNE,  FG_JAUNE),
+    'orange': (BG_ORANGE, FG_ORANGE),
+    'rouge':  (BG_ROUGE,  FG_ROUGE),
+    'bleu':   (BG_BLEU,   FG_BLEU),
+    'gris':   (BG_GRIS,   FG_GRIS),
 }
 
-STATUS_ORDER = {'rouge': 0, 'jaune': 1, 'bleu': 2, 'vert': 3, 'gris': 4}
+STATUS_ORDER = {'rouge': 0, 'orange': 1, 'jaune': 2, 'bleu': 3, 'vert': 4, 'gris': 5}
 
 
 # ─── Loaders ─────────────────────────────────────────────────────────────────
@@ -172,11 +176,12 @@ def _assign_status(
     retours: set, kc: set, future: set,
 ) -> str:
     """
-    GRIS  = dans Future
-    BLEU  = dans KC (fermeture hebdomadaire)
-    JAUNE = dans Retours OU tour complet (J∩J+1)
-    ROUGE = dans SCANNING J + absent J+1 + absent Retours
-    VERT  = pas dans SCANNING J
+    GRIS   = dans Future
+    BLEU   = dans KC (fermeture hebdomadaire)
+    ORANGE = dans Retours chauffeur (retour dépôt physique)
+    JAUNE  = tour complet J∩J+1 (retour scanning J+1, pas dans retours chauffeur)
+    ROUGE  = dans SCANNING J + absent J+1 + absent Retours
+    VERT   = pas dans SCANNING J
     """
     if tracking in future:
         return 'gris'
@@ -187,17 +192,19 @@ def _assign_status(
     in_j   = tracking in scanning_j  if scanning_j  else False
     in_j1  = tracking in scanning_j1 if scanning_j1 else False
 
+    # Retour physique au dépôt (fichier Retours chauffeur) → orange
     if in_ret:
-        return 'jaune'
+        return 'orange'
 
     if scanning_j:
         if not in_j:
             return 'vert'
+        # Tour complet : scanné J puis rescanned J+1 → jaune
         if in_j1:
             return 'jaune'
         return 'rouge'
 
-    # Sans SCANNING J : J+1 seul
+    # Sans SCANNING J : J+1 seul → jaune
     if in_j1:
         return 'jaune'
     return 'vert'
@@ -227,7 +234,7 @@ def build_excel(
     ws = wb.active
     ws.title = f"LBD {target_date.strftime('%d-%m-%Y')}"
 
-    summary = {'total': 0, 'vert': 0, 'jaune': 0, 'rouge': 0, 'bleu': 0, 'gris': 0}
+    summary = {'total': 0, 'vert': 0, 'jaune': 0, 'orange': 0, 'rouge': 0, 'bleu': 0, 'gris': 0}
     rows_data = []
     seen_trackings = set()  # dédoublonnage
 
@@ -270,12 +277,13 @@ def build_excel(
     ws.append([])
 
     summary_rows = [
-        ('Total',  '',                          summary['total'],  None),
-        ('VERT',   STATUS_LABELS['vert'],        summary['vert'],   (BG_VERT,  FG_VERT)),
-        ('JAUNE',  STATUS_LABELS['jaune'],       summary['jaune'],  (BG_JAUNE, FG_JAUNE)),
-        ('ROUGE',  STATUS_LABELS['rouge'],       summary['rouge'],  (BG_ROUGE, FG_ROUGE)),
-        ('BLEU',   STATUS_LABELS['bleu'],        summary['bleu'],   (BG_BLEU,  FG_BLEU)),
-        ('GRIS',   STATUS_LABELS['gris'],        summary['gris'],   (BG_GRIS,  FG_GRIS)),
+        ('Total',  '',                           summary['total'],   None),
+        ('VERT',   STATUS_LABELS['vert'],         summary['vert'],    (BG_VERT,   FG_VERT)),
+        ('JAUNE',  STATUS_LABELS['jaune'],        summary['jaune'],   (BG_JAUNE,  FG_JAUNE)),
+        ('ORANGE', STATUS_LABELS['orange'],       summary['orange'],  (BG_ORANGE, FG_ORANGE)),
+        ('ROUGE',  STATUS_LABELS['rouge'],        summary['rouge'],   (BG_ROUGE,  FG_ROUGE)),
+        ('BLEU',   STATUS_LABELS['bleu'],         summary['bleu'],    (BG_BLEU,   FG_BLEU)),
+        ('GRIS',   STATUS_LABELS['gris'],         summary['gris'],    (BG_GRIS,   FG_GRIS)),
     ]
     for label, desc, count, colors in summary_rows:
         ws.append(['', label, desc, count, '', ''])
@@ -490,6 +498,7 @@ if __name__ == '__main__':
     print(f"  Total  : {s['total']}")
     print(f"  VERT   : {s['vert']:>3}  — {STATUS_LABELS['vert']}")
     print(f"  JAUNE  : {s['jaune']:>3}  — {STATUS_LABELS['jaune']}")
+    print(f"  ORANGE : {s['orange']:>3}  — {STATUS_LABELS['orange']}")
     print(f"  ROUGE  : {s['rouge']:>3}  — {STATUS_LABELS['rouge']}")
     print(f"  BLEU   : {s['bleu']:>3}  — {STATUS_LABELS['bleu']}")
     print(f"  GRIS   : {s['gris']:>3}  — {STATUS_LABELS['gris']}")

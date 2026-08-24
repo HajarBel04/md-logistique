@@ -67,19 +67,29 @@ export default function App() {
               ))}
             </div>
           </div>
-          <main className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/import-webfleet" element={<WebfleetImport />} />
-              <Route path="/chauffeurs" element={<Drivers />} />
-              <Route path="/documents" element={<Documents />} />
-              <Route path="/planning" element={<Planning />} />
-              <Route path="/payroll" element={<Payroll />} />
-              <Route path="/lbd" element={<LbdTracking />} />
-              <Route path="/gps" element={<GpsAnalysis />} />
-              <Route path="/parametres" element={<Settings />} />
-            </Routes>
-          </main>
+          <Routes>
+            {/* GPS Analysis — pleine largeur pour le tableau */}
+            <Route path="/gps" element={
+              <main className="w-full px-3 pb-10 pt-6 sm:px-4">
+                <GpsAnalysis />
+              </main>
+            } />
+            {/* Toutes les autres pages — largeur normale */}
+            <Route path="*" element={
+              <main className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/import-webfleet" element={<WebfleetImport />} />
+                  <Route path="/chauffeurs" element={<Drivers />} />
+                  <Route path="/documents" element={<Documents />} />
+                  <Route path="/planning" element={<Planning />} />
+                  <Route path="/payroll" element={<Payroll />} />
+                  <Route path="/lbd" element={<LbdTracking />} />
+                  <Route path="/parametres" element={<Settings />} />
+                </Routes>
+              </main>
+            } />
+          </Routes>
         </div>
       </div>
     </div>

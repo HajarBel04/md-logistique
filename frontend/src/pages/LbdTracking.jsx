@@ -255,12 +255,13 @@ export default function LbdTracking() {
         <>
           <GlassCard title="Résumé" tag="Résultat">
             <div className="flex flex-wrap gap-3">
-              <SummaryTile label="Total"           count={s.total}  colorClass="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100" />
-              <SummaryTile label="No Inbound Scan" count={s.vert}   colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
-              <SummaryTile label="Retour dépôt"    count={s.jaune}  colorClass="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" />
-              <SummaryTile label="Driver Error"    count={s.rouge}  colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
-              <SummaryTile label="Fermeture"       count={s.bleu}   colorClass="bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200" />
-              <SummaryTile label="Future"          count={s.gris}   colorClass="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300" />
+              <SummaryTile label="Total"              count={s.total}  colorClass="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100" />
+              <SummaryTile label="No Inbound Scan"  count={s.vert}   colorClass="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" />
+              <SummaryTile label="Retour scanning J+1" count={s.jaune} colorClass="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" />
+              <SummaryTile label="Retour dépôt"     count={s.orange} colorClass="bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200" />
+              <SummaryTile label="Driver Error"     count={s.rouge}  colorClass="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200" />
+              <SummaryTile label="Fermeture"        count={s.bleu}   colorClass="bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200" />
+              <SummaryTile label="Future"           count={s.gris}   colorClass="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300" />
             </div>
 
             <div className="mt-5">

@@ -1,0 +1,15 @@
+:root {
+  --md-orange: #ff4b0a;
+  --md-orange-light: #fff5f0;
+  --md-orange-border: rgba(255, 75, 10, 0.14);
+  --md-orange-hover: #e54209;
+  --text-primary: #111111;
+  --text-secondary: #6b7280;
+  --white: #ffffff;
+  --soft-white: #fafafa;
+  --border: #ececec;
+  --green: #22c55e;
+  --shadow-soft: 0 8px 28px rgba(0,0,0,.07);
+  --shadow-card: 0 12px 40px rgba(0,0,0,.09);
+  --font: "Inter", Arial, Helvetica, sans-serif;
+}

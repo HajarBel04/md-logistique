@@ -1,0 +1,51 @@
+.services-section {
+  padding: 56px 0 52px;
+  background: #fff;
+}
+
+/* ── Heading ────────────────────────────────── */
+.services-heading {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 36px;
+  letter-spacing: -.018em;
+}
+
+.services-heading__accent {
+  color: var(--md-orange);
+  position: relative;
+}
+
+.services-heading__accent::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48%;
+  height: 2px;
+  background: var(--md-orange);
+  border-radius: 2px;
+}
+
+/* ── 5-column grid ──────────────────────────── */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1100px) {
+  .services-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .services-grid { grid-template-columns: 1fr; }
+  .services-section { padding: 56px 0 48px; }
+}
