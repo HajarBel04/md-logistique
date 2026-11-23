@@ -98,7 +98,10 @@ function parseWebfleetFile(filePath) {
     if (activity === 'Repos') totals.reposMinutes += minutes;
     if (activity === 'Disponibilité') totals.disponibiliteMinutes += minutes;
 
-    if (!dtStart || !activity) continue;
+    // Ligne aberrante (> 12h) ou repos journalier (≥ 9h) : ni dispo ni heures de nuit
+    const spanMin = dtStart && dtEnd ? (dtEnd - dtStart) / 60000 : minutesRaw;
+    const isDailyRest = spanMin > 720 || (activity === 'Repos' && spanMin >= 540);
+    if (!dtStart || !activity || isDailyRest) continue;
 
     const dayKey = dtStart.toLocaleDateString('fr-FR', {
       day: '2-digit', month: '2-digit', year: '2-digit',

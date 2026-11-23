@@ -55,6 +55,8 @@ function toTitleCase(str) {
 function computeDaily(rows, homeCity, depotKeyword) {
   const map = {};
   let commuteMin = 0;
+  const SHIFT_GAP = 9 * 60 * 60 * 1000;
+  const ANOMALY = 12 * 60 * 60 * 1000;
 
   // Trier toutes les activités par heure de début
   const sorted = rows
@@ -66,11 +68,16 @@ function computeDaily(rows, homeCity, depotKeyword) {
       arrivee: (r['Emplacement de fin'] || '').toLowerCase(),
     }))
     .filter(r => r.act && r.dtStart)
+    // Lignes > 12h (Webfleet resté en "Travail" tout le week-end) et repos journalier ≥ 9h :
+    // ni payés ni comptés en nuit, et ne doivent pas coller deux shifts ensemble.
+    .filter(r => {
+      const span = r.dtEnd ? r.dtEnd - r.dtStart : 0;
+      return span <= ANOMALY && !(r.act === 'Repos' && span >= SHIFT_GAP);
+    })
     .sort((a, b) => a.dtStart - b.dtStart);
 
   // Grouper en shifts : pause ≥ 9h entre activités de travail = nouveau shift
   // On ignore les "Repos" pour calculer le gap — ils remplissent le temps mais ne sont pas du travail
-  const SHIFT_GAP = 9 * 60 * 60 * 1000;
   const shifts = [];
   let cur = [];
   let lastWorkEnd = null;
@@ -104,7 +111,6 @@ function computeDaily(rows, homeCity, depotKeyword) {
     for (const r of shift) {
       const { act, dtStart, dtEnd, depart, arrivee } = r;
       const dur = dtEnd ? Math.max(0, Math.round((dtEnd - dtStart) / 60000)) : 0;
-      if (dur > 720) continue; // anomalie Webfleet
 
       const city = homeCity ? homeCity.toLowerCase() : null;
       const depot = depotKeyword ? depotKeyword.toLowerCase() : null;
