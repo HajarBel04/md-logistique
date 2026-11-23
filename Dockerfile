@@ -6,6 +6,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
 COPY scripts/ ./scripts/
+COPY documents/ ./documents/
 
 # Dossier outputs (geocache vide au démarrage — se remplit à l'usage)
 RUN mkdir -p outputs && echo '{}' > outputs/geocache.json
