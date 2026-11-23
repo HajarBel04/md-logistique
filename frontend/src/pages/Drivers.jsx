@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useCallback } from 'react';
 
-const API = 'http://localhost:8787';
+const API = import.meta.env.VITE_API_URL || '';
 import PageHeader from '../components/PageHeader';
 
 /* ═══════════════════════════════════════════════════════════

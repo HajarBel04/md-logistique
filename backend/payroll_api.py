@@ -136,7 +136,7 @@ async def generate_payroll(
         else:
             cp140_default = os.path.join(SAMPLES_DIR, 'alex', 'PC140_991163 01-05-2026 - 31-05-2026.xlsx')
             if not os.path.exists(cp140_default):
-                raise HTTPException(400, "Aucun template CP140 fourni et template par défaut introuvable.")
+                raise HTTPException(400, "Ajoutez le modèle CP140 du mois (champ « Modèle CP140 ») avant de générer.")
             cp140_tmp = cp140_default
 
         # Copie de travail
@@ -426,6 +426,7 @@ async def gps_health():
 # ─── Module Chauffeurs ────────────────────────────────────────────────────────
 
 import re
+import mimetypes
 import urllib.parse
 from fastapi.responses import StreamingResponse
 import io
@@ -467,9 +468,9 @@ async def get_chauffeur_file(type: str, folder: str, filename: str):
         raise HTTPException(404, f"Fichier introuvable : {filename}")
     return FileResponse(
         path,
-        media_type='application/octet-stream',
+        media_type=mimetypes.guess_type(path)[0] or 'application/octet-stream',
         filename=filename,
-        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+        content_disposition_type='inline',
     )
 
 

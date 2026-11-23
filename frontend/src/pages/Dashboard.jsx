@@ -37,6 +37,9 @@ export default function Dashboard() {
 
       try {
         const response = await getAlexDashboard();
+        if (!response.data || typeof response.data !== 'object') {
+          throw new Error('Réponse inattendue du serveur');
+        }
         setDashboard(response.data);
       } catch (err) {
         const status = err.response?.status;

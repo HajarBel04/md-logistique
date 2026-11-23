@@ -1,4 +1,5 @@
-export default function DataTable({ columns, data, rowKey, className = '' }) {
+export default function DataTable({ columns, data: rawData, rowKey, className = '' }) {
+  const data = Array.isArray(rawData) ? rawData : [];
   const keyFn = rowKey || ((row, index) => row.id ?? row.name ?? index);
   const getCellValue = (column, row, index) => {
     if (typeof column.cell === 'function') {

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import PageHeader from '../components/PageHeader';
 import GlassCard from '../components/GlassCard';
 
-const PAYROLL_API = 'http://localhost:8000';
+const PAYROLL_API = import.meta.env.VITE_API_URL || '';
 
 const MONTHS = [
   { value: 1, label: 'Janvier' }, { value: 2, label: 'Février' },
@@ -41,6 +41,7 @@ export default function Payroll() {
   const [loading, setLoading] = useState(false);
   const [result, setResult]   = useState(null);
   const [error, setError]     = useState(null);
+  const [cp140, setCp140]     = useState(null);
   const fileInputRef          = useRef(null);
 
   // ── Drag & drop ──────────────────────────────────────────────────────────
@@ -75,6 +76,7 @@ export default function Payroll() {
       files.forEach(f => formData.append('webfleet_files', f));
       formData.append('mois', mois);
       formData.append('annee', annee);
+      if (cp140) formData.append('cp140_template', cp140);
       const res = await fetch(`${PAYROLL_API}/api/payroll/generate`, { method: 'POST', body: formData });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -86,7 +88,7 @@ export default function Payroll() {
       const isNetwork = msg === 'Load failed' || msg === 'Network Error' || msg.includes('Failed to fetch');
       setError(
         isNetwork
-          ? 'Serveur FastAPI inaccessible (port 8000). Lance ./start.sh ou : python3 backend/payroll_api.py'
+          ? 'Serveur de paie inaccessible. Réessayez dans un instant.'
           : msg || 'Erreur inconnue.'
       );
     } finally {
@@ -184,6 +186,17 @@ export default function Payroll() {
               min={2020} max={2030}
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 sm:w-28"
             />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Modèle CP140 (.xlsx)</label>
+            <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:border-orange-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+              <input
+                type="file" accept=".xlsx" className="hidden"
+                onChange={e => { setCp140(e.target.files[0] ?? null); e.target.value = ''; }}
+              />
+              <span className="max-w-[16rem] truncate">{cp140 ? cp140.name : 'Choisir le CP140 du mois'}</span>
+            </label>
           </div>
 
           <button
