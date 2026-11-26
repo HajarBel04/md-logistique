@@ -10,20 +10,6 @@ function Label({ children, htmlFor }) {
   return <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-semibold text-slate-700">{children}</label>;
 }
 
-const FEATURES = [
-  { t: 'Route du jour', d: 'Le chauffeur choisit sa route : date, km et véhicule sont enregistrés.', i: 'M3 17h2a2 2 0 1 0 4 0h6a2 2 0 1 0 4 0h2v-5l-3-4h-4V5H3v12Z' },
-  { t: 'CMR et documents', d: 'Photos des CMR, permis et cartes conducteur classées et vérifiées.', i: 'M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h4' },
-  { t: 'Facturation', d: 'Rate/Tour, surcharge carburant et facture PDF par client.', i: 'M6 3h12v18l-3-2-3 2-3-2-3 2V3Z M9 8h6M9 12h6' },
-];
-
-function Icon({ d }) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {d.split(' M').map((p, i) => <path key={i} d={i ? `M${p}` : p} />)}
-    </svg>
-  );
-}
-
 export default function LoginPage() {
   const { login, setup, needsSetup, error: loadError } = useAuth();
   const [mode, setMode] = useState('email');
@@ -57,55 +43,40 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#f6f4f1] lg:grid lg:grid-cols-[1.05fr_1fr]">
+    <div className="min-h-[100dvh] bg-[#f6f4f1] lg:flex">
       {/* Panneau marque (ordinateur) */}
-      <aside className="relative hidden overflow-hidden bg-[#0f172a] lg:flex lg:flex-col lg:p-10 xl:p-14">
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[420px] w-[420px] rounded-full bg-orange-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-48 -left-24 h-[420px] w-[420px] rounded-full bg-amber-400/10 blur-3xl" />
+      <aside
+        className="relative hidden h-[100dvh] max-w-[55vw] overflow-hidden bg-[#0f172a] lg:sticky lg:top-0 lg:block"
+        style={{ aspectRatio: '9 / 16' }}
+      >
+        {/* Vidéo en fond : le panneau a le même format que la vidéo (9:16) → affichée entière, sans recadrage */}
+        <video
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          src="/login-animation.mp4"
+          poster="/login-animation-poster.jpg"
+          autoPlay={!reducedMotion}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        />
+        {/* Légers dégradés seulement derrière le logo et la phrase du bas */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[#0f172a]/75 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#0f172a]/90 to-transparent" />
 
-        <img src={logoWhite} alt="M-D Logistique" className="relative h-20 w-auto self-start xl:h-24" />
+        <img src={logoWhite} alt="M-D Logistique" className="absolute left-8 top-7 h-16 w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] xl:h-20" />
 
-        <div className="relative flex flex-1 flex-col justify-center gap-8 py-8 2xl:flex-row 2xl:items-center 2xl:gap-10">
-          {/* Vidéo entière (format vertical), sans recadrage ni effet */}
-          <div className="mx-auto shrink-0 overflow-hidden rounded-3xl bg-black shadow-2xl shadow-black/40 ring-1 ring-white/10 2xl:order-2 2xl:mx-0">
-            <video
-              className="block aspect-[9/16] h-[42vh] w-auto 2xl:h-[min(68vh,620px)]"
-              src="/login-animation.mp4"
-              poster="/login-animation-poster.jpg"
-              autoPlay={!reducedMotion}
-              muted
-              loop
-              playsInline
-              preload="auto"
-              aria-hidden="true"
-            />
-          </div>
-
-          <div className="max-w-md text-center 2xl:order-1 2xl:text-left">
-            <p className="text-xs font-bold uppercase tracking-[0.35em] text-orange-400">Transport & logistique · Belgique</p>
-            <h1 className="mt-4 text-3xl font-extrabold leading-[1.1] text-white 2xl:text-[2.6rem]">
-              Toute l'exploitation,<br />
-              <span className="bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent">en un seul endroit.</span>
-            </h1>
-            <ul className="mt-8 hidden space-y-4 text-left 2xl:block">
-              {FEATURES.map((f) => (
-                <li key={f.t} className="flex gap-4">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-orange-300 ring-1 ring-white/10"><Icon d={f.i} /></span>
-                  <span>
-                    <span className="block font-bold text-white">{f.t}</span>
-                    <span className="block text-sm leading-6 text-slate-300">{f.d}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="absolute inset-x-8 bottom-7 [text-shadow:0_2px_10px_rgba(0,0,0,0.5)]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-orange-300">Transport & logistique · Belgique</p>
+          <p className="mt-2 text-2xl font-extrabold leading-tight text-white xl:text-[1.7rem]">
+            Toute l'exploitation, <span className="text-amber-300">en un seul endroit.</span>
+          </p>
         </div>
-
-        <p className="relative text-xs text-slate-400">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
       </aside>
 
       {/* Formulaire */}
-      <main className="flex min-h-[100dvh] flex-col items-center justify-center px-5 py-10 sm:px-8">
+      <main className="flex min-h-[100dvh] flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8">
         <img src={logo} alt="M-D Logistique" className="mb-8 h-20 w-auto lg:hidden" />
 
         <div className="w-full max-w-[420px] rounded-[28px] bg-white p-7 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 sm:p-9">
