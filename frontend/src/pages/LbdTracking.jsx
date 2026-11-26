@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import PageHeader from '../components/PageHeader';
 import GlassCard from '../components/GlassCard';
 
-const LBD_API = import.meta.env.VITE_API_URL || '';
+const LBD_API = ''; // même origine (cookie de session)
 
 const STATUS_CONFIG = {
   'No Inbound Scan': { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300', dot: 'bg-emerald-500' },

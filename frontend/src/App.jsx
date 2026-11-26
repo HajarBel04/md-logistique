@@ -4,25 +4,71 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
 import WebfleetImport from './pages/WebfleetImport';
-import Drivers from './pages/Drivers';
 import Planning from './pages/Planning';
-import Documents from './pages/Documents';
 import Settings from './pages/Settings';
 import Payroll from './pages/Payroll';
 import LbdTracking from './pages/LbdTracking';
 import GpsAnalysis from './pages/GpsAnalysis';
+import ConformiteDashboard from './pages/flotte/ConformiteDashboard';
+import Vehicules from './pages/flotte/Vehicules';
+import Chauffeurs from './pages/flotte/Chauffeurs';
+import OutilScan from './pages/flotte/OutilScan';
+import Messagerie from './pages/flotte/Messagerie';
+import AlertesParametres from './pages/flotte/AlertesParametres';
+import PortailChauffeur from './pages/flotte/PortailChauffeur';
+import Referentiels from './pages/flotte/Referentiels';
+import Trajets from './pages/flotte/Trajets';
+import Facturation from './pages/flotte/Facturation';
+import Comptes from './pages/flotte/Comptes';
+import EspaceChauffeur from './pages/flotte/EspaceChauffeur';
+import { ToastProvider } from './flotte/ui';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import LoginPage from './auth/LoginPage';
 
 const navItems = [
-  { path: '/',               label: 'Dashboard'       },
+  { path: '/conformite',      label: 'Conformité'      },
+  { path: '/vehicules',       label: 'Véhicules'       },
+  { path: '/chauffeurs',      label: 'Chauffeurs'      },
+  { path: '/documents',       label: 'Documents & scan' },
+  { path: '/messagerie',      label: 'Messagerie'      },
+  { path: '/alertes',         label: 'Alertes'         },
+  { path: '/trajets',         label: 'Formulaires'     },
+  { path: '/facturation',     label: 'Facturation'     },
+  { path: '/referentiels',    label: 'Référentiels'    },
+  { path: '/comptes',         label: 'Comptes'         },
+  { path: '/',                label: 'Dashboard paie'  },
   { path: '/import-webfleet', label: 'Import Webfleet' },
-  { path: '/chauffeurs',     label: 'Chauffeurs'      },
-  { path: '/documents',      label: 'Documents'       },
-  { path: '/planning',       label: 'Planning'        },
-  { path: '/payroll',        label: 'Fiches de paie'  },
-  { path: '/parametres',     label: 'Paramètres'      },
+  { path: '/planning',        label: 'Planning'        },
+  { path: '/payroll',         label: 'Fiches de paie'  },
+  { path: '/parametres',      label: 'Paramètres'      },
 ];
 
 export default function App() {
+  return (
+    <Routes>
+      {/* Lien personnel du chauffeur : page autonome, sans menu */}
+      <Route path="/portail/:token" element={<PortailChauffeur />} />
+      <Route path="*" element={<AuthProvider><Gate /></AuthProvider>} />
+    </Routes>
+  );
+}
+
+/** Aiguillage selon la connexion : écran de connexion, espace chauffeur ou plateforme admin. */
+function Gate() {
+  const { loading, user } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-orange-600" aria-label="Chargement" />
+      </div>
+    );
+  }
+  if (!user) return <LoginPage />;
+  if (user.role === 'CHAUFFEUR') return <EspaceChauffeur />;
+  return <ToastProvider><Platform /></ToastProvider>;
+}
+
+function Platform() {
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
@@ -80,8 +126,16 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/import-webfleet" element={<WebfleetImport />} />
-                  <Route path="/chauffeurs" element={<Drivers />} />
-                  <Route path="/documents" element={<Documents />} />
+                  <Route path="/conformite" element={<ConformiteDashboard />} />
+                  <Route path="/vehicules" element={<Vehicules />} />
+                  <Route path="/chauffeurs" element={<Chauffeurs />} />
+                  <Route path="/documents" element={<OutilScan />} />
+                  <Route path="/messagerie" element={<Messagerie />} />
+                  <Route path="/alertes" element={<AlertesParametres />} />
+                  <Route path="/trajets" element={<Trajets />} />
+                  <Route path="/facturation" element={<Facturation />} />
+                  <Route path="/referentiels" element={<Referentiels />} />
+                  <Route path="/comptes" element={<Comptes />} />
                   <Route path="/planning" element={<Planning />} />
                   <Route path="/payroll" element={<Payroll />} />
                   <Route path="/lbd" element={<LbdTracking />} />

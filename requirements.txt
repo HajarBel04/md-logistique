@@ -4,3 +4,6 @@ openpyxl>=3.0.10
 python-multipart>=0.0.8
 requests
 geopy
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+tzdata

@@ -44,6 +44,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Module Flotte & Conformité (véhicules, chauffeurs, documents, alertes, messagerie)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from flotte.routes import init_flotte  # noqa: E402
+init_flotte(app)
+
 BASE_DIR    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUTS_DIR = os.path.join(BASE_DIR, 'outputs')
 SAMPLES_DIR = os.path.join(BASE_DIR, 'samples')

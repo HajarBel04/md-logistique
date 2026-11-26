@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import PageHeader from '../components/PageHeader';
 import GlassCard from '../components/GlassCard';
 
-const PAYROLL_API = import.meta.env.VITE_API_URL || '';
+const PAYROLL_API = ''; // même origine (cookie de session)
 
 const MONTHS = [
   { value: 1, label: 'Janvier' }, { value: 2, label: 'Février' },

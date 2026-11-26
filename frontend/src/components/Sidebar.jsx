@@ -1,10 +1,32 @@
 import { NavLink } from 'react-router-dom';
 import logo from '../assets/logo1.png';
 
-const navItems = [
+const I = (paths) => (
+  <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    {paths.map((d) => <path key={d} d={d} />)}
+  </svg>
+);
+
+const flotteItems = [
+  { path: '/conformite', label: 'Tableau de bord', icon: I(['M4 13h6V4H4v9Z', 'M4 20h6v-4H4v4Z', 'M14 20h6v-9h-6v9Z', 'M14 4v4h6V4h-6Z']) },
+  { path: '/vehicules', label: 'Véhicules', icon: I(['M3 16V7a1 1 0 0 1 1-1h10v10', 'M14 9h4l3 4v3h-7', 'M7 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z', 'M17 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z']) },
+  { path: '/chauffeurs', label: 'Chauffeurs', icon: I(['M5.5 20h13a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2Z', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z']) },
+  { path: '/documents', label: 'Documents & outil scan', icon: I(['M4 8V5a1 1 0 0 1 1-1h3', 'M16 4h3a1 1 0 0 1 1 1v3', 'M20 16v3a1 1 0 0 1-1 1h-3', 'M8 20H5a1 1 0 0 1-1-1v-3', 'M8 9h8v6H8z']) },
+  { path: '/messagerie', label: 'Messagerie', icon: I(['M4 5h16v11H8l-4 4V5Z', 'M8 9h8M8 12h5']) },
+  { path: '/alertes', label: 'Alertes & paramètres', icon: I(['M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2Z', 'M10 21h4']) },
+];
+
+const operationsItems = [
+  { path: '/trajets', label: 'Formulaires chauffeurs', icon: I(['M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2', 'M9 3h6v4H9z', 'M9 12h6M9 16h4']) },
+  { path: '/facturation', label: 'Facturation', icon: I(['M6 3h12v18l-3-2-3 2-3-2-3 2V3Z', 'M9 8h6M9 12h6M9 16h3']) },
+  { path: '/referentiels', label: 'Routes & référentiels', icon: I(['M4 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z', 'M20 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z', 'M6 17h6a4 4 0 0 0 0-8h-1a4 4 0 0 1 0-8h7']) },
+  { path: '/comptes', label: 'Comptes', icon: I(['M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1', 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z', 'M19 8v6M16 11h6']) },
+];
+
+const exploitationItems = [
   {
     path: '/',
-    label: 'Dashboard',
+    label: 'Dashboard paie',
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M3 12h7V3H3v9Zm0 9h7v-7H3v7Zm11 0h7V12h-7v9Zm0-18v7h7V3h-7Z" />
@@ -18,26 +40,6 @@ const navItems = [
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M12 3v12m0 0l4-4m-4 4l-4-4" />
         <path d="M5 21h14" />
-      </svg>
-    ),
-  },
-  {
-    path: '/chauffeurs',
-    label: 'Chauffeurs',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M5.5 20h13a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2Z" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-    ),
-  },
-  {
-    path: '/documents',
-    label: 'Documents',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M4 4h16v16H4V4Z" />
-        <path d="M8 8h8M8 12h8M8 16h5" />
       </svg>
     ),
   },
@@ -98,47 +100,50 @@ const navItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="hidden w-80 shrink-0 border-r border-slate-200/80 bg-white/85 px-6 py-8 backdrop-blur-xl shadow-soft dark:border-slate-800/70 dark:bg-slate-950/95 lg:flex lg:flex-col">
-      <div className="mb-6 flex items-center justify-center px-2">
-        <img src={logo} alt="MD Logistique" className="w-44 h-auto object-contain drop-shadow-sm" />
+    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-slate-200/80 bg-white/85 px-4 py-6 backdrop-blur-xl shadow-soft dark:border-slate-800/70 dark:bg-slate-950/95 lg:flex lg:flex-col">
+      <div className="mb-6 flex shrink-0 items-center justify-center px-2">
+        <img src={logo} alt="MD Logistique" className="h-auto w-36 object-contain drop-shadow-sm" />
       </div>
 
-      <nav className="space-y-2">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === '/'}
-            className={({ isActive }) =>
-              `group flex items-center gap-4 rounded-3xl px-4 py-3 text-sm font-semibold transition ${
-                isActive
-                  ? 'border-l-4 border-orange-400 bg-orange-50/80 text-orange-600 ring-1 ring-orange-200/60 dark:bg-orange-500/10 dark:text-orange-200'
-                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <span
-                  className={`flex h-11 w-11 items-center justify-center rounded-2xl transition ${
-                    isActive ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-                  }`}
+      <nav className="flex-1 space-y-6 overflow-y-auto pr-1 scrollbar-none">
+        {[
+          { title: 'Flotte & conformité', items: flotteItems },
+          { title: 'Exploitation & facturation', items: operationsItems },
+          { title: 'Paie & analyses', items: exploitationItems },
+        ].map((group) => (
+          <div key={group.title}>
+            <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{group.title}</p>
+            <div className="space-y-1">
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold transition ${
+                      isActive
+                        ? 'bg-orange-50 text-orange-700 ring-1 ring-orange-200/70 dark:bg-orange-500/10 dark:text-orange-200 dark:ring-orange-500/20'
+                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                    }`
+                  }
                 >
-                  {item.icon}
-                </span>
-                <span className="text-sm font-semibold leading-tight">{item.label}</span>
-              </>
-            )}
-          </NavLink>
+                  {({ isActive }) => (
+                    <>
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition [&>svg]:h-[18px] [&>svg]:w-[18px] ${
+                        isActive ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      }`}>
+                        {item.icon}
+                      </span>
+                      <span className="leading-tight">{item.label}</span>
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 
-      <div className="mt-auto rounded-[28px] bg-slate-50/90 p-5 shadow-soft dark:bg-slate-900/75">
-        <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Astuce</p>
-        <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-slate-300">
-          Importez vos rapports Webfleet pour générer automatiquement les totaux de conduite, travail et repos.
-        </p>
-      </div>
     </aside>
   );
 }

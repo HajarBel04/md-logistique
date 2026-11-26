@@ -1,11 +1,22 @@
 import { useLocation } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
+import { useAuth } from '../auth/AuthContext';
 
 const titleMap = {
   '/': 'Dashboard',
   '/import-webfleet': 'Import Webfleet',
+  '/conformite': 'Flotte & conformité',
+  '/vehicules': 'Véhicules',
   '/chauffeurs': 'Chauffeurs',
-  '/documents': 'Documents',
+  '/documents': 'Documents & outil scan',
+  '/messagerie': 'Messagerie',
+  '/alertes': 'Alertes & paramètres',
+  '/trajets': 'Formulaires chauffeurs',
+  '/facturation': 'Facturation',
+  '/referentiels': 'Référentiels',
+  '/comptes': 'Comptes',
+  '/lbd': 'LBD Tracking',
+  '/gps': 'GPS Analysis',
   '/planning': 'Planning',
   '/payroll': 'Fiches de paie',
   '/parametres': 'Paramètres',
@@ -13,6 +24,8 @@ const titleMap = {
 
 export default function Header({ theme, onToggleTheme }) {
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const initial = (user?.nom || user?.email || '?').trim()[0]?.toUpperCase();
   const title = titleMap[location.pathname] || 'MD Logistique';
 
   return (
@@ -48,15 +61,18 @@ export default function Header({ theme, onToggleTheme }) {
             />
           </div>
 
-          {/* Profil Alex — masqué sur mobile */}
-          <div className="hidden items-center gap-2.5 rounded-full bg-slate-50 px-3 py-2 text-sm text-slate-700 shadow-sm dark:bg-slate-900 dark:text-slate-200 md:flex">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-400 text-sm font-semibold text-white">
-              A
+          {/* Utilisateur connecté */}
+          <div className="flex items-center gap-2.5 rounded-full bg-slate-50 py-1.5 pl-1.5 pr-3 text-sm text-slate-700 shadow-sm dark:bg-slate-900 dark:text-slate-200">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-400 text-sm font-semibold text-white">
+              {initial}
             </div>
-            <div className="hidden lg:block">
-              <div className="font-semibold text-slate-900 dark:text-slate-50">Alex</div>
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">RH</div>
+            <div className="hidden max-w-[160px] lg:block">
+              <div className="truncate font-semibold text-slate-900 dark:text-slate-50">{user?.nom || user?.email}</div>
+              <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Admin</div>
             </div>
+            <button type="button" onClick={logout} className="ml-1 text-xs font-semibold text-slate-500 hover:text-orange-600" title="Se déconnecter">
+              Déconnexion
+            </button>
           </div>
 
           <ThemeToggle theme={theme} onToggleTheme={onToggleTheme} />
