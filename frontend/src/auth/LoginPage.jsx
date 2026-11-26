@@ -61,8 +61,11 @@ export default function LoginPage() {
       {/* Panneau marque (ordinateur) */}
       <aside className="relative hidden overflow-hidden bg-[#0f172a] lg:flex lg:flex-col lg:p-12 xl:p-16">
         {/* Animation entrepôt → livraison, en fond (muette, en boucle) */}
+        {/* Fond flouté (mêmes couleurs) pour remplir les côtés de la vidéo verticale */}
+        <img src="/login-animation-poster.jpg" alt="" aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-2xl" />
         <video
-          className="md-login-video pointer-events-none absolute inset-0 h-full w-full object-cover"
+          className="md-login-video pointer-events-none absolute inset-y-0 left-1/2 aspect-[9/16] h-full max-w-none -translate-x-1/2 object-cover [mask-image:linear-gradient(to_right,transparent_0%,black_16%,black_84%,transparent_100%)]"
           src="/login-animation.mp4"
           poster="/login-animation-poster.jpg"
           autoPlay={!reducedMotion}
