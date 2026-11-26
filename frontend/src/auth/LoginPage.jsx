@@ -44,11 +44,10 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-[100dvh] bg-white">
-      {/* Plein écran : vidéo entière (9:16) sur toute la hauteur à gauche, formulaire à droite */}
-      <aside className="sticky top-0 hidden h-[100dvh] max-w-[50vw] shrink-0 overflow-hidden bg-[#0f172a] lg:block" style={{ aspectRatio: '9 / 16' }}>
-        {/* Vidéo en fond : le panneau a le même format que la vidéo (9:16) → affichée entière, sans recadrage */}
+      {/* Moitié gauche : vidéo entière sur toute la hauteur, centrée ; côtés bleu nuit uni (aucune coupe) */}
+      <aside className="sticky top-0 hidden h-[100dvh] w-1/2 shrink-0 overflow-hidden bg-[#0f172a] lg:block">
         <video
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          className="pointer-events-none absolute inset-0 h-full w-full object-contain"
           src="/login-animation.mp4"
           poster="/login-animation-poster.jpg"
           autoPlay={!reducedMotion}
@@ -73,7 +72,7 @@ export default function LoginPage() {
       </aside>
 
       {/* Formulaire */}
-      <main className="flex min-h-[100dvh] flex-1 flex-col items-center justify-center px-6 py-10 sm:px-10">
+      <main className="flex min-h-[100dvh] w-full flex-col lg:w-1/2 items-center justify-center px-6 py-10 sm:px-10">
         <img src={logo} alt="M-D Logistique" className="mb-8 h-16 w-auto lg:hidden" />
 
         <div className="w-full max-w-[380px]">
