@@ -5,13 +5,14 @@ import CropperModal from '../../flotte/CropperModal';
 import DocumentVault from '../../flotte/DocumentVault';
 import ComplianceDocTabs, { MAIN_SLOTS } from '../../flotte/ComplianceDocTabs';
 import { AccountModal } from './Comptes';
+import { WhatsAppButton, messages } from '../../flotte/whatsapp';
 import { isPdf } from '../../flotte/docTools';
 import {
   Button, DeadlineCell, Drawer, Empty, ErrorBanner, Field, LinkIcon, Loader, Modal, PlusIcon,
   SearchInput, StatusPill, Tabs, TrashIcon, inputBase, inputClass, useToast,
 } from '../../flotte/ui';
 import {
-  ADR_CATEGORIES, PERMIS_CATEGORIES, STATUT_LABELS, slotsFor, TYPE_CHAUFFEUR_LABELS, countdown,
+  ADR_CATEGORIES, PERMIS_CATEGORIES, SLOT_BY_KEY, STATUT_LABELS, slotsFor, TYPE_CHAUFFEUR_LABELS, countdown,
 } from '../../flotte/utils';
 
 const item = (d, type) => d.compliance.find((c) => c.type === type);
@@ -289,6 +290,12 @@ function DriverDrawer({ driverId, onClose, onChanged }) {
 
   if (!driver || !form) return <Drawer title="Chargement…" onClose={onClose}><Loader /></Drawer>;
 
+  // Documents obligatoires absents + échéances expirées ou à renouveler
+  const missingDocs = [
+    ...driver.documentsRequired.filter((s) => !driver.documents?.[s]).map((s) => SLOT_BY_KEY[s]?.label || s),
+    ...driver.compliance.filter((c) => c.status === 'expire' || c.status === 'bientot').map((c) => `${c.label} (à renouveler)`),
+  ];
+
   return (
     <Drawer
       title={driver.nomComplet}
@@ -296,6 +303,8 @@ function DriverDrawer({ driverId, onClose, onChanged }) {
       badge={<StatusPill status={driver.status} />}
       onClose={onClose}
       actions={<>
+        <WhatsAppButton phone={driver.telephone} text={messages.lienPlateforme({ prenom: driver.prenom })}
+          title={driver.telephone ? `Écrire à ${driver.prenom} sur WhatsApp` : 'Aucun téléphone dans la fiche : WhatsApp demandera le contact'} />
         <Button size="sm" variant="secondary" onClick={copyPortal} title="Lien de messagerie pour le chauffeur"><LinkIcon /> Lien chauffeur</Button>
         <Link to={`/messagerie?chauffeur=${driver.id}`}><Button size="sm" variant="secondary">Messages{driver.unreadMessages ? ` (${driver.unreadMessages})` : ''}</Button></Link>
       </>}
@@ -311,6 +320,13 @@ function DriverDrawer({ driverId, onClose, onChanged }) {
           { value: 'compte', label: 'Compte' },
         ]}
       />
+      {(tab === 'documents' || tab === 'autres') && missingDocs.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-500/30 dark:bg-amber-500/10">
+          <span className="text-amber-900 dark:text-amber-200"><strong>{missingDocs.length} document(s) à demander :</strong> {missingDocs.join(', ')}</span>
+          <WhatsAppButton phone={driver.telephone} label="Demander par WhatsApp"
+            text={messages.documentsManquants({ prenom: driver.prenom, documents: missingDocs })} />
+        </div>
+      )}
       {tab === 'documents' && (
         <ComplianceDocTabs driver={driver} onChange={(d) => { apply(d); onChanged(); }} />
       )}

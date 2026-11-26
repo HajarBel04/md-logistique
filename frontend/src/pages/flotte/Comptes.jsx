@@ -7,6 +7,7 @@ import {
   inputClass, useToast,
 } from '../../flotte/ui';
 import { formatDateTime } from '../../flotte/utils';
+import { WhatsAppButton, messages } from '../../flotte/whatsapp';
 
 function genPassword() {
   const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -38,7 +39,11 @@ export function AccountModal({ role, account, drivers = [], fixedDriver, onClose
         ? await flotteApi.updateUser(account.id, payload)
         : await flotteApi.createUser({ ...payload, role, driverId: form.driverId });
       onSaved(saved);
-      if (form.password) setCreated({ ident: form.email || form.telephone, password: form.password });
+      if (form.password) {
+        const drv = fixedDriver || drivers.find((d) => d.id === (form.driverId || saved.driverId));
+        setCreated({ ident: form.email || form.telephone, password: form.password,
+          prenom: drv?.prenom || (role === 'ADMIN' ? form.nom : ''), phone: form.telephone || drv?.telephone });
+      }
       else { toast('Compte mis à jour'); onClose(); }
     } catch (err) {
       setError(err.message);
@@ -48,10 +53,14 @@ export function AccountModal({ role, account, drivers = [], fixedDriver, onClose
   };
 
   if (created) {
-    const text = `Votre accès MD Logistique :\n${window.location.origin}\nIdentifiant : ${created.ident}\nMot de passe : ${created.password}`;
+    const text = messages.identifiants(created);
     return (
       <Modal title="Identifiants à transmettre" size="sm" onClose={onClose}
-        footer={<><Button variant="secondary" onClick={() => navigator.clipboard.writeText(text).then(() => toast('Copié'))}>Copier le message</Button><Button onClick={onClose}>Terminé</Button></>}>
+        footer={<>
+          <Button variant="secondary" onClick={() => navigator.clipboard.writeText(text).then(() => toast('Copié'))}>Copier</Button>
+          <WhatsAppButton phone={created.phone} text={text} label="Envoyer par WhatsApp" size="md" />
+          <Button onClick={onClose}>Terminé</Button>
+        </>}>
         <p className="text-sm text-slate-600 dark:text-slate-300">Envoyez ces identifiants au chauffeur (SMS, WhatsApp). Le mot de passe ne sera plus affiché.</p>
         <pre className="mt-3 whitespace-pre-wrap rounded-xl bg-slate-100 p-4 font-mono text-sm dark:bg-slate-800">{text}</pre>
       </Modal>

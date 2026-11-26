@@ -4,6 +4,7 @@ import { flotteApi, fileUrl } from '../../flotte/api';
 import {
   Button, Card, Empty, ErrorBanner, EyeIcon, Loader, RenewInline, StatusPill, Tabs, useToast,
 } from '../../flotte/ui';
+import { WhatsAppButton, messages } from '../../flotte/whatsapp';
 import { CATEGORY_LABELS, TYPE_CHAUFFEUR_LABELS, countdown, formatDate } from '../../flotte/utils';
 
 const PRIORITY_TYPES = new Set(['CODE_95', 'CARTE_CONDUCTEUR']);
@@ -69,6 +70,11 @@ function DeadlineRow({ row, onRenewed }) {
       ) : (
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <StatusPill status={row.status}>{countdown(row.daysRemaining)}</StatusPill>
+          {row.entityType === 'DRIVER' && row.date && (
+            <WhatsAppButton phone={row.telephone} label="Prévenir"
+              text={messages.echeance({ prenom: row.prenom, document: row.label, date: row.date, daysRemaining: row.daysRemaining })}
+              title={row.telephone ? `Prévenir ${row.name} sur WhatsApp` : 'Pas de téléphone dans la fiche : WhatsApp demandera le contact'} />
+          )}
           {row.documentUrl && (
             <Button size="sm" variant="ghost" onClick={() => window.open(fileUrl(row.documentUrl), '_blank', 'noopener')}>
               <EyeIcon /> Voir le document

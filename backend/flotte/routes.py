@@ -647,7 +647,7 @@ def dashboard(db: Session = Depends(get_db)):
             doc = docs.get(slot) if slot else None
             rows.append({
                 **it, 'entityType': 'DRIVER', 'entityId': d.id, 'name': C.driver_label(d),
-                'sub': d.type_chauffeur,
+                'sub': d.type_chauffeur, 'telephone': d.telephone, 'prenom': d.prenom,
                 'documentUrl': f'/api/flotte/files/{doc.file_id}' if doc else None,
             })
 

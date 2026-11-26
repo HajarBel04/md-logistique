@@ -10,6 +10,7 @@ import {
   inputBase, inputClass, useToast,
 } from '../../flotte/ui';
 import { formatDate } from '../../flotte/utils';
+import { messages, openWhatsApp } from '../../flotte/whatsapp';
 
 const STATUS = {
   BROUILLON: { label: 'Brouillon', cls: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
@@ -280,6 +281,24 @@ function InvoiceModal({ id, onClose, onChanged }) {
     if (!window.confirm(`Supprimer la facture brouillon ${inv.numero} ? Ses lignes redeviennent « à facturer ».`)) return;
     try { await flotteApi.deleteInvoice(id); toast('Facture supprimée'); onChanged(); onClose(); } catch (e) { toast(e.message, 'error'); }
   };
+  const shareWhatsApp = async () => {
+    const text = messages.facture({ client: inv.client?.nom, numero: inv.numero, periode: periodLabel(inv), total: eur2(inv.totalTtc) });
+    // Sur téléphone : feuille de partage avec le PDF joint (choisir WhatsApp). Sinon : WhatsApp avec le message.
+    try {
+      const blob = await (await fetch(pdfUrl)).blob();
+      const file = new File([blob], `Facture-${inv.numero}.pdf`, { type: 'application/pdf' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], text, title: `Facture ${inv.numero}` });
+        return;
+      }
+    } catch (e) {
+      if (e?.name === 'AbortError') return;
+    }
+    download();
+    openWhatsApp(null, text);
+    toast('PDF téléchargé : joignez-le dans la conversation WhatsApp');
+  };
+
   const download = () => {
     const a = document.createElement('a');
     a.href = pdfUrl;
@@ -297,6 +316,7 @@ function InvoiceModal({ id, onClose, onChanged }) {
         {inv.status === 'BROUILLON' && <Button variant="danger" className="mr-auto" onClick={remove}><TrashIcon /> Supprimer</Button>}
         <Button variant="secondary" onClick={() => exportInvoiceXlsx(inv).catch((e) => toast(e.message, 'error'))}><DownloadIcon /> Excel</Button>
         <Button variant="secondary" onClick={download} disabled={!pdfUrl}><DownloadIcon /> PDF</Button>
+        <Button onClick={shareWhatsApp} disabled={!pdfUrl} className="!bg-[#25D366] hover:!bg-[#1ebe5b]" title="Envoyer la facture au client par WhatsApp">WhatsApp</Button>
         {inv.status === 'BROUILLON' && <Button onClick={() => setStatus('EMISE')}>Marquer comme émise</Button>}
         {inv.status === 'EMISE' && <Button onClick={() => setStatus('PAYEE')}>Marquer comme payée</Button>}
       </>}
