@@ -59,49 +59,49 @@ export default function LoginPage() {
   return (
     <div className="min-h-[100dvh] bg-[#f6f4f1] lg:grid lg:grid-cols-[1.05fr_1fr]">
       {/* Panneau marque (ordinateur) */}
-      <aside className="relative hidden overflow-hidden bg-[#0f172a] lg:flex lg:flex-col lg:p-12 xl:p-16">
-        {/* Animation entrepôt → livraison, en fond (muette, en boucle) */}
-        {/* Fond flouté (mêmes couleurs) pour remplir les côtés de la vidéo verticale */}
-        <img src="/login-animation-poster.jpg" alt="" aria-hidden="true"
-          className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-2xl" />
-        <video
-          className="md-login-video pointer-events-none absolute inset-y-0 left-1/2 aspect-[9/16] h-full max-w-none -translate-x-1/2 object-cover [mask-image:linear-gradient(to_right,transparent_0%,black_16%,black_84%,transparent_100%)]"
-          src="/login-animation.mp4"
-          poster="/login-animation-poster.jpg"
-          autoPlay={!reducedMotion}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-        />
-        {/* Voile sombre : logo en haut et textes en bas restent lisibles */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#0f172a]/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-[#0f172a] via-[#0f172a]/90 to-transparent" />
+      <aside className="relative hidden overflow-hidden bg-[#0f172a] lg:flex lg:flex-col lg:p-10 xl:p-14">
         <div className="pointer-events-none absolute -right-40 -top-40 h-[420px] w-[420px] rounded-full bg-orange-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-48 -left-24 h-[420px] w-[420px] rounded-full bg-amber-400/10 blur-3xl" />
 
-        <img src={logoWhite} alt="M-D Logistique" className="relative h-24 w-auto self-start drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] xl:h-28" />
+        <img src={logoWhite} alt="M-D Logistique" className="relative h-20 w-auto self-start xl:h-24" />
 
-        <div className="relative mt-auto max-w-lg [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
-          <p className="text-xs font-bold uppercase tracking-[0.35em] text-orange-400">Transport & logistique · Belgique</p>
-          <h1 className="mt-4 text-4xl font-extrabold leading-[1.1] text-white xl:text-5xl">
-            Toute l'exploitation,<br />
-            <span className="bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent [text-shadow:none] [filter:drop-shadow(0_2px_10px_rgba(0,0,0,0.45))]">en un seul endroit.</span>
-          </h1>
-          <ul className="mt-8 space-y-4">
-            {FEATURES.map((f) => (
-              <li key={f.t} className="flex gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-orange-300 ring-1 ring-white/10"><Icon d={f.i} /></span>
-                <span>
-                  <span className="block font-bold text-white">{f.t}</span>
-                  <span className="block text-sm leading-6 text-slate-300">{f.d}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="relative flex flex-1 flex-col justify-center gap-8 py-8 2xl:flex-row 2xl:items-center 2xl:gap-10">
+          {/* Vidéo entière (format vertical), sans recadrage ni effet */}
+          <div className="mx-auto shrink-0 overflow-hidden rounded-3xl bg-black shadow-2xl shadow-black/40 ring-1 ring-white/10 2xl:order-2 2xl:mx-0">
+            <video
+              className="block aspect-[9/16] h-[42vh] w-auto 2xl:h-[min(68vh,620px)]"
+              src="/login-animation.mp4"
+              poster="/login-animation-poster.jpg"
+              autoPlay={!reducedMotion}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+            />
+          </div>
+
+          <div className="max-w-md text-center 2xl:order-1 2xl:text-left">
+            <p className="text-xs font-bold uppercase tracking-[0.35em] text-orange-400">Transport & logistique · Belgique</p>
+            <h1 className="mt-4 text-3xl font-extrabold leading-[1.1] text-white 2xl:text-[2.6rem]">
+              Toute l'exploitation,<br />
+              <span className="bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent">en un seul endroit.</span>
+            </h1>
+            <ul className="mt-8 hidden space-y-4 text-left 2xl:block">
+              {FEATURES.map((f) => (
+                <li key={f.t} className="flex gap-4">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-orange-300 ring-1 ring-white/10"><Icon d={f.i} /></span>
+                  <span>
+                    <span className="block font-bold text-white">{f.t}</span>
+                    <span className="block text-sm leading-6 text-slate-300">{f.d}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        <p className="relative mt-10 text-xs text-slate-400">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
+        <p className="relative text-xs text-slate-400">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
       </aside>
 
       {/* Formulaire */}
