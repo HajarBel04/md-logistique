@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
 import logo from '../assets/logo-md.png';
+import logoWhite from '../assets/logo-md-white.png';
 
 const input =
   'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/15';
@@ -34,6 +35,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const phone = mode === 'phone' && !needsSetup;
+  // « Réduire les animations » : la vidéo reste sur son image fixe
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -56,35 +59,46 @@ export default function LoginPage() {
   return (
     <div className="min-h-[100dvh] bg-[#f6f4f1] lg:grid lg:grid-cols-[1.05fr_1fr]">
       {/* Panneau marque (ordinateur) */}
-      <aside className="relative hidden overflow-hidden bg-[#0f172a] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-orange-500/25 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-48 -left-24 h-[460px] w-[460px] rounded-full bg-amber-400/15 blur-3xl" />
-        <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:repeating-linear-gradient(115deg,#fff_0_2px,transparent_2px_28px)]" />
+      <aside className="relative hidden overflow-hidden bg-[#0f172a] lg:flex lg:flex-col lg:p-12 xl:p-16">
+        {/* Animation entrepôt → livraison, en fond (muette, en boucle) */}
+        <video
+          className="md-login-video pointer-events-none absolute inset-0 h-full w-full object-cover"
+          src="/login-animation.mp4"
+          poster="/login-animation-poster.jpg"
+          autoPlay={!reducedMotion}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        />
+        {/* Voile sombre : logo en haut et textes en bas restent lisibles */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#0f172a]/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-[#0f172a] via-[#0f172a]/90 to-transparent" />
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[420px] w-[420px] rounded-full bg-orange-500/20 blur-3xl" />
 
-        <div className="relative inline-flex w-fit rounded-3xl bg-white px-7 py-5 shadow-2xl shadow-black/30">
-          <img src={logo} alt="M-D Logistique" className="h-20 w-auto xl:h-24" />
-        </div>
+        <img src={logoWhite} alt="M-D Logistique" className="relative h-24 w-auto self-start drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] xl:h-28" />
 
-        <div className="relative max-w-lg">
+        <div className="relative mt-auto max-w-lg [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
           <p className="text-xs font-bold uppercase tracking-[0.35em] text-orange-400">Transport & logistique · Belgique</p>
           <h1 className="mt-4 text-4xl font-extrabold leading-[1.1] text-white xl:text-5xl">
             Toute l'exploitation,<br />
-            <span className="bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent">en un seul endroit.</span>
+            <span className="bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent [text-shadow:none] [filter:drop-shadow(0_2px_10px_rgba(0,0,0,0.45))]">en un seul endroit.</span>
           </h1>
-          <ul className="mt-10 space-y-5">
+          <ul className="mt-8 space-y-4">
             {FEATURES.map((f) => (
               <li key={f.t} className="flex gap-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-orange-300 ring-1 ring-white/10"><Icon d={f.i} /></span>
                 <span>
                   <span className="block font-bold text-white">{f.t}</span>
-                  <span className="block text-sm leading-6 text-slate-400">{f.d}</span>
+                  <span className="block text-sm leading-6 text-slate-300">{f.d}</span>
                 </span>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative text-xs text-slate-500">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
+        <p className="relative mt-10 text-xs text-slate-400">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
       </aside>
 
       {/* Formulaire */}
