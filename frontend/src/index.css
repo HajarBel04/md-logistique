@@ -127,26 +127,45 @@ html {
   flex-shrink: 0;
 }
 
-/* ─── Camion MD du menu : arrive par la droite, s'arrête, repart vers la gauche ─── */
-.md-truck {
-  transform: translateX(-50%);
+/* ─── Logo du menu : le camion MD tire le logo depuis la droite, le dépose, puis sort à gauche ─── */
+.md-brand {
+  container-type: inline-size; /* 1cqw = 1 % de la largeur du bloc */
+}
+.md-brand-logo,
+.md-brand-truck {
   will-change: transform, opacity;
-  animation: md-truck-drive var(--md-truck-duration, 4200ms) var(--md-truck-delay, 600ms) both;
+  animation-duration: var(--md-brand-duration, 3600ms);
+  animation-delay: var(--md-brand-delay, 300ms);
+  animation-fill-mode: both;
+}
+.md-brand-logo {
+  transform: translate(-50%, -50%);
+  animation-name: md-brand-logo-in;
+}
+/* Le camion roule devant le logo : son centre est 133 px à gauche du centre du logo */
+.md-brand-truck {
+  transform: translateX(calc(-50% - 133px - 115cqw));
+  opacity: 0;
+  animation-name: md-brand-truck-pass;
 }
 
-@keyframes md-truck-drive {
-  0%   { transform: translateX(110%);  opacity: 0; animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1); }
-  10%  { opacity: 1; }
-  30%  { transform: translateX(-50%);  opacity: 1; }
-  55%  { transform: translateX(-50%);  opacity: 1; animation-timing-function: cubic-bezier(0.55, 0, 0.8, 0.25); }
-  85%  { opacity: 1; }
-  100% { transform: translateX(-240%); opacity: 0; }
+@keyframes md-brand-logo-in {
+  0%   { transform: translate(calc(-50% + 115cqw), -50%); animation-timing-function: linear; }
+  /* ralentit jusqu'à l'arrêt, sans jamais aller plus vite que le camion (pente initiale = vitesse commune) */
+  50%  { transform: translate(calc(-50% + 14cqw), -50%);  animation-timing-function: cubic-bezier(0.33, 0.66, 0.66, 1); }
+  64%  { transform: translate(-50%, -50%); }
+  100% { transform: translate(-50%, -50%); }
+}
+
+@keyframes md-brand-truck-pass {
+  0%   { transform: translateX(calc(-50% - 133px + 115cqw)); opacity: 1; animation-timing-function: linear; }
+  /* lâche le logo et accélère vers la gauche (toujours plus rapide que le logo) */
+  50%  { transform: translateX(calc(-50% - 133px + 14cqw));  opacity: 1; animation-timing-function: cubic-bezier(0.3, 0.3, 0.7, 0.55); }
+  88%  { opacity: 1; }
+  100% { transform: translateX(calc(-50% - 133px - 115cqw)); opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .md-truck {
-    animation: none;
-    transform: translateX(-50%);
-    opacity: 1;
-  }
+  .md-brand-logo { animation: none; transform: translate(-50%, -50%); }
+  .md-brand-truck { display: none; }
 }
