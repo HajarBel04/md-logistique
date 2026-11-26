@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { flotteApi } from '../../flotte/api';
 import { currentMonth, euro, exportTripsXlsx, monthLabel } from '../../flotte/excel';
 import TripForm from '../../flotte/TripForm';
+import { CmrButton } from './Facturation';
 import {
   Button, DownloadIcon, Empty, ErrorBanner, IconButton, Loader, Modal, PlusIcon, TrashIcon, inputBase,
   useToast,
@@ -163,8 +164,9 @@ export default function Trajets() {
                 <th className="px-3 py-3">Véhicules</th>
                 <th className="px-3 py-3">Client</th>
                 <th className="px-3 py-3 text-right">Surcharge</th>
-                <th className="px-3 py-3 text-right">Prix de base</th>
+                <th className="px-3 py-3 text-right">Rate/Tour</th>
                 <th className="px-3 py-3 text-right">Total HT</th>
+                <th className="px-3 py-3">CMR</th>
                 <th className="px-3 py-3" />
               </tr>
             </thead>
@@ -197,13 +199,14 @@ export default function Trajets() {
                   </td>
                   <td className="px-3 py-3 text-right tabular-nums">
                     {euro(t.surcharge)}
-                    {t.fuelRate != null && <p className="text-xs text-slate-400">{t.fuelRate} €/km</p>}
+                    {t.fuelRate != null && <p className="text-xs text-slate-400">{t.fuelRate} €/km{t.fuelRateOnRow ? '' : ' (mois)'}</p>}
                   </td>
                   <td className="px-3 py-3 text-right"><BasePriceInput trip={t} onSaved={replace} /></td>
                   <td className="px-3 py-3 text-right font-semibold tabular-nums">
                     {euro(t.total)}
                     {t.invoiceId && <p className="text-xs font-normal text-emerald-600">Facturé</p>}
                   </td>
+                  <td className="px-3 py-3"><CmrButton trip={t} onUpdated={replace} /></td>
                   <td className="px-3 py-3">
                     {!t.invoiceId && <IconButton label="Supprimer" onClick={() => remove(t)} className="hover:!text-red-600"><TrashIcon /></IconButton>}
                   </td>

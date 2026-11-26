@@ -930,6 +930,11 @@ _ADDED_COLUMNS = {
     'flotte_vehicle': {
         'type_vehicule_id': 'VARCHAR(36)', 'carburant': 'VARCHAR(20)', 'consommation': 'FLOAT',
     },
+    'flotte_company': {'numero_client': 'VARCHAR(30)'},
+    'flotte_trip': {'tour': 'INTEGER NOT NULL DEFAULT 1', 'cmr_file_id': 'VARCHAR(36)'},
+    'flotte_invoice': {
+        'period_start': 'DATE', 'period_end': 'DATE', 'numero_client': 'VARCHAR(30)', 'section': 'VARCHAR(80)',
+    },
     'flotte_driver_document': {
         'uploaded_by_driver': 'BOOLEAN NOT NULL DEFAULT FALSE', 'verified_at': 'TIMESTAMP',
     },
@@ -940,6 +945,10 @@ def _ensure_columns() -> None:
     from sqlalchemy import inspect, text
     insp = inspect(engine)
     with engine.begin() as conn:
+        if not IS_SQLITE:  # précision du taux carburant (5 décimales, ex. 0,02640 €/km)
+            for table, col in (('flotte_trip', 'fuel_rate'), ('flotte_fuel_rate', 'rate')):
+                if insp.has_table(table):
+                    conn.execute(text(f'ALTER TABLE {table} ALTER COLUMN {col} TYPE NUMERIC(12, 5)'))
         for table, cols in _ADDED_COLUMNS.items():
             if not insp.has_table(table):
                 continue

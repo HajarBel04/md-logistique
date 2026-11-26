@@ -217,6 +217,7 @@ class Company(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     nom: Mapped[str] = mapped_column(String(120), unique=True)
+    numero_client: Mapped[str | None] = mapped_column(String(30), nullable=True)  # ex. CL0009
     adresse: Mapped[str | None] = mapped_column(Text, nullable=True)
     tva: Mapped[str | None] = mapped_column(String(40), nullable=True)
     email: Mapped[str | None] = mapped_column(String(200), nullable=True)
@@ -265,7 +266,7 @@ class FuelRate(Base):
     __tablename__ = 'flotte_fuel_rate'
 
     month: Mapped[str] = mapped_column(String(7), primary_key=True)  # AAAA-MM
-    rate: Mapped[float] = mapped_column(Numeric(10, 4))
+    rate: Mapped[float] = mapped_column(Numeric(12, 5))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now)
 
 
@@ -279,6 +280,10 @@ class Invoice(Base):
     client: Mapped[dict] = mapped_column(JSON)       # copie des coordonnées du client
     emetteur: Mapped[dict] = mapped_column(JSON)     # copie des coordonnées MD Logistique
     month: Mapped[str] = mapped_column(String(7))
+    period_start: Mapped[date | None] = mapped_column(Date, nullable=True)
+    period_end: Mapped[date | None] = mapped_column(Date, nullable=True)
+    numero_client: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    section: Mapped[str | None] = mapped_column(String(80), nullable=True)  # ex. « PAN - »
     date_emission: Mapped[date] = mapped_column(Date)
     vat_rate: Mapped[float] = mapped_column(Numeric(5, 2))
     total_base: Mapped[float] = mapped_column(Numeric(12, 2))
@@ -306,6 +311,7 @@ class Trip(Base):
     route_code: Mapped[str] = mapped_column(String(40))
     itineraire: Mapped[str] = mapped_column(String(255), default='')
     distance_km: Mapped[float] = mapped_column(Float)
+    tour: Mapped[int] = mapped_column(Integer, default=1)
     company_id: Mapped[str | None] = mapped_column(
         ForeignKey('flotte_company.id', ondelete='SET NULL'), nullable=True, index=True)
     vehicle_id: Mapped[str | None] = mapped_column(
@@ -319,10 +325,13 @@ class Trip(Base):
     remarque: Mapped[str | None] = mapped_column(Text, nullable=True)
     ct_warning: Mapped[str | None] = mapped_column(Text, nullable=True)
     base_price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
-    fuel_rate: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)  # figé à la facturation
+    # Taux carburant de la ligne (€/km). Vide = taux du mois ; 0 = pas de surcharge. Figé à la facturation.
+    fuel_rate: Mapped[float | None] = mapped_column(Numeric(12, 5), nullable=True)
     surcharge: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)  # figé à la facturation
     invoice_id: Mapped[str | None] = mapped_column(
         ForeignKey('flotte_invoice.id', ondelete='SET NULL'), nullable=True, index=True)
+    cmr_file_id: Mapped[str | None] = mapped_column(
+        ForeignKey('flotte_file.id', ondelete='SET NULL'), nullable=True)
     created_by_role: Mapped[str] = mapped_column(String(10), default='CHAUFFEUR')
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 

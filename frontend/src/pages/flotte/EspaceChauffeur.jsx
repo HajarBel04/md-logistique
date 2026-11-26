@@ -1,7 +1,7 @@
 // Espace chauffeur (mobile) : route du jour, historique, documents, messages.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
-import { flotteApi } from '../../flotte/api';
+import { flotteApi, fileUrl } from '../../flotte/api';
 import ComplianceDocTabs, { MAIN_SLOTS } from '../../flotte/ComplianceDocTabs';
 import DocumentVault from '../../flotte/DocumentVault';
 import TripForm from '../../flotte/TripForm';
@@ -16,6 +16,38 @@ const NAV = [
   { key: 'documents', label: 'Documents', d: 'M7 3h7l5 5v13H7zM14 3v5h5' },
   { key: 'messages', label: 'Messages', d: 'M4 5h16v11H8l-4 4V5Z' },
 ];
+
+/** Photo du CMR signé (appareil photo du téléphone) pour un trajet. */
+function CmrCapture({ trip, onUploaded, big = false }) {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const onFile = async (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    setBusy(true);
+    try {
+      onUploaded(await flotteApi.uploadMyCmr(trip.id, f));
+      toast('CMR envoyé');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (trip.cmrUrl && !big) {
+    return <a href={fileUrl(trip.cmrUrl)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-emerald-700">✓ CMR envoyé</a>;
+  }
+  return (
+    <label className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl font-bold ${big
+      ? 'w-full bg-slate-900 px-4 py-3.5 text-base text-white dark:bg-white dark:text-slate-900'
+      : 'px-3 py-1.5 text-xs text-orange-700 ring-1 ring-orange-300'} ${busy ? 'opacity-60' : ''}`}>
+      <svg viewBox="0 0 24 24" className={big ? 'h-6 w-6' : 'h-4 w-4'} fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+      {busy ? 'Envoi…' : trip.cmrUrl ? 'Reprendre la photo du CMR' : big ? 'Photo du CMR signé' : 'Ajouter le CMR'}
+      <input type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} disabled={busy} />
+    </label>
+  );
+}
 
 function NewTrip({ onDone }) {
   const toast = useToast();
@@ -40,6 +72,12 @@ function NewTrip({ onDone }) {
           {done.routeCode} · {done.distanceKm} km · {formatDate(done.date)}
         </p>
         {done.ctWarning && <p className="mt-3 text-sm font-semibold text-amber-800 dark:text-amber-300">⚠ {done.ctWarning}</p>}
+        <div className="mt-5 rounded-xl bg-white p-4 text-left dark:bg-slate-900">
+          <p className="text-sm font-bold text-slate-900 dark:text-white">Fin de la route : CMR</p>
+          <p className="mb-3 mt-0.5 text-xs text-slate-500">Photographiez la lettre de voiture signée par le client. Vous pouvez aussi l'ajouter plus tard depuis l'historique.</p>
+          {done.cmrUrl && <img src={fileUrl(done.cmrUrl)} alt="CMR envoyé" className="mb-3 max-h-48 w-full rounded-lg object-contain ring-1 ring-slate-200" />}
+          <CmrCapture trip={done} onUploaded={setDone} big />
+        </div>
         <button type="button" className="mt-4 text-sm font-semibold text-emerald-800 underline dark:text-emerald-300"
           onClick={() => { setDone(null); setKey((k) => k + 1); load(); }}>
           Déclarer un autre trajet
@@ -79,6 +117,7 @@ function History() {
           <p className="text-sm text-slate-600 dark:text-slate-300">{t.itineraire}</p>
           <p className="mt-1 text-xs text-slate-500">{t.distanceKm} km · {t.vehiclePlaque}{t.trailerPlaque ? ` - ${t.trailerPlaque}` : ''}{t.companyNom ? ` · ${t.companyNom}` : ''}</p>
           {t.breakdownNom && <p className="mt-1 text-xs font-semibold text-red-600">Panne signalée : {t.breakdownNom}</p>}
+          <div className="mt-2"><CmrCapture trip={t} onUploaded={(u) => setTrips((list) => list.map((x) => (x.id === u.id ? u : x)))} /></div>
         </li>
       ))}
     </ul>

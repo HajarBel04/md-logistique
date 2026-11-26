@@ -1,10 +1,12 @@
-// Facturation : préparation par client et par mois, factures, taux carburant mensuel, coordonnées émetteur.
+// Facturation hebdomadaire : lignes déclarées par les chauffeurs → Rate/Tour saisi par l'admin
+// + Fuel Surch/KM → facture PDF / Excel au format M-D logistique.com sprl.
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { flotteApi } from '../../flotte/api';
-import { currentMonth, euro, exportTripsXlsx, monthLabel } from '../../flotte/excel';
+import { useSearchParams } from 'react-router-dom';
+import { flotteApi, fileUrl } from '../../flotte/api';
+import { currentMonth, monthLabel } from '../../flotte/excel';
+import { buildInvoicePdf, eur2, eur5, exportInvoiceXlsx, periodLabel } from '../../flotte/invoiceExport';
 import {
-  Button, Card, DownloadIcon, Empty, ErrorBanner, Field, Loader, Modal, PrintIcon, Tabs, TrashIcon,
+  Button, Card, DownloadIcon, Empty, ErrorBanner, EyeIcon, Field, Loader, Modal, Tabs, TrashIcon, UploadIcon,
   inputBase, inputClass, useToast,
 } from '../../flotte/ui';
 import { formatDate } from '../../flotte/utils';
@@ -15,66 +17,201 @@ const STATUS = {
   PAYEE: { label: 'Payée', cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' },
 };
 
-const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const nl = (s) => esc(s).replace(/\n/g, '<br>');
-
-function invoiceHtml(inv) {
-  const e = inv.emetteur || {};
-  const c = inv.client || {};
-  const lines = inv.lines.map((t) => `
-    <tr><td>${formatDate(t.date)}</td><td>${esc(t.routeCode)}<br><small>${esc(t.itineraire)}</small></td>
-    <td>${esc(t.driverNom)}<br><small>${esc(t.vehiclePlaque || '')}${t.trailerPlaque ? ' - ' + esc(t.trailerPlaque) : ''}</small></td>
-    <td class="r">${t.distanceKm}</td><td class="r">${euro(t.basePrice)}</td>
-    <td class="r">${euro(t.surcharge)}</td><td class="r"><b>${euro((t.basePrice || 0) + (t.surcharge || 0))}</b></td></tr>`).join('');
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Facture ${esc(inv.numero)}</title><style>
-    @page{size:A4;margin:14mm} body{font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#111;margin:0}
-    h1{font-size:22px;margin:0 0 4px} .top{display:flex;justify-content:space-between;gap:24px;margin-bottom:24px}
-    .box{border:1px solid #ddd;border-radius:6px;padding:10px 12px;min-width:220px} small{color:#666}
-    table{width:100%;border-collapse:collapse;margin-top:8px} th{background:#f3f4f6;text-align:left;font-size:10px;text-transform:uppercase}
-    th,td{padding:6px 8px;border-bottom:1px solid #e5e7eb;vertical-align:top} .r{text-align:right}
-    .tot{margin-left:auto;width:280px;margin-top:14px} .tot td{border:0;padding:3px 8px} .grand td{font-size:14px;font-weight:bold;border-top:2px solid #111}
-    .foot{margin-top:28px;color:#444;font-size:10px;white-space:pre-line}</style></head><body>
-    <div class="top"><div><h1>${esc(e.nom || 'MD Logistique')}</h1><div>${nl(e.adresse)}</div>
-      ${e.tva ? `<div>TVA : ${esc(e.tva)}</div>` : ''}${e.telephone ? `<div>${esc(e.telephone)}</div>` : ''}${e.email ? `<div>${esc(e.email)}</div>` : ''}</div>
-      <div><h1>Facture</h1><div>N° <b>${esc(inv.numero)}</b></div><div>Date : ${formatDate(inv.dateEmission)}</div>
-      <div>Période : ${esc(monthLabel(inv.month))}</div></div></div>
-    <div class="box"><small>Facturé à</small><br><b>${esc(c.nom)}</b><br>${nl(c.adresse)}${c.tva ? `<br>TVA : ${esc(c.tva)}` : ''}</div>
-    <table><thead><tr><th>Date</th><th>Route</th><th>Chauffeur / véhicule</th><th class="r">Km</th><th class="r">Prix de base</th>
-      <th class="r">Surcharge carburant</th><th class="r">Total HT</th></tr></thead><tbody>${lines}</tbody></table>
-    <table class="tot"><tr><td>Prix de base</td><td class="r">${euro(inv.totalBase)}</td></tr>
-      <tr><td>Surcharge carburant</td><td class="r">${euro(inv.totalSurcharge)}</td></tr>
-      <tr><td>Total HT</td><td class="r">${euro(inv.totalHt)}</td></tr>
-      <tr><td>TVA ${inv.vatRate} %</td><td class="r">${euro(inv.totalTva)}</td></tr>
-      <tr class="grand"><td>Total TTC</td><td class="r">${euro(inv.totalTtc)}</td></tr></table>
-    <div class="foot">${inv.lines[0]?.fuelRate != null ? `Surcharge carburant : ${inv.lines[0].fuelRate} €/km (${esc(monthLabel(inv.month))}).\n` : ''}${esc(inv.notes || '')}
-${e.iban ? `Paiement : IBAN ${esc(e.iban)}${e.bic ? ` — BIC ${esc(e.bic)}` : ''}` : ''}
-${esc(e.conditions || '')}</div></body></html>`;
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function weekOf(offset = 0) {
+  const d = new Date();
+  const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+  return { start: iso(monday), end: iso(sunday) };
 }
+const num = (v) => (v === '' || v == null ? null : Number(String(v).replace(',', '.')));
 
-function printHtml(html) {
-  const iframe = document.createElement('iframe');
-  iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
-  document.body.appendChild(iframe);
-  iframe.contentDocument.write(html);
-  iframe.contentDocument.close();
-  setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 250);
-  setTimeout(() => iframe.remove(), 60000);
-}
+/* ─── CMR : voir / ajouter ───────────────────────────────────────────── */
 
-/* ─── Préparer une facture ───────────────────────────────────────────── */
-
-function Prepare({ companies, onCreated }) {
+export function CmrButton({ trip, onUpdated }) {
   const toast = useToast();
-  const [month, setMonth] = useState(currentMonth());
-  const [trips, setTrips] = useState(null);
+  const [busy, setBusy] = useState(false);
+  if (trip.cmrUrl) {
+    return (
+      <Button size="sm" variant="secondary" onClick={() => window.open(fileUrl(trip.cmrUrl), '_blank', 'noopener')} title="Voir le CMR signé">
+        <EyeIcon /> CMR
+      </Button>
+    );
+  }
+  return (
+    <label className={`inline-flex cursor-pointer items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-300 hover:bg-amber-50 dark:text-amber-300 dark:ring-amber-500/40 ${busy ? 'opacity-50' : ''}`}
+      title="Aucun CMR envoyé — ajouter">
+      <UploadIcon /> CMR
+      <input type="file" accept="image/*,application/pdf" className="hidden" disabled={busy} onChange={async (e) => {
+        const f = e.target.files?.[0];
+        e.target.value = '';
+        if (!f) return;
+        setBusy(true);
+        try { onUpdated(await flotteApi.uploadTripCmr(trip.id, f)); toast('CMR ajouté'); } catch (err) { toast(err.message, 'error'); } finally { setBusy(false); }
+      }} />
+    </label>
+  );
+}
+
+/* ─── Éditeur de facture (lignes de la période pour un client) ──────── */
+
+function InvoiceBuilder({ group, period, onCreated }) {
+  const toast = useToast();
+  const [rows, setRows] = useState(group.trips);
+  const [draft, setDraft] = useState({}); // id → { basePrice, fuelRate } en cours de saisie
   const [vat, setVat] = useState('21');
-  const [busy, setBusy] = useState('');
+  const [section, setSection] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bulkRate, setBulkRate] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => setRows(group.trips), [group.trips]);
+
+  const val = (t, k) => (draft[t.id]?.[k] !== undefined ? draft[t.id][k] : t[k] ?? '');
+  const calc = (t) => {
+    const rate = num(val(t, 'basePrice'));
+    const fuelInput = val(t, 'fuelRate');
+    const fuel = fuelInput === '' ? t.fuelRate : num(fuelInput);
+    const tot = fuel == null ? null : t.distanceKm * (t.tour || 1) * fuel;
+    return { rate, fuel, tot, total: rate == null || tot == null ? null : rate + tot };
+  };
+  const lines = rows.map((t) => ({ t, ...calc(t) }));
+  const totals = lines.reduce((s, l) => ({
+    km: s.km + l.t.distanceKm, fuel: s.fuel + (l.tot || 0), sub: s.sub + (l.total ?? 0),
+    missing: s.missing + (l.rate == null ? 1 : 0), noFuel: s.noFuel + (l.fuel == null ? 1 : 0),
+  }), { km: 0, fuel: 0, sub: 0, missing: 0, noFuel: 0 });
+  const vatN = num(vat) || 0;
+  const tva = Math.round(totals.sub * vatN) / 100;
+
+  const save = async (t, key) => {
+    const v = draft[t.id]?.[key];
+    if (v === undefined) return;
+    const current = t[key] ?? '';
+    if (String(v) === String(current)) return;
+    try {
+      const updated = await flotteApi.updateTrip(t.id, { [key]: v === '' ? null : v });
+      setRows((rs) => rs.map((r) => (r.id === t.id ? updated : r)));
+      setDraft((d) => { const n = { ...d }; if (n[t.id]) delete n[t.id][key]; return n; });
+    } catch (e) { toast(e.message, 'error'); }
+  };
+  const setD = (t, key, v) => setDraft((d) => ({ ...d, [t.id]: { ...d[t.id], [key]: v } }));
+
+  const applyBulk = async () => {
+    if (bulkRate === '') return;
+    try {
+      const updated = await Promise.all(rows.map((t) => flotteApi.updateTrip(t.id, { fuelRate: bulkRate })));
+      setRows(updated);
+      setDraft({});
+      toast(`Fuel Surch/KM ${bulkRate} appliqué à ${updated.length} ligne(s)`);
+    } catch (e) { toast(e.message, 'error'); }
+  };
+
+  const generate = async () => {
+    setBusy(true);
+    try {
+      const inv = await flotteApi.createInvoice({
+        companyId: group.companyId, start: period.start, end: period.end, vatRate: vat, section, numero,
+        tripIds: rows.map((t) => t.id),
+      });
+      toast(`Facture ${inv.numero} créée`);
+      onCreated(inv);
+    } catch (e) { toast(e.message, 'error'); } finally { setBusy(false); }
+  };
+
+  const cell = 'border border-slate-300 px-2 py-1.5 dark:border-slate-700';
+  return (
+    <Card padded={false} title={group.nom} subtitle={`${rows.length} ligne(s) · ${totals.km.toLocaleString('fr-BE')} km · ${formatDate(period.start)} au ${formatDate(period.end)}`}
+      action={
+        <div className="flex flex-wrap items-end gap-2">
+          <input className={`${inputBase} w-28 py-1.5 text-sm`} placeholder="0,066" value={bulkRate} onChange={(e) => setBulkRate(e.target.value)} aria-label="Fuel Surch/KM pour toutes les lignes" />
+          <Button size="sm" variant="secondary" onClick={applyBulk} disabled={bulkRate === ''}>Fuel/KM sur toutes les lignes</Button>
+        </div>
+      }>
+      {!group.companyId && <p className="px-5 pt-4 text-sm text-amber-700">Attribuez un client à ces lignes (page « Formulaires chauffeurs ») pour pouvoir les facturer.</p>}
+      <div className="overflow-x-auto p-4">
+        <table className="min-w-full border-collapse text-[13px]">
+          <thead className="bg-slate-50 text-left text-xs font-bold dark:bg-slate-800">
+            <tr>
+              {['Date', 'Job# /Schedule#', 'Routing (city)', 'km per job', 'Tour', 'Rate/Tour', 'Fuel Surch/KM', 'Tot Fuel surch', 'Total Rate', 'CMR'].map((h) => (
+                <th key={h} className={`${cell} whitespace-nowrap`}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map(({ t, rate, fuel, tot, total }) => (
+              <tr key={t.id}>
+                <td className={`${cell} tabular-nums`}>{formatDate(t.date)}</td>
+                <td className={cell}>{t.routeCode}<div className="text-[11px] text-slate-400">{t.driverNom}</div></td>
+                <td className={cell}>{t.itineraire}</td>
+                <td className={`${cell} text-right tabular-nums`}>{t.distanceKm}</td>
+                <td className={`${cell} text-center`}>{t.tour}</td>
+                <td className={`${cell} p-1`}>
+                  <input inputMode="decimal" value={val(t, 'basePrice')} placeholder="À saisir"
+                    onChange={(e) => setD(t, 'basePrice', e.target.value)} onBlur={() => save(t, 'basePrice')}
+                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    className={`${inputBase} w-24 py-1 text-right tabular-nums ${rate == null ? 'border-amber-400 bg-amber-50 dark:bg-amber-500/10' : ''}`} aria-label={`Rate/Tour ${t.routeCode}`} />
+                </td>
+                <td className={`${cell} p-1`}>
+                  <input inputMode="decimal" value={draft[t.id]?.fuelRate !== undefined ? draft[t.id].fuelRate : t.fuelRateOnRow ? t.fuelRate : ''}
+                    placeholder={t.fuelRate != null && !t.fuelRateOnRow ? `${t.fuelRate} (mois)` : '0,066'}
+                    onChange={(e) => setD(t, 'fuelRate', e.target.value)} onBlur={() => save(t, 'fuelRate')}
+                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    className={`${inputBase} w-28 py-1 text-right tabular-nums ${fuel == null ? 'border-amber-400 bg-amber-50 dark:bg-amber-500/10' : ''}`} aria-label={`Fuel Surch/KM ${t.routeCode}`} />
+                </td>
+                <td className={`${cell} text-right tabular-nums`}>{tot == null ? '—' : eur5(tot)}</td>
+                <td className={`${cell} text-right font-bold tabular-nums`}>{total == null ? '—' : eur2(total)}</td>
+                <td className={`${cell} p-1`}><CmrButton trip={t} onUpdated={(u) => setRows((rs) => rs.map((r) => (r.id === u.id ? u : r)))} /></td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot className="font-semibold">
+            <tr>
+              <td colSpan={3} className="px-2 pt-3 text-right">Subtotal</td>
+              <td className="px-2 pt-3 text-right tabular-nums">{totals.km.toLocaleString('fr-BE')}</td>
+              <td colSpan={3} />
+              <td className="px-2 pt-3 text-right tabular-nums">{eur2(totals.fuel)}</td>
+              <td className="px-2 pt-3 text-right tabular-nums">{eur2(totals.sub)}</td>
+            </tr>
+            <tr>
+              <td colSpan={8} className="px-2 text-right">TVA {vatN} %</td>
+              <td className="px-2 text-right tabular-nums">{eur2(tva)}</td>
+            </tr>
+            <tr className="text-base">
+              <td colSpan={8} className="px-2 text-right">Total</td>
+              <td className="px-2 text-right tabular-nums">{eur2(totals.sub + tva)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div className="flex flex-wrap items-end gap-3 border-t border-slate-100 px-5 py-4 dark:border-slate-800">
+        <Field label="TVA (%)" hint="0 % = autoliquidation (client UE)"><input className={`${inputBase} w-24`} value={vat} onChange={(e) => setVat(e.target.value)} /></Field>
+        <Field label="Libellé (ex. PAN -)"><input className={`${inputBase} w-36`} value={section} onChange={(e) => setSection(e.target.value)} /></Field>
+        <Field label="N° de facture" hint="Vide = numéro automatique"><input className={`${inputBase} w-36`} value={numero} onChange={(e) => setNumero(e.target.value)} /></Field>
+        <div className="ml-auto text-right">
+          {(totals.missing > 0 || totals.noFuel > 0) && (
+            <p className="mb-2 text-xs text-amber-700 dark:text-amber-300">
+              {totals.missing > 0 && `${totals.missing} Rate/Tour à saisir. `}{totals.noFuel > 0 && `${totals.noFuel} Fuel Surch/KM à saisir (0 = sans surcharge).`}
+            </p>
+          )}
+          <Button onClick={generate} disabled={busy || !group.companyId || totals.missing > 0 || totals.noFuel > 0 || Object.values(draft).some((d) => Object.keys(d).length)}>
+            {busy ? 'Création…' : 'Générer la facture'}
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function Prepare({ onCreated }) {
+  const [period, setPeriod] = useState(weekOf(-1));
+  const [trips, setTrips] = useState(null);
   const [error, setError] = useState('');
 
   const load = useCallback(() => {
     setTrips(null);
-    flotteApi.trips({ month, status: 'a_facturer' }).then(setTrips).catch((e) => setError(e.message));
-  }, [month]);
+    flotteApi.trips({ start: period.start, end: period.end, status: 'a_facturer' })
+      .then((t) => { setTrips(t.slice().reverse()); setError(''); })
+      .catch((e) => setError(e.message));
+  }, [period]);
   useEffect(load, [load]);
 
   const groups = useMemo(() => {
@@ -86,67 +223,21 @@ function Prepare({ companies, onCreated }) {
     });
     return Object.values(g).sort((a, b) => (a.companyId ? 0 : 1) - (b.companyId ? 0 : 1) || a.nom.localeCompare(b.nom));
   }, [trips]);
-  const noRate = trips?.some((t) => t.fuelRate == null);
-
-  const create = async (g) => {
-    setBusy(g.companyId);
-    try {
-      const inv = await flotteApi.createInvoice({ companyId: g.companyId, month, vatRate: vat });
-      toast(`Facture ${inv.numero} créée (brouillon)`);
-      onCreated(inv);
-      load();
-    } catch (e) {
-      toast(e.message, 'error');
-    } finally {
-      setBusy('');
-    }
-  };
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
-        <Field label="Mois"><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={`${inputBase} w-44`} /></Field>
-        <Field label="TVA (%)"><input type="number" min="0" step="0.01" value={vat} onChange={(e) => setVat(e.target.value)} className={`${inputBase} w-24`} /></Field>
+        <Field label="Du"><input type="date" className={`${inputBase} w-40`} value={period.start} onChange={(e) => setPeriod({ ...period, start: e.target.value })} /></Field>
+        <Field label="Au"><input type="date" className={`${inputBase} w-40`} value={period.end} onChange={(e) => setPeriod({ ...period, end: e.target.value })} /></Field>
+        <Button variant="secondary" onClick={() => setPeriod(weekOf(-1))}>Semaine dernière</Button>
+        <Button variant="secondary" onClick={() => setPeriod(weekOf(0))}>Cette semaine</Button>
       </div>
       <ErrorBanner message={error} onRetry={load} />
-      {noRate && (
-        <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-          Renseignez le taux de surcharge carburant de {monthLabel(month)} (onglet « Carburant ») avant de facturer.
-        </div>
-      )}
       {!trips ? <Loader /> : groups.length === 0 ? (
-        <Empty title={`Rien à facturer en ${monthLabel(month)}`}>Tous les trajets du mois sont déjà facturés, ou aucun n'a été déclaré.</Empty>
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {groups.map((g) => {
-            const missing = g.trips.filter((t) => t.basePrice == null).length;
-            const km = g.trips.reduce((s, t) => s + t.distanceKm, 0);
-            const sur = g.trips.reduce((s, t) => s + (t.surcharge || 0), 0);
-            const base = g.trips.reduce((s, t) => s + (t.basePrice || 0), 0);
-            const ht = base + sur;
-            const ready = g.companyId && !missing && !noRate;
-            return (
-              <Card key={g.companyId || 'none'} title={g.nom} subtitle={`${g.trips.length} trajet(s) · ${km.toLocaleString('fr-BE')} km`}>
-                <dl className="space-y-1.5 text-sm">
-                  <div className="flex justify-between"><dt className="text-slate-500">Prix de base</dt><dd className="tabular-nums">{euro(base)}</dd></div>
-                  <div className="flex justify-between"><dt className="text-slate-500">Surcharge carburant</dt><dd className="tabular-nums">{euro(sur)}</dd></div>
-                  <div className="flex justify-between border-t border-slate-100 pt-1.5 font-semibold dark:border-slate-800"><dt>Total HT</dt><dd className="tabular-nums">{euro(ht)}</dd></div>
-                  <div className="flex justify-between text-slate-500"><dt>TTC ({vat} %)</dt><dd className="tabular-nums">{euro(ht * (1 + Number(vat || 0) / 100))}</dd></div>
-                </dl>
-                {!g.companyId && <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">Attribuez un client à ces trajets dans « Formulaires chauffeurs ».</p>}
-                {g.companyId && missing > 0 && (
-                  <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">
-                    Prix de base à saisir pour {missing} trajet(s) — <Link className="font-semibold underline" to="/trajets">compléter</Link>.
-                  </p>
-                )}
-                <Button className="mt-4 w-full" disabled={!ready || busy === g.companyId} onClick={() => create(g)}>
-                  {busy === g.companyId ? 'Création…' : 'Générer la facture'}
-                </Button>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+        <Empty title="Rien à facturer sur cette période">Les lignes apparaissent ici dès que les chauffeurs déclarent leurs routes.</Empty>
+      ) : groups.map((g) => (
+        <InvoiceBuilder key={`${g.companyId}-${period.start}-${period.end}`} group={g} period={period} onCreated={(inv) => { onCreated(inv); load(); }} />
+      ))}
     </div>
   );
 }
@@ -156,37 +247,61 @@ function Prepare({ companies, onCreated }) {
 function InvoiceModal({ id, onClose, onChanged }) {
   const toast = useToast();
   const [inv, setInv] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
   useEffect(() => { flotteApi.invoice(id).then(setInv).catch((e) => { toast(e.message, 'error'); onClose(); }); }, [id, toast, onClose]);
+  useEffect(() => {
+    if (!inv) return undefined;
+    let url;
+    buildInvoicePdf(inv).then((b) => { url = URL.createObjectURL(b); setPdfUrl(url); }).catch((e) => toast(e.message, 'error'));
+    return () => url && URL.revokeObjectURL(url);
+  }, [inv, toast]);
 
   const setStatus = async (status) => {
     try { setInv(await flotteApi.updateInvoice(id, { status })); onChanged(); } catch (e) { toast(e.message, 'error'); }
   };
   const remove = async () => {
-    if (!window.confirm(`Supprimer la facture brouillon ${inv.numero} ? Ses trajets redeviennent « à facturer ».`)) return;
+    if (!window.confirm(`Supprimer la facture brouillon ${inv.numero} ? Ses lignes redeviennent « à facturer ».`)) return;
     try { await flotteApi.deleteInvoice(id); toast('Facture supprimée'); onChanged(); onClose(); } catch (e) { toast(e.message, 'error'); }
+  };
+  const download = () => {
+    const a = document.createElement('a');
+    a.href = pdfUrl;
+    a.download = `Facture-${inv.numero}.pdf`;
+    a.click();
   };
 
   return (
     <Modal
       title={inv ? `Facture ${inv.numero}` : 'Facture'}
-      subtitle={inv ? `${inv.client?.nom} · ${monthLabel(inv.month)}` : ''}
-      size="lg"
+      subtitle={inv ? `${inv.client?.nom} · ${periodLabel(inv)}` : ''}
+      size="xl"
       onClose={onClose}
       footer={inv && <>
         {inv.status === 'BROUILLON' && <Button variant="danger" className="mr-auto" onClick={remove}><TrashIcon /> Supprimer</Button>}
-        <Button variant="secondary" onClick={() => exportTripsXlsx(inv.lines, `${inv.numero}.xlsx`)}><DownloadIcon /> Excel</Button>
-        <Button variant="secondary" onClick={() => printHtml(invoiceHtml(inv))}><PrintIcon /> Imprimer / PDF</Button>
+        <Button variant="secondary" onClick={() => exportInvoiceXlsx(inv).catch((e) => toast(e.message, 'error'))}><DownloadIcon /> Excel</Button>
+        <Button variant="secondary" onClick={download} disabled={!pdfUrl}><DownloadIcon /> PDF</Button>
         {inv.status === 'BROUILLON' && <Button onClick={() => setStatus('EMISE')}>Marquer comme émise</Button>}
         {inv.status === 'EMISE' && <Button onClick={() => setStatus('PAYEE')}>Marquer comme payée</Button>}
       </>}
     >
       {!inv ? <Loader /> : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS[inv.status].cls}`}>{STATUS[inv.status].label}</span>
-            <span className="text-slate-500">Émise le {formatDate(inv.dateEmission)}</span>
+            <span className="text-slate-500">Émise le {formatDate(inv.dateEmission)} · {inv.lines.length} ligne(s) · {inv.lines.filter((l) => l.cmrUrl).length} CMR</span>
           </div>
-          <iframe title="Aperçu de la facture" srcDoc={invoiceHtml(inv)} className="h-[60vh] w-full rounded-xl border border-slate-200 bg-white dark:border-slate-700" />
+          {pdfUrl ? <iframe title="Aperçu PDF de la facture" src={pdfUrl} className="h-[62vh] w-full rounded-xl border border-slate-200 bg-white dark:border-slate-700" /> : <Loader label="Génération du PDF…" />}
+          <details className="rounded-xl border border-slate-200 p-3 text-sm dark:border-slate-700">
+            <summary className="cursor-pointer font-semibold">CMR des lignes</summary>
+            <ul className="mt-2 space-y-1">
+              {inv.lines.map((l) => (
+                <li key={l.id} className="flex items-center justify-between gap-2">
+                  <span>{formatDate(l.date)} · {l.routeCode} · {l.driverNom}</span>
+                  {l.cmrUrl ? <a className="font-semibold text-orange-600 hover:underline" href={fileUrl(l.cmrUrl)} target="_blank" rel="noopener noreferrer">Voir le CMR</a> : <span className="text-amber-600">Pas de CMR</span>}
+                </li>
+              ))}
+            </ul>
+          </details>
         </div>
       )}
     </Modal>
@@ -196,11 +311,8 @@ function InvoiceModal({ id, onClose, onChanged }) {
 function Invoices({ openId, setOpenId, refreshKey }) {
   const [list, setList] = useState(null);
   const [error, setError] = useState('');
-  const load = useCallback(() => {
-    flotteApi.invoices().then(setList).catch((e) => setError(e.message));
-  }, []);
+  const load = useCallback(() => { flotteApi.invoices().then(setList).catch((e) => setError(e.message)); }, []);
   useEffect(load, [load, refreshKey]);
-
   return (
     <div className="space-y-4">
       <ErrorBanner message={error} onRetry={load} />
@@ -211,16 +323,16 @@ function Invoices({ openId, setOpenId, refreshKey }) {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900/60">
               <tr><th className="px-4 py-3">N°</th><th className="px-4 py-3">Client</th><th className="px-4 py-3">Période</th>
-                <th className="px-4 py-3 text-right">HT</th><th className="px-4 py-3 text-right">TTC</th><th className="px-4 py-3">Statut</th></tr>
+                <th className="px-4 py-3 text-right">Subtotal</th><th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3">Statut</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {list.map((i) => (
                 <tr key={i.id} onClick={() => setOpenId(i.id)} className="cursor-pointer hover:bg-orange-50/40 dark:hover:bg-slate-800/50">
                   <td className="px-4 py-3 font-mono font-bold">{i.numero}</td>
                   <td className="px-4 py-3">{i.client?.nom}</td>
-                  <td className="px-4 py-3 capitalize">{monthLabel(i.month)}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{euro(i.totalHt)}</td>
-                  <td className="px-4 py-3 text-right font-semibold tabular-nums">{euro(i.totalTtc)}</td>
+                  <td className="px-4 py-3">{periodLabel(i)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{eur2(i.totalHt)}</td>
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums">{eur2(i.totalTtc)}</td>
                   <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS[i.status].cls}`}>{STATUS[i.status].label}</span></td>
                 </tr>
               ))}
@@ -242,14 +354,9 @@ function FuelAndIssuer() {
   const [rate, setRate] = useState('');
   const [issuer, setIssuer] = useState(null);
 
-  const load = useCallback(() => {
-    flotteApi.fuelRates().then(setRates).catch((e) => toast(e.message, 'error'));
-  }, [toast]);
+  const load = useCallback(() => { flotteApi.fuelRates().then(setRates).catch((e) => toast(e.message, 'error')); }, [toast]);
   useEffect(() => { load(); flotteApi.companyInfo().then(setIssuer).catch(() => {}); }, [load]);
-  useEffect(() => {
-    const r = rates?.find((x) => x.month === month);
-    setRate(r ? String(r.rate) : '');
-  }, [month, rates]);
+  useEffect(() => { const r = rates?.find((x) => x.month === month); setRate(r ? String(r.rate) : ''); }, [month, rates]);
 
   const saveRate = async (e) => {
     e.preventDefault();
@@ -262,32 +369,30 @@ function FuelAndIssuer() {
 
   return (
     <div className="grid gap-5 xl:grid-cols-2">
-      <Card title="Surcharge carburant mensuelle" subtitle="Surcharge d'un trajet = distance de la route × taux du mois.">
+      <Card title="Fuel Surch/KM par défaut" subtitle="Utilisé pour une ligne quand aucun taux n'y est saisi. Chaque ligne peut avoir son propre taux.">
         <form onSubmit={saveRate} className="flex flex-wrap items-end gap-3">
           <Field label="Mois"><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={`${inputBase} w-44`} /></Field>
-          <Field label="Taux (€/km)"><input required type="number" step="0.0001" min="0" value={rate} onChange={(e) => setRate(e.target.value)} placeholder="0,06" className={`${inputBase} w-32`} /></Field>
+          <Field label="Taux (€/km)"><input required inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} placeholder="0,066" className={`${inputBase} w-32`} /></Field>
           <Button type="submit">Enregistrer</Button>
         </form>
-        {rate && <p className="mt-3 text-sm text-slate-500">Ex. route de 447 km → surcharge de <strong>{euro(447 * Number(rate))}</strong>.</p>}
         <ul className="mt-5 divide-y divide-slate-100 text-sm dark:divide-slate-800">
           {(rates || []).map((r) => (
             <li key={r.month} className="flex justify-between py-2">
               <button type="button" className="capitalize hover:text-orange-600" onClick={() => setMonth(r.month)}>{monthLabel(r.month)}</button>
-              <span className="font-semibold tabular-nums">{r.rate} €/km</span>
+              <span className="font-semibold tabular-nums">{eur5(r.rate)}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-xs text-slate-400">Le taux est figé sur chaque trajet au moment de la facture : le modifier ensuite ne change pas les factures existantes.</p>
       </Card>
 
-      <Card title="Coordonnées de MD Logistique" subtitle="Affichées en en-tête et en pied des factures.">
+      <Card title="En-tête des factures" subtitle="Coordonnées de M-D logistique.com sprl.">
         {!issuer ? <Loader /> : (
           <form onSubmit={saveIssuer} className="grid gap-3 sm:grid-cols-2">
-            {[['nom', 'Raison sociale'], ['tva', 'N° TVA'], ['telephone', 'Téléphone'], ['email', 'Email'], ['iban', 'IBAN'], ['bic', 'BIC']].map(([k, l]) => (
+            {[['nom', 'Raison sociale'], ['adresse', 'Adresse'], ['cpVille', 'CP & Ville'], ['pays', 'Pays'], ['telephone', 'Téléphone'], ['email', 'E-mail'],
+              ['iban', 'Rekeningnummer (IBAN)'], ['tva', 'BTW nr']].map(([k, l]) => (
               <Field key={k} label={l}><input className={inputClass} value={issuer[k] || ''} onChange={(e) => setIssuer({ ...issuer, [k]: e.target.value })} /></Field>
             ))}
-            <Field label="Adresse" className="sm:col-span-2"><textarea rows={2} className={inputClass} value={issuer.adresse || ''} onChange={(e) => setIssuer({ ...issuer, adresse: e.target.value })} /></Field>
-            <Field label="Conditions de paiement" className="sm:col-span-2"><textarea rows={2} className={inputClass} value={issuer.conditions || ''} onChange={(e) => setIssuer({ ...issuer, conditions: e.target.value })} placeholder="Paiement à 30 jours fin de mois." /></Field>
+            <Field label="Mentions en bas de facture" className="sm:col-span-2"><textarea rows={2} className={inputClass} value={issuer.conditions || ''} onChange={(e) => setIssuer({ ...issuer, conditions: e.target.value })} placeholder="Paiement à 30 jours." /></Field>
             <div className="sm:col-span-2"><Button type="submit">Enregistrer</Button></div>
           </form>
         )}
@@ -299,10 +404,8 @@ function FuelAndIssuer() {
 export default function Facturation() {
   const [params, setParams] = useSearchParams();
   const tab = params.get('tab') || 'preparer';
-  const [companies, setCompanies] = useState([]);
   const [openId, setOpenId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  useEffect(() => { flotteApi.refs().then((r) => setCompanies(r.companies)).catch(() => {}); }, []);
 
   return (
     <div className="space-y-5">
@@ -310,14 +413,14 @@ export default function Facturation() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-600">Exploitation</p>
           <h1 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white sm:text-3xl">Facturation</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Prix de base + surcharge carburant (km × taux du mois), une facture par client et par mois.</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Total Rate = Rate/Tour + km × Fuel Surch/KM. Une facture par client et par semaine.</p>
         </div>
         <Tabs value={tab} onChange={(v) => setParams({ tab: v })} tabs={[
-          { value: 'preparer', label: 'À facturer' }, { value: 'factures', label: 'Factures' }, { value: 'carburant', label: 'Carburant & coordonnées' },
+          { value: 'preparer', label: 'À facturer' }, { value: 'factures', label: 'Factures' }, { value: 'carburant', label: 'Carburant & en-tête' },
         ]} />
       </div>
       {tab === 'preparer' && (
-        <Prepare companies={companies} onCreated={(inv) => { setRefreshKey((k) => k + 1); setParams({ tab: 'factures' }); setOpenId(inv.id); }} />
+        <Prepare onCreated={(inv) => { setRefreshKey((k) => k + 1); setParams({ tab: 'factures' }); setOpenId(inv.id); }} />
       )}
       {tab === 'factures' && <Invoices openId={openId} setOpenId={setOpenId} refreshKey={refreshKey} />}
       {tab === 'carburant' && <FuelAndIssuer />}
