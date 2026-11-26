@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import AnimatedButton from '../AnimatedButton/AnimatedButton';
 import './Header.css';
 
+// Plateforme interne (connexion chauffeurs et bureau)
+const PLATFORM_URL = 'https://md-logistique.vercel.app';
+
 const NAV_LINKS = [
   { label: 'Accueil',        href: '/',           active: true  },
   { label: 'Services',       href: '/services',   active: false },
@@ -59,8 +62,8 @@ export default function Header() {
           <AnimatedButton variant="outline" href="/tracking" icon={<PinIcon />} delay={0}>
             Suivre un colis
           </AnimatedButton>
-          <AnimatedButton variant="primary" href="/login" icon={<UserIcon />} delay={80}>
-            Espace client
+          <AnimatedButton variant="primary" href={PLATFORM_URL} icon={<UserIcon />} delay={80}>
+            Espace chauffeur
           </AnimatedButton>
         </div>
 
@@ -76,6 +79,7 @@ export default function Header() {
           {NAV_LINKS.map(({ label, href }) => (
             <a key={href} href={href} className="mobile-link" onClick={() => setMenuOpen(false)}>{label}</a>
           ))}
+          <a href={PLATFORM_URL} className="mobile-link" style={{ color: '#ea580c', fontWeight: 700 }}>Espace chauffeur</a>
         </nav>
       )}
     </header>
