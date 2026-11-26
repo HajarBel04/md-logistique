@@ -332,6 +332,15 @@ class Trip(Base):
         ForeignKey('flotte_invoice.id', ondelete='SET NULL'), nullable=True, index=True)
     cmr_file_id: Mapped[str | None] = mapped_column(
         ForeignKey('flotte_file.id', ondelete='SET NULL'), nullable=True)
+    cmr_numero: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    vehicle_type: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    statut: Mapped[str] = mapped_column(String(10), default='CONFIRME')   # CONFIRME | ANNULE
+    phase: Mapped[str] = mapped_column(String(10), default='TERMINE')     # EN_COURS | TERMINE
+    arrival_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)  # heure locale saisie
+    wait_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    return_cmr_numero: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    return_cmr_file_id: Mapped[str | None] = mapped_column(
+        ForeignKey('flotte_file.id', ondelete='SET NULL'), nullable=True)
     created_by_role: Mapped[str] = mapped_column(String(10), default='CHAUFFEUR')
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 

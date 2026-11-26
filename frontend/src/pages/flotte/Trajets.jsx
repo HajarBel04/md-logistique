@@ -166,7 +166,7 @@ export default function Trajets() {
                 <th className="px-3 py-3 text-right">Surcharge</th>
                 <th className="px-3 py-3 text-right">Rate/Tour</th>
                 <th className="px-3 py-3 text-right">Total HT</th>
-                <th className="px-3 py-3">CMR</th>
+                <th className="px-3 py-3">CMR aller / retour</th>
                 <th className="px-3 py-3" />
               </tr>
             </thead>
@@ -179,7 +179,10 @@ export default function Trajets() {
                   </td>
                   <td className="px-3 py-3 font-semibold text-slate-800 dark:text-slate-100">{t.driverNom}</td>
                   <td className="px-3 py-3">
-                    <p className="font-mono font-bold">{t.routeCode}</p>
+                    <p className="font-mono font-bold">{t.routeCode}
+                      {t.statut === 'ANNULE' && <span className="ml-1.5 rounded bg-red-600 px-1.5 py-0.5 font-sans text-[10px] font-bold text-white">ANNULÉ</span>}
+                      {t.phase === 'EN_COURS' && <span className="ml-1.5 rounded bg-orange-100 px-1.5 py-0.5 font-sans text-[10px] font-bold text-orange-700">EN COURS</span>}
+                    </p>
                     <p className="text-xs text-slate-500">{t.itineraire}</p>
                     {t.breakdownNom && <p className="mt-1 inline-block rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-500/15 dark:text-red-300">Panne : {t.breakdownNom}</p>}
                     {t.remarque && <p className="mt-1 max-w-[220px] text-xs italic text-slate-500">« {t.remarque} »</p>}
@@ -206,7 +209,15 @@ export default function Trajets() {
                     {euro(t.total)}
                     {t.invoiceId && <p className="text-xs font-normal text-emerald-600">Facturé</p>}
                   </td>
-                  <td className="px-3 py-3"><CmrButton trip={t} onUpdated={replace} /></td>
+                  <td className="px-3 py-3">
+                    <div className="flex flex-col gap-1">
+                      <CmrButton trip={t} onUpdated={replace} />
+                      {t.cmrNumero && <span className="text-[11px] text-slate-500">n° {t.cmrNumero}</span>}
+                      <CmrButton trip={t} retour onUpdated={replace} />
+                      {t.returnCmrNumero && <span className="text-[11px] text-slate-500">n° {t.returnCmrNumero}</span>}
+                      {t.waitMinutes > 0 && <span className="text-[11px] text-slate-500">Attente {Math.floor(t.waitMinutes / 60)} h {t.waitMinutes % 60} min</span>}
+                    </div>
+                  </td>
                   <td className="px-3 py-3">
                     {!t.invoiceId && <IconButton label="Supprimer" onClick={() => remove(t)} className="hover:!text-red-600"><TrashIcon /></IconButton>}
                   </td>
@@ -224,8 +235,9 @@ export default function Trajets() {
             drivers={drivers}
             options={options}
             submitLabel="Ajouter le trajet"
-            onSubmit={async (payload) => {
-              await flotteApi.createTrip(payload);
+            onSubmit={async (payload, cmrFile) => {
+              const t = await flotteApi.createTrip(payload);
+              if (cmrFile) await flotteApi.uploadTripCmr(t.id, cmrFile);
               toast('Trajet ajouté');
               setAdding(false);
               load();

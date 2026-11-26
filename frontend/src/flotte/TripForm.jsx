@@ -1,5 +1,5 @@
 // Formulaire de trajet (route du jour) — partagé entre l'espace chauffeur et l'admin.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button, ErrorBanner, Field, inputClass } from './ui';
 import { formatDate } from './utils';
 
@@ -17,6 +17,54 @@ export function ctLabel(ct) {
   return '';
 }
 
+/** Photo / scan du CMR : appareil photo du téléphone, image ou PDF (CamScanner…). */
+export function CmrPhotoField({ label = 'Photo du CMR', file, onChange, required = true }) {
+  const [preview, setPreview] = useState(null);
+  useEffect(() => {
+    if (!file || !file.type.startsWith('image/')) { setPreview(null); return undefined; }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  return (
+    <div>
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {label}{required && <span className="text-red-600"> *</span>}
+      </span>
+      {file ? (
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-2.5 dark:border-emerald-500/40 dark:bg-emerald-500/10">
+          {preview ? <img src={preview} alt="CMR" className="h-16 w-12 rounded object-cover ring-1 ring-emerald-200" /> : <span className="flex h-16 w-12 items-center justify-center rounded bg-white text-xs font-bold">PDF</span>}
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-emerald-900 dark:text-emerald-200">✓ {file.name}</span>
+          <button type="button" onClick={() => onChange(null)} className="text-xs font-semibold text-red-600">Retirer</button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-3 text-sm font-bold text-white dark:bg-white dark:text-slate-900">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+            Prendre photo
+            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { onChange(e.target.files?.[0] || null); e.target.value = ''; }} />
+          </label>
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 ring-1 ring-inset ring-slate-300 dark:text-slate-200 dark:ring-slate-700">
+            Fichier / scan
+            <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => { onChange(e.target.files?.[0] || null); e.target.value = ''; }} />
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function StatutField({ value, onChange }) {
+  return (
+    <Field label="Statut">
+      <select className={inputClass} value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="CONFIRME">Confirmé</option>
+        <option value="ANNULE">Annulé (route annulée sur place — CMR « Cancel »)</option>
+      </select>
+    </Field>
+  );
+}
+
 /**
  * props: options (routes, vehicles, trailers, companies, breakdownTypes, today),
  *        onSubmit(payload) → promesse, admin (bool : chauffeur + date + forçage), drivers (admin)
@@ -24,8 +72,9 @@ export function ctLabel(ct) {
 export default function TripForm({ options, onSubmit, admin = false, drivers = [], submitLabel = 'Enregistrer le trajet' }) {
   const [form, setForm] = useState({
     driverId: '', date: options.today, routeId: '', vehicleId: '', trailerId: '', companyId: '',
-    breakdownTypeId: '', remarque: '', basePrice: '',
+    breakdownTypeId: '', remarque: '', basePrice: '', cmrNumero: '', statut: 'CONFIRME',
   });
+  const [cmrFile, setCmrFile] = useState(null);
   const [panne, setPanne] = useState(false);
   const [error, setError] = useState('');
   const [blocked, setBlocked] = useState(null);
@@ -49,8 +98,10 @@ export default function TripForm({ options, onSubmit, admin = false, drivers = [
     setError('');
     setBlocked(null);
     try {
+      if (!admin && !form.cmrNumero.trim()) throw new Error('Le numéro du CMR est obligatoire.');
+      if (!admin && !cmrFile) throw new Error('La photo du CMR est obligatoire.');
       const payload = { ...form, breakdownTypeId: panne ? form.breakdownTypeId : '', force };
-      await onSubmit(payload);
+      await onSubmit(payload, cmrFile);
     } catch (err) {
       if (err.status === 409) setBlocked(err.message);
       else setError(err.message);
@@ -111,6 +162,14 @@ export default function TripForm({ options, onSubmit, admin = false, drivers = [
         </Field>
       </div>
 
+      {vehicle && (
+        <Field label="Type de véhicule">
+          <p className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold dark:bg-slate-800">
+            {vehicle.typeNom || <span className="font-normal text-slate-500">Non renseigné dans la fiche du véhicule</span>}
+          </p>
+        </Field>
+      )}
+
       {checks.map((c) => (
         <div key={c.plaque} className={`rounded-xl border px-4 py-3 text-sm font-semibold ${CT_STYLE[c.level]}`} role="alert">
           {c.level === 'bloque' ? '⛔ ' : c.level === 'attention' ? '⚠ ' : ''}{c.message}
@@ -124,6 +183,12 @@ export default function TripForm({ options, onSubmit, admin = false, drivers = [
           {options.companies.map((c) => <option key={c.id} value={c.id}>{c.nom}</option>)}
         </select>
       </Field>
+
+      <StatutField value={form.statut} onChange={(v) => setForm((f) => ({ ...f, statut: v }))} />
+      <Field label={<>Numéro CMR{!admin && <span className="text-red-600"> *</span>}</>}>
+        <input required={!admin} inputMode="numeric" className={inputClass} value={form.cmrNumero} onChange={set('cmrNumero')} placeholder="Ex. 73318896" />
+      </Field>
+      <CmrPhotoField label={form.statut === 'ANNULE' ? 'Photo du CMR annulé (« Cancel »)' : 'Photo du CMR'} file={cmrFile} onChange={setCmrFile} required={!admin} />
 
       <label className="flex items-center gap-2.5">
         <input type="checkbox" checked={panne} onChange={(e) => setPanne(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-orange-600" />
@@ -157,7 +222,7 @@ export default function TripForm({ options, onSubmit, admin = false, drivers = [
         </div>
       )}
 
-      <Button type="submit" size="lg" className="w-full" disabled={busy || isBlocked}>
+      <Button type="submit" size="lg" className="w-full" disabled={busy || isBlocked || (!admin && (!cmrFile || !form.cmrNumero.trim()))}>
         {busy ? 'Enregistrement…' : submitLabel}
       </Button>
     </form>

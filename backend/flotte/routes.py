@@ -931,7 +931,12 @@ _ADDED_COLUMNS = {
         'type_vehicule_id': 'VARCHAR(36)', 'carburant': 'VARCHAR(20)', 'consommation': 'FLOAT',
     },
     'flotte_company': {'numero_client': 'VARCHAR(30)'},
-    'flotte_trip': {'tour': 'INTEGER NOT NULL DEFAULT 1', 'cmr_file_id': 'VARCHAR(36)'},
+    'flotte_trip': {
+        'tour': 'INTEGER NOT NULL DEFAULT 1', 'cmr_file_id': 'VARCHAR(36)', 'cmr_numero': 'VARCHAR(40)',
+        'vehicle_type': 'VARCHAR(80)', 'statut': "VARCHAR(10) NOT NULL DEFAULT 'CONFIRME'",
+        'phase': "VARCHAR(10) NOT NULL DEFAULT 'TERMINE'", 'arrival_at': 'TIMESTAMP',
+        'wait_minutes': 'INTEGER', 'return_cmr_numero': 'VARCHAR(40)', 'return_cmr_file_id': 'VARCHAR(36)',
+    },
     'flotte_invoice': {
         'period_start': 'DATE', 'period_end': 'DATE', 'numero_client': 'VARCHAR(30)', 'section': 'VARCHAR(80)',
     },

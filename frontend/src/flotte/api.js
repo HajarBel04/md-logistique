@@ -40,7 +40,7 @@ async function request(path, { method = 'GET', json, form, root = ROOT } = {}) {
       : typeof detail?.message === 'string' ? detail.message : `Erreur serveur (${res.status}).`;
     throw new ApiError(message, res.status, detail);
   }
-  if (data === null && text) throw new Error('Réponse inattendue du serveur.');
+  if (data === null && text && text.trim() !== 'null') throw new Error('Réponse inattendue du serveur.');
   return data;
 }
 
@@ -120,7 +120,7 @@ export const flotteApi = {
   createTrip: (data) => request('/trips', { method: 'POST', json: data }),
   updateTrip: (id, data) => request(`/trips/${id}`, { method: 'PATCH', json: data }),
   deleteTrip: (id) => request(`/trips/${id}`, { method: 'DELETE' }),
-  uploadTripCmr: (id, file) => upload(`/trips/${id}/cmr`, file),
+  uploadTripCmr: (id, file, retour = false) => upload(`/trips/${id}/cmr`, file, { retour: retour ? 'true' : 'false' }),
   uploadMyCmr: (id, file) => upload(`/me/trips/${id}/cmr`, file),
   fuelRates: () => request('/fuel-rates'),
   setFuelRate: (month, rate) => request(`/fuel-rates/${month}`, { method: 'PUT', json: { rate } }),
@@ -141,7 +141,19 @@ export const flotteApi = {
   me: () => request('/me'),
   myOptions: () => request('/me/options'),
   myTrips: () => request('/me/trips'),
-  createMyTrip: (data) => request('/me/trips', { method: 'POST', json: data }),
+  createMyTrip: (data, cmrFile) => {
+    const form = new FormData();
+    form.append('payload', JSON.stringify(data));
+    if (cmrFile) form.append('cmr', cmrFile, cmrFile.name || 'cmr.jpg');
+    return request('/me/trips', { method: 'POST', form });
+  },
+  myActiveTrip: () => request('/me/active'),
+  arriveTrip: (id, data, cmrFile) => {
+    const form = new FormData();
+    form.append('payload', JSON.stringify(data));
+    if (cmrFile) form.append('cmr', cmrFile, cmrFile.name || 'cmr-retour.jpg');
+    return request(`/me/trips/${id}/arrival`, { method: 'POST', form });
+  },
   uploadMyDoc: (slot, file, cropped) => upload(`/me/documents/${slot}`, file, { cropped: cropped ? 'true' : 'false' }),
   myMessages: () => request('/me/messages'),
   sendMyMessage: (body, file) => {

@@ -4,8 +4,8 @@ import { useAuth } from '../../auth/AuthContext';
 import { flotteApi, fileUrl } from '../../flotte/api';
 import ComplianceDocTabs, { MAIN_SLOTS } from '../../flotte/ComplianceDocTabs';
 import DocumentVault from '../../flotte/DocumentVault';
-import TripForm from '../../flotte/TripForm';
-import { ErrorBanner, Loader, StatusPill, ToastProvider, useToast } from '../../flotte/ui';
+import TripForm, { CmrPhotoField, StatutField } from '../../flotte/TripForm';
+import { Button, ErrorBanner, Field, Loader, StatusPill, ToastProvider, inputClass, useToast } from '../../flotte/ui';
 import { countdown, formatDate, formatDateTime } from '../../flotte/utils';
 import { Attachment, Composer } from './Messagerie';
 import logo from '../../assets/logo1.png';
@@ -17,83 +17,134 @@ const NAV = [
   { key: 'messages', label: 'Messages', d: 'M4 5h16v11H8l-4 4V5Z' },
 ];
 
-/** Photo du CMR signé (appareil photo du téléphone) pour un trajet. */
-function CmrCapture({ trip, onUploaded, big = false }) {
+const pad = (n) => String(n).padStart(2, '0');
+const nowLocal = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+function Info({ label, children }) {
+  return (
+    <div className="flex justify-between gap-3 py-1.5 text-sm">
+      <span className="text-slate-500">{label}</span>
+      <span className="text-right font-semibold text-slate-900 dark:text-white">{children || '—'}</span>
+    </div>
+  );
+}
+
+/** Trajet en cours → « Je suis arrivé » → formulaire de retour (CMR retour obligatoire). */
+function ActiveTrip({ trip, onFinished }) {
   const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ arrivalAt: nowLocal(), waitHours: '0', waitMinutes: '0', statut: trip.statut || 'CONFIRME', returnCmrNumero: '', remarque: '' });
+  const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
-  const onFile = async (e) => {
-    const f = e.target.files?.[0];
-    e.target.value = '';
-    if (!f) return;
+  const [error, setError] = useState('');
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!form.returnCmrNumero.trim()) { setError('Le numéro du CMR retour est obligatoire.'); return; }
+    if (!file) { setError('La photo du CMR retour est obligatoire.'); return; }
     setBusy(true);
     try {
-      onUploaded(await flotteApi.uploadMyCmr(trip.id, f));
-      toast('CMR envoyé');
+      await flotteApi.arriveTrip(trip.id, form, file);
+      toast('Formulaire de retour envoyé');
+      onFinished();
     } catch (err) {
-      toast(err.message, 'error');
+      setError(err.message);
     } finally {
       setBusy(false);
     }
   };
-  if (trip.cmrUrl && !big) {
-    return <a href={fileUrl(trip.cmrUrl)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-emerald-700">✓ CMR envoyé</a>;
-  }
-  return (
-    <label className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl font-bold ${big
-      ? 'w-full bg-slate-900 px-4 py-3.5 text-base text-white dark:bg-white dark:text-slate-900'
-      : 'px-3 py-1.5 text-xs text-orange-700 ring-1 ring-orange-300'} ${busy ? 'opacity-60' : ''}`}>
-      <svg viewBox="0 0 24 24" className={big ? 'h-6 w-6' : 'h-4 w-4'} fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
-      {busy ? 'Envoi…' : trip.cmrUrl ? 'Reprendre la photo du CMR' : big ? 'Photo du CMR signé' : 'Ajouter le CMR'}
-      <input type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} disabled={busy} />
-    </label>
+
+  const context = (
+    <div className="divide-y divide-slate-100 rounded-xl bg-slate-50 px-3 dark:divide-slate-800 dark:bg-slate-800/60">
+      <Info label="Itinéraire">{trip.routeCode} → {trip.itineraire}</Info>
+      <Info label="Date">{formatDateTime(trip.createdAt)}</Info>
+      <Info label="Société">{trip.companyNom}</Info>
+      <Info label="Véhicule">{trip.vehiclePlaque}{trip.trailerPlaque ? ` - ${trip.trailerPlaque}` : ''}</Info>
+      <Info label="Type de véhicule">{trip.vehicleType}</Info>
+      <Info label="CMR aller">{trip.cmrNumero}</Info>
+    </div>
   );
-}
 
-function NewTrip({ onDone }) {
-  const toast = useToast();
-  const [options, setOptions] = useState(null);
-  const [error, setError] = useState('');
-  const [done, setDone] = useState(null);
-  const [key, setKey] = useState(0);
-
-  const load = useCallback(() => {
-    flotteApi.myOptions().then(setOptions).catch((e) => setError(e.message));
-  }, []);
-  useEffect(load, [load]);
-
-  if (error) return <ErrorBanner message={error} onRetry={load} />;
-  if (!options) return <Loader />;
-  if (done) {
+  if (!open) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-center dark:border-emerald-500/30 dark:bg-emerald-500/10">
-        <p className="text-3xl">✓</p>
-        <p className="mt-2 font-bold text-emerald-900 dark:text-emerald-200">Trajet enregistré</p>
-        <p className="mt-1 text-sm text-emerald-800 dark:text-emerald-300">
-          {done.routeCode} · {done.distanceKm} km · {formatDate(done.date)}
-        </p>
-        {done.ctWarning && <p className="mt-3 text-sm font-semibold text-amber-800 dark:text-amber-300">⚠ {done.ctWarning}</p>}
-        <div className="mt-5 rounded-xl bg-white p-4 text-left dark:bg-slate-900">
-          <p className="text-sm font-bold text-slate-900 dark:text-white">Fin de la route : CMR</p>
-          <p className="mb-3 mt-0.5 text-xs text-slate-500">Photographiez la lettre de voiture signée par le client. Vous pouvez aussi l'ajouter plus tard depuis l'historique.</p>
-          {done.cmrUrl && <img src={fileUrl(done.cmrUrl)} alt="CMR envoyé" className="mb-3 max-h-48 w-full rounded-lg object-contain ring-1 ring-slate-200" />}
-          <CmrCapture trip={done} onUploaded={setDone} big />
-        </div>
-        <button type="button" className="mt-4 text-sm font-semibold text-emerald-800 underline dark:text-emerald-300"
-          onClick={() => { setDone(null); setKey((k) => k + 1); load(); }}>
-          Déclarer un autre trajet
+      <div className="rounded-2xl border border-orange-200 bg-white p-4 shadow-sm dark:border-orange-500/30 dark:bg-slate-900">
+        <p className="font-bold text-slate-900 dark:text-white">Trajet en cours</p>
+        <p className="mb-3 text-xs font-semibold text-orange-600">En attente d'arrivée</p>
+        {context}
+        <button type="button" onClick={() => { setForm((f) => ({ ...f, arrivalAt: nowLocal() })); setOpen(true); }}
+          className="mt-4 w-full rounded-xl bg-emerald-600 py-3.5 text-base font-bold text-white shadow-sm active:bg-emerald-700">
+          ✓ Je suis arrivé
         </button>
       </div>
     );
   }
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <p className="text-lg font-extrabold">Formulaire de retour</p>
+      {error && <ErrorBanner message={error} />}
+      <Field label="Date & heure d'arrivée">
+        <input type="datetime-local" className={inputClass} value={form.arrivalAt} onChange={set('arrivalAt')} required />
+      </Field>
+      <div>
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Temps d'attente du chauffeur</span>
+        <div className="grid grid-cols-2 gap-2">
+          <select className={inputClass} value={form.waitHours} onChange={set('waitHours')} aria-label="Heures">
+            {Array.from({ length: 13 }, (_, h) => <option key={h} value={h}>{h} h</option>)}
+          </select>
+          <select className={inputClass} value={form.waitMinutes} onChange={set('waitMinutes')} aria-label="Minutes">
+            {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => <option key={m} value={m}>{m} min</option>)}
+          </select>
+        </div>
+      </div>
+      {context}
+      <StatutField value={form.statut} onChange={(v) => setForm((f) => ({ ...f, statut: v }))} />
+      <Field label={<>Numéro CMR retour<span className="text-red-600"> *</span></>}>
+        <input required inputMode="numeric" className={inputClass} value={form.returnCmrNumero} onChange={set('returnCmrNumero')} />
+      </Field>
+      <CmrPhotoField label={form.statut === 'ANNULE' ? 'Photo du CMR annulé (« Cancel »)' : 'Photo du CMR retour'} file={file} onChange={setFile} />
+      <Field label="Remarque (facultatif)">
+        <textarea rows={2} className={inputClass} value={form.remarque} onChange={set('remarque')} />
+      </Field>
+      <div className="flex gap-2">
+        <Button variant="secondary" onClick={() => setOpen(false)} disabled={busy}>Retour</Button>
+        <Button type="submit" size="lg" className="flex-1" disabled={busy || !file || !form.returnCmrNumero.trim()}>
+          {busy ? 'Envoi…' : 'Soumettre le formulaire'}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function NewTrip() {
+  const toast = useToast();
+  const [options, setOptions] = useState(null);
+  const [active, setActive] = useState(undefined);
+  const [error, setError] = useState('');
+  const [key, setKey] = useState(0);
+
+  const load = useCallback(() => {
+    setError('');
+    Promise.all([flotteApi.myOptions(), flotteApi.myActiveTrip()])
+      .then(([o, a]) => { setOptions(o); setActive(a); })
+      .catch((e) => setError(e.message));
+  }, []);
+  useEffect(load, [load]);
+
+  if (error) return <ErrorBanner message={error} onRetry={load} />;
+  if (!options || active === undefined) return <Loader />;
+  if (active) return <ActiveTrip trip={active} onFinished={() => { setKey((k) => k + 1); load(); }} />;
   return (
     <TripForm
       key={key}
       options={options}
-      onSubmit={async (payload) => {
-        const t = await flotteApi.createMyTrip(payload);
-        toast('Trajet enregistré');
-        setDone(t);
-        onDone();
+      submitLabel="Soumettre le formulaire"
+      onSubmit={async (payload, cmrFile) => {
+        const t = await flotteApi.createMyTrip(payload, cmrFile);
+        toast('Formulaire envoyé — trajet en cours');
+        setActive(t);
       }}
     />
   );
@@ -117,7 +168,12 @@ function History() {
           <p className="text-sm text-slate-600 dark:text-slate-300">{t.itineraire}</p>
           <p className="mt-1 text-xs text-slate-500">{t.distanceKm} km · {t.vehiclePlaque}{t.trailerPlaque ? ` - ${t.trailerPlaque}` : ''}{t.companyNom ? ` · ${t.companyNom}` : ''}</p>
           {t.breakdownNom && <p className="mt-1 text-xs font-semibold text-red-600">Panne signalée : {t.breakdownNom}</p>}
-          <div className="mt-2"><CmrCapture trip={t} onUploaded={(u) => setTrips((list) => list.map((x) => (x.id === u.id ? u : x)))} /></div>
+          <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
+            {t.statut === 'ANNULE' && <span className="rounded bg-red-100 px-1.5 py-0.5 text-red-700">Annulé</span>}
+            {t.phase === 'EN_COURS' && <span className="rounded bg-orange-100 px-1.5 py-0.5 text-orange-700">En cours</span>}
+            {t.cmrUrl && <a className="text-emerald-700" href={fileUrl(t.cmrUrl)} target="_blank" rel="noopener noreferrer">CMR aller {t.cmrNumero}</a>}
+            {t.returnCmrUrl && <a className="text-emerald-700" href={fileUrl(t.returnCmrUrl)} target="_blank" rel="noopener noreferrer">CMR retour {t.returnCmrNumero}</a>}
+          </div>
         </li>
       ))}
     </ul>
@@ -215,10 +271,10 @@ function Space() {
       <main className={`flex-1 overflow-y-auto px-4 py-4 ${tab === 'messages' ? 'flex flex-col overflow-hidden' : ''}`}>
         <div className={`mx-auto w-full max-w-lg ${tab === 'messages' ? 'flex min-h-0 flex-1 flex-col' : ''}`}>
           <h1 className="mb-4 text-xl font-extrabold">
-            {{ trajet: 'Route du jour', historique: 'Mes trajets', documents: 'Mes documents', messages: 'Messages' }[tab]}
+            {{ trajet: 'Formulaire de trajet', historique: 'Mes trajets', documents: 'Mes documents', messages: 'Messages' }[tab]}
           </h1>
           {error && <ErrorBanner message={error} onRetry={loadMe} />}
-          {tab === 'trajet' && <NewTrip onDone={() => {}} />}
+          {tab === 'trajet' && <NewTrip />}
           {tab === 'historique' && <History />}
           {tab === 'documents' && (driver ? <Documents driver={driver} setDriver={setDriver} /> : <Loader />)}
           {tab === 'messages' && <Messages />}

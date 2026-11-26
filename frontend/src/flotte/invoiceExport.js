@@ -20,7 +20,7 @@ export const COLUMNS = [
 
 export function invoiceRows(inv) {
   return inv.lines.map((t) => ({
-    date: d2(t.date), job: t.routeCode, routing: t.itineraire, km: t.distanceKm, tour: t.tour || 1,
+    date: d2(t.date), job: t.statut === 'ANNULE' ? `${t.routeCode} (annulé)` : t.routeCode, routing: t.itineraire, km: t.distanceKm, tour: t.tour || 1,
     rate: t.basePrice, fuel: t.fuelRate, totFuel: t.surcharge, total: t.total,
   }));
 }

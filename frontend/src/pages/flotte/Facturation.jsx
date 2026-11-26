@@ -28,26 +28,29 @@ const num = (v) => (v === '' || v == null ? null : Number(String(v).replace(',',
 
 /* ─── CMR : voir / ajouter ───────────────────────────────────────────── */
 
-export function CmrButton({ trip, onUpdated }) {
+export function CmrButton({ trip, onUpdated, retour = false }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
-  if (trip.cmrUrl) {
+  const url = retour ? trip.returnCmrUrl : trip.cmrUrl;
+  const label = retour ? 'Retour' : 'Aller';
+  if (url) {
     return (
-      <Button size="sm" variant="secondary" onClick={() => window.open(fileUrl(trip.cmrUrl), '_blank', 'noopener')} title="Voir le CMR signé">
-        <EyeIcon /> CMR
+      <Button size="sm" variant="secondary" onClick={() => window.open(fileUrl(url), '_blank', 'noopener')}
+        title={`Voir le CMR ${label.toLowerCase()}${(retour ? trip.returnCmrNumero : trip.cmrNumero) ? ` n° ${retour ? trip.returnCmrNumero : trip.cmrNumero}` : ''}`}>
+        <EyeIcon /> {label}
       </Button>
     );
   }
   return (
     <label className={`inline-flex cursor-pointer items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-300 hover:bg-amber-50 dark:text-amber-300 dark:ring-amber-500/40 ${busy ? 'opacity-50' : ''}`}
-      title="Aucun CMR envoyé — ajouter">
-      <UploadIcon /> CMR
+      title={`Aucun CMR ${label.toLowerCase()} — ajouter`}>
+      <UploadIcon /> {label}
       <input type="file" accept="image/*,application/pdf" className="hidden" disabled={busy} onChange={async (e) => {
         const f = e.target.files?.[0];
         e.target.value = '';
         if (!f) return;
         setBusy(true);
-        try { onUpdated(await flotteApi.uploadTripCmr(trip.id, f)); toast('CMR ajouté'); } catch (err) { toast(err.message, 'error'); } finally { setBusy(false); }
+        try { onUpdated(await flotteApi.uploadTripCmr(trip.id, f, retour)); toast('CMR ajouté'); } catch (err) { toast(err.message, 'error'); } finally { setBusy(false); }
       }} />
     </label>
   );
@@ -75,6 +78,7 @@ function InvoiceBuilder({ group, period, onCreated }) {
     return { rate, fuel, tot, total: rate == null || tot == null ? null : rate + tot };
   };
   const lines = rows.map((t) => ({ t, ...calc(t) }));
+  const cancelled = rows.filter((t) => t.statut === 'ANNULE').length;
   const totals = lines.reduce((s, l) => ({
     km: s.km + l.t.distanceKm, fuel: s.fuel + (l.tot || 0), sub: s.sub + (l.total ?? 0),
     missing: s.missing + (l.rate == null ? 1 : 0), noFuel: s.noFuel + (l.fuel == null ? 1 : 0),
@@ -126,6 +130,11 @@ function InvoiceBuilder({ group, period, onCreated }) {
           <Button size="sm" variant="secondary" onClick={applyBulk} disabled={bulkRate === ''}>Fuel/KM sur toutes les lignes</Button>
         </div>
       }>
+      {cancelled > 0 && (
+        <p className="mx-5 mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-500/10 dark:text-red-200">
+          {cancelled} route(s) <strong>annulée(s) sur place</strong> : le chauffeur s'est déplacé mais la route n'a pas été effectuée — ne facturez pas le tarif plein (adaptez le Rate/Tour).
+        </p>
+      )}
       {!group.companyId && <p className="px-5 pt-4 text-sm text-amber-700">Attribuez un client à ces lignes (page « Formulaires chauffeurs ») pour pouvoir les facturer.</p>}
       <div className="overflow-x-auto p-4">
         <table className="min-w-full border-collapse text-[13px]">
@@ -138,9 +147,12 @@ function InvoiceBuilder({ group, period, onCreated }) {
           </thead>
           <tbody>
             {lines.map(({ t, rate, fuel, tot, total }) => (
-              <tr key={t.id}>
+              <tr key={t.id} className={t.statut === 'ANNULE' ? 'bg-red-50 dark:bg-red-500/10' : ''}>
                 <td className={`${cell} tabular-nums`}>{formatDate(t.date)}</td>
-                <td className={cell}>{t.routeCode}<div className="text-[11px] text-slate-400">{t.driverNom}</div></td>
+                <td className={cell}>{t.routeCode}
+                  {t.statut === 'ANNULE' && <div className="mt-0.5 inline-block rounded bg-red-600 px-1.5 text-[10px] font-bold text-white" title="Route annulée sur place : ne pas facturer le tarif plein">ANNULÉ</div>}
+                  {t.phase === 'EN_COURS' && <div className="mt-0.5 inline-block rounded bg-orange-100 px-1.5 text-[10px] font-bold text-orange-700">EN COURS</div>}
+                  <div className="text-[11px] text-slate-400">{t.driverNom}</div></td>
                 <td className={cell}>{t.itineraire}</td>
                 <td className={`${cell} text-right tabular-nums`}>{t.distanceKm}</td>
                 <td className={`${cell} text-center`}>{t.tour}</td>
@@ -159,7 +171,12 @@ function InvoiceBuilder({ group, period, onCreated }) {
                 </td>
                 <td className={`${cell} text-right tabular-nums`}>{tot == null ? '—' : eur5(tot)}</td>
                 <td className={`${cell} text-right font-bold tabular-nums`}>{total == null ? '—' : eur2(total)}</td>
-                <td className={`${cell} p-1`}><CmrButton trip={t} onUpdated={(u) => setRows((rs) => rs.map((r) => (r.id === u.id ? u : r)))} /></td>
+                <td className={`${cell} p-1`}>
+                  <div className="flex gap-1">
+                    <CmrButton trip={t} onUpdated={(u) => setRows((rs) => rs.map((r) => (r.id === u.id ? u : r)))} />
+                    <CmrButton trip={t} retour onUpdated={(u) => setRows((rs) => rs.map((r) => (r.id === u.id ? u : r)))} />
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -296,8 +313,11 @@ function InvoiceModal({ id, onClose, onChanged }) {
             <ul className="mt-2 space-y-1">
               {inv.lines.map((l) => (
                 <li key={l.id} className="flex items-center justify-between gap-2">
-                  <span>{formatDate(l.date)} · {l.routeCode} · {l.driverNom}</span>
-                  {l.cmrUrl ? <a className="font-semibold text-orange-600 hover:underline" href={fileUrl(l.cmrUrl)} target="_blank" rel="noopener noreferrer">Voir le CMR</a> : <span className="text-amber-600">Pas de CMR</span>}
+                  <span>{formatDate(l.date)} · {l.routeCode}{l.statut === 'ANNULE' ? ' (annulé)' : ''} · {l.driverNom}</span>
+                  <span className="flex gap-3">
+                    {l.cmrUrl ? <a className="font-semibold text-orange-600 hover:underline" href={fileUrl(l.cmrUrl)} target="_blank" rel="noopener noreferrer">CMR aller {l.cmrNumero || ''}</a> : <span className="text-amber-600">Pas de CMR aller</span>}
+                    {l.returnCmrUrl ? <a className="font-semibold text-orange-600 hover:underline" href={fileUrl(l.returnCmrUrl)} target="_blank" rel="noopener noreferrer">CMR retour {l.returnCmrNumero || ''}</a> : <span className="text-amber-600">Pas de CMR retour</span>}
+                  </span>
                 </li>
               ))}
             </ul>
