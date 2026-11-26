@@ -8,7 +8,7 @@ import TripForm, { CmrPhotoField, StatutField } from '../../flotte/TripForm';
 import { Button, ErrorBanner, Field, Loader, StatusPill, ToastProvider, inputClass, useToast } from '../../flotte/ui';
 import { countdown, formatDate, formatDateTime } from '../../flotte/utils';
 import { Attachment, Composer } from './Messagerie';
-import logo from '../../assets/logo1.png';
+import logo from '../../assets/logo-md.png';
 
 const NAV = [
   { key: 'trajet', label: 'Trajet', d: 'M3 17h2a2 2 0 1 0 4 0h6a2 2 0 1 0 4 0h2v-5l-3-4h-4V5H3v12Z' },

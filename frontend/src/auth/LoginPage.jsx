@@ -1,12 +1,26 @@
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
-import logo from '../assets/logo1.png';
+import logo from '../assets/logo-md.png';
 
 const input =
-  'w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100';
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/15';
 
-function Label({ children }) {
-  return <span className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">{children}</span>;
+function Label({ children, htmlFor }) {
+  return <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-semibold text-slate-700">{children}</label>;
+}
+
+const FEATURES = [
+  { t: 'Route du jour', d: 'Le chauffeur choisit sa route : date, km et véhicule sont enregistrés.', i: 'M3 17h2a2 2 0 1 0 4 0h6a2 2 0 1 0 4 0h2v-5l-3-4h-4V5H3v12Z' },
+  { t: 'CMR et documents', d: 'Photos des CMR, permis et cartes conducteur classées et vérifiées.', i: 'M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h4' },
+  { t: 'Facturation', d: 'Rate/Tour, surcharge carburant et facture PDF par client.', i: 'M6 3h12v18l-3-2-3 2-3-2-3 2V3Z M9 8h6M9 12h6' },
+];
+
+function Icon({ d }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {d.split(' M').map((p, i) => <path key={i} d={i ? `M${p}` : p} />)}
+    </svg>
+  );
 }
 
 export default function LoginPage() {
@@ -19,6 +33,7 @@ export default function LoginPage() {
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const phone = mode === 'phone' && !needsSetup;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -39,90 +54,131 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] bg-slate-50 dark:bg-slate-950">
-      <div className="relative hidden w-[45%] overflow-hidden bg-slate-900 lg:block">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(249,115,22,0.35),transparent_45%),radial-gradient(circle_at_80%_90%,rgba(249,115,22,0.18),transparent_40%)]" />
-        <div className="relative flex h-full flex-col justify-end p-12 text-white">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-orange-300">MD Logistique</p>
-          <h2 className="mt-3 text-4xl font-extrabold leading-tight">Flotte, chauffeurs<br />et facturation</h2>
-          <p className="mt-4 max-w-sm text-sm leading-6 text-slate-300">
-            Les chauffeurs déclarent leur route du jour, le bureau suit les échéances et facture les clients.
-          </p>
-        </div>
-      </div>
+    <div className="min-h-[100dvh] bg-[#f6f4f1] lg:grid lg:grid-cols-[1.05fr_1fr]">
+      {/* Panneau marque (ordinateur) */}
+      <aside className="relative hidden overflow-hidden bg-[#0f172a] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-orange-500/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-48 -left-24 h-[460px] w-[460px] rounded-full bg-amber-400/15 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:repeating-linear-gradient(115deg,#fff_0_2px,transparent_2px_28px)]" />
 
-      <div className="flex flex-1 items-center justify-center px-5 py-10">
-        <form onSubmit={submit} className="w-full max-w-sm">
-          <img src={logo} alt="MD Logistique" className="mb-8 h-12 w-auto" />
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-            {needsSetup ? 'Créer le compte administrateur' : 'Connexion'}
+        <div className="relative inline-flex w-fit rounded-3xl bg-white px-7 py-5 shadow-2xl shadow-black/30">
+          <img src={logo} alt="M-D Logistique" className="h-20 w-auto xl:h-24" />
+        </div>
+
+        <div className="relative max-w-lg">
+          <p className="text-xs font-bold uppercase tracking-[0.35em] text-orange-400">Transport & logistique · Belgique</p>
+          <h1 className="mt-4 text-4xl font-extrabold leading-[1.1] text-white xl:text-5xl">
+            Toute l'exploitation,<br />
+            <span className="bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent">en un seul endroit.</span>
           </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <ul className="mt-10 space-y-5">
+            {FEATURES.map((f) => (
+              <li key={f.t} className="flex gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-orange-300 ring-1 ring-white/10"><Icon d={f.i} /></span>
+                <span>
+                  <span className="block font-bold text-white">{f.t}</span>
+                  <span className="block text-sm leading-6 text-slate-400">{f.d}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="relative text-xs text-slate-500">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
+      </aside>
+
+      {/* Formulaire */}
+      <main className="flex min-h-[100dvh] flex-col items-center justify-center px-5 py-10 sm:px-8">
+        <img src={logo} alt="M-D Logistique" className="mb-8 h-20 w-auto lg:hidden" />
+
+        <div className="w-full max-w-[420px] rounded-[28px] bg-white p-7 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 sm:p-9">
+          <h2 className="text-[26px] font-extrabold tracking-tight text-slate-900">
+            {needsSetup ? 'Créer le compte administrateur' : 'Bon retour 👋'}
+          </h2>
+          <p className="mt-1.5 text-sm leading-6 text-slate-500">
             {needsSetup
-              ? 'Première utilisation : ce compte pourra ensuite créer les comptes des chauffeurs.'
-              : 'Accédez à votre espace.'}
+              ? 'Première connexion : ce compte gérera ensuite les chauffeurs et les accès.'
+              : 'Connectez-vous à votre espace M-D Logistique.'}
           </p>
 
           {!needsSetup && (
-            <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl bg-slate-200/70 p-1 dark:bg-slate-800">
+            <div className="mt-6 grid grid-cols-2 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Mode de connexion">
               {[['email', 'Email'], ['phone', 'Téléphone']].map(([k, l]) => (
-                <button key={k} type="button" onClick={() => { setMode(k); setIdentifier(''); }}
-                  className={`rounded-lg py-1.5 text-sm font-semibold transition ${mode === k ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500'}`}>
+                <button key={k} type="button" role="tab" aria-selected={mode === k}
+                  onClick={() => { setMode(k); setIdentifier(''); setError(''); }}
+                  className={`rounded-lg py-2 text-sm font-bold transition ${mode === k ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
                   {l}
                 </button>
               ))}
             </div>
           )}
 
-          <div className="mt-5 space-y-4">
-            {(loadError || error) && (
-              <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-300" role="alert">{error || loadError}</p>
+          <form onSubmit={submit} className="mt-6 space-y-4">
+            {(error || loadError) && (
+              <p className="flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-3 text-sm font-medium text-red-700 ring-1 ring-red-100" role="alert">
+                <span aria-hidden="true">⚠</span>{error || loadError}
+              </p>
             )}
             {needsSetup && (
-              <label className="block"><Label>Nom</Label>
-                <input className={input} value={nom} onChange={(e) => setNom(e.target.value)} autoComplete="name" />
-              </label>
+              <div>
+                <Label htmlFor="nom">Votre nom</Label>
+                <input id="nom" className={input} value={nom} onChange={(e) => setNom(e.target.value)} autoComplete="name" placeholder="Prénom Nom" />
+              </div>
             )}
-            <label className="block">
-              <Label>{mode === 'phone' && !needsSetup ? 'Numéro de téléphone' : 'Adresse email'}</Label>
+            <div>
+              <Label htmlFor="ident">{phone ? 'Numéro de téléphone' : 'Adresse email'}</Label>
               <input
+                id="ident"
                 required
                 autoFocus
                 className={input}
-                type={mode === 'phone' && !needsSetup ? 'tel' : 'email'}
-                inputMode={mode === 'phone' && !needsSetup ? 'tel' : 'email'}
-                autoComplete={mode === 'phone' && !needsSetup ? 'tel' : 'username'}
-                placeholder={mode === 'phone' && !needsSetup ? '0470 12 34 56' : 'prenom@mdlogistique.com'}
+                type={phone ? 'tel' : 'email'}
+                inputMode={phone ? 'tel' : 'email'}
+                autoComplete={phone ? 'tel' : 'username'}
+                placeholder={phone ? '0470 12 34 56' : 'prenom@mdlogistique.com'}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
               />
-            </label>
-            <label className="block">
-              <Label>Mot de passe</Label>
+            </div>
+            <div>
+              <Label htmlFor="pw">Mot de passe</Label>
               <div className="relative">
-                <input required minLength={needsSetup ? 8 : undefined} className={`${input} pr-20`} type={show ? 'text' : 'password'}
+                <input id="pw" required minLength={needsSetup ? 8 : undefined} className={`${input} pr-24`} type={show ? 'text' : 'password'}
                   autoComplete={needsSetup ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
-                <button type="button" onClick={() => setShow((v) => !v)} className="absolute inset-y-0 right-3 text-xs font-semibold text-slate-500 hover:text-slate-800">
+                <button type="button" onClick={() => setShow((v) => !v)}
+                  className="absolute inset-y-1.5 right-1.5 rounded-lg px-3 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800">
                   {show ? 'Masquer' : 'Afficher'}
                 </button>
               </div>
-              {needsSetup && <span className="mt-1 block text-xs text-slate-400">8 caractères minimum.</span>}
-            </label>
+              {needsSetup && <p className="mt-1.5 text-xs text-slate-400">8 caractères minimum.</p>}
+            </div>
             {needsSetup && (
-              <label className="block"><Label>Confirmer le mot de passe</Label>
-                <input required className={input} type={show ? 'text' : 'password'} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-              </label>
+              <div>
+                <Label htmlFor="pw2">Confirmer le mot de passe</Label>
+                <input id="pw2" required className={input} type={show ? 'text' : 'password'} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              </div>
             )}
+
             <button type="submit" disabled={busy}
-              className="w-full rounded-xl bg-orange-600 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-60">
-              {busy ? '…' : needsSetup ? 'Créer le compte' : 'Se connecter'}
+              className="group relative mt-2 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-orange-600/25 transition hover:shadow-orange-600/40 active:scale-[0.99] disabled:opacity-60">
+              {busy ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : (
+                <>
+                  {needsSetup ? 'Créer le compte' : 'Se connecter'}
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </>
+              )}
             </button>
-            {!needsSetup && (
-              <p className="text-center text-xs text-slate-500">Mot de passe oublié ? Demandez au bureau de le réinitialiser.</p>
-            )}
-          </div>
-        </form>
-      </div>
+          </form>
+
+          {!needsSetup && (
+            <p className="mt-6 text-center text-xs leading-5 text-slate-500">
+              Mot de passe oublié ? Le bureau peut le réinitialiser.<br />
+              Chauffeurs : utilisez le numéro de téléphone communiqué au bureau.
+            </p>
+          )}
+        </div>
+        <p className="mt-8 text-xs text-slate-400 lg:hidden">© {new Date().getFullYear()} M-D logistique.com sprl</p>
+      </main>
     </div>
   );
 }

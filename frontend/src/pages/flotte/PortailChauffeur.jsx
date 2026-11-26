@@ -5,7 +5,7 @@ import { flotteApi } from '../../flotte/api';
 import { ToastProvider, useToast } from '../../flotte/ui';
 import { formatDateTime } from '../../flotte/utils';
 import { Attachment, Composer } from './Messagerie';
-import logo from '../../assets/logo1.png';
+import logo from '../../assets/logo-md.png';
 
 function Portal() {
   const { token } = useParams();

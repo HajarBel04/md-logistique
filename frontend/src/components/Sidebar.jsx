@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import logo from '../assets/logo1.png';
+import logo from '../assets/logo-md.png';
 
 const I = (paths) => (
   <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

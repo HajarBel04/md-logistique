@@ -1,5 +1,5 @@
 // Facture au format M-D logistique.com sprl : PDF (jsPDF) et Excel (.xlsx).
-import logoUrl from '../assets/logo1.png';
+import logoUrl from '../assets/logo-md.png';
 
 const d2 = (iso) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '');
 const fr = (n, dec) => Number(n || 0).toLocaleString('fr-BE', { minimumFractionDigits: dec, maximumFractionDigits: dec });
