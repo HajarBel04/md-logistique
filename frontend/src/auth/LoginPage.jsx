@@ -44,10 +44,13 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-[100dvh] bg-white">
-      {/* Moitié gauche : vidéo entière sur toute la hauteur, centrée ; côtés bleu nuit uni (aucune coupe) */}
-      <aside className="sticky top-0 hidden h-[100dvh] w-1/2 shrink-0 overflow-hidden bg-[#0f172a] lg:block">
+      {/* Moitié gauche : logo en haut, vidéo 16:9 entière sur toute la largeur, phrase en bas (aucune coupe) */}
+      <aside className="sticky top-0 hidden h-[100dvh] w-1/2 shrink-0 flex-col justify-between overflow-hidden bg-[#0f172a] p-10 lg:flex xl:p-14">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[420px] w-[420px] rounded-full bg-orange-500/15 blur-3xl" />
+        <img src={logoWhite} alt="M-D Logistique" className="relative h-16 w-auto self-start xl:h-20" />
+
         <video
-          className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+          className="relative -mx-10 block aspect-video w-[calc(100%+5rem)] max-w-none xl:-mx-14 xl:w-[calc(100%+7rem)]"
           src="/login-animation.mp4"
           poster="/login-animation-poster.jpg"
           autoPlay={!reducedMotion}
@@ -57,15 +60,10 @@ export default function LoginPage() {
           preload="auto"
           aria-hidden="true"
         />
-        {/* Légers dégradés seulement derrière le logo et la phrase du bas */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[#0f172a]/75 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#0f172a]/90 to-transparent" />
 
-        <img src={logoWhite} alt="M-D Logistique" className="absolute left-8 top-7 h-16 w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] xl:h-20" />
-
-        <div className="absolute inset-x-8 bottom-7 [text-shadow:0_2px_10px_rgba(0,0,0,0.5)]">
+        <div className="relative">
           <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-orange-300">Transport & logistique · Belgique</p>
-          <p className="mt-2 text-2xl font-extrabold leading-tight text-white xl:text-[1.7rem]">
+          <p className="mt-2 text-2xl font-extrabold leading-tight text-white xl:text-[1.9rem]">
             Toute l'exploitation, <span className="text-amber-300">en un seul endroit.</span>
           </p>
         </div>
