@@ -6,30 +6,8 @@ import GlassCard from '../components/GlassCard';
 import EmptyState from '../components/EmptyState';
 import { uploadWebfleet } from '../services/api';
 import DRIVER_CONFIGS from '../driverConfigs';
+import { computeDaily } from '../utils/timesheet';
 
-function parseDT(str) {
-  if (!str) return null;
-  const m = String(str).trim().match(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2})/);
-  if (!m) return null;
-  return new Date(2000 + +m[3], +m[2] - 1, +m[1], +m[4], +m[5]);
-}
-
-function nightMinutes(start, end) {
-  if (!start || !end || end <= start) return 0;
-  let count = 0;
-  const cur = new Date(start);
-  while (cur < end) {
-    const h = cur.getHours();
-    if (h >= 20 || h < 6) count++; // nuit : 20h00 → 06h00
-    cur.setMinutes(cur.getMinutes() + 1);
-  }
-  return count;
-}
-
-
-function fmt(mins) {
-  return parseFloat((mins / 60).toFixed(2));
-}
 
 function wordOverlap(a, b) {
   const wa = a.toLowerCase().split(/[\s\-_]+/).filter(w => w.length > 2);
@@ -50,121 +28,6 @@ function findDriverConfig(driverName, configs) {
 
 function toTitleCase(str) {
   return str.replace(/\w+/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
-}
-
-function computeDaily(rows, homeCity, depotKeyword) {
-  const map = {};
-  let commuteMin = 0;
-  const SHIFT_GAP = 9 * 60 * 60 * 1000;
-  const ANOMALY = 12 * 60 * 60 * 1000;
-
-  // Trier toutes les activités par heure de début
-  const sorted = rows
-    .map(r => ({
-      act: r['Activité'],
-      dtStart: parseDT(r['Heure de début']),
-      dtEnd: parseDT(r['Heure de fin']),
-      depart: (r['Position de départ'] || '').toLowerCase(),
-      arrivee: (r['Emplacement de fin'] || '').toLowerCase(),
-    }))
-    .filter(r => r.act && r.dtStart)
-    // Lignes > 12h (Webfleet resté en "Travail" tout le week-end) et repos journalier ≥ 9h :
-    // ni payés ni comptés en nuit, et ne doivent pas coller deux shifts ensemble.
-    .filter(r => {
-      const span = r.dtEnd ? r.dtEnd - r.dtStart : 0;
-      return span <= ANOMALY && !(r.act === 'Repos' && span >= SHIFT_GAP);
-    })
-    .sort((a, b) => a.dtStart - b.dtStart);
-
-  // Grouper en shifts : pause ≥ 9h entre activités de travail = nouveau shift
-  // On ignore les "Repos" pour calculer le gap — ils remplissent le temps mais ne sont pas du travail
-  const shifts = [];
-  let cur = [];
-  let lastWorkEnd = null;
-  for (const r of sorted) {
-    if (cur.length === 0) {
-      cur.push(r);
-      if (r.act !== 'Repos') lastWorkEnd = r.dtEnd || r.dtStart;
-      continue;
-    }
-    const ref = r.act !== 'Repos' && lastWorkEnd
-      ? lastWorkEnd
-      : (cur[cur.length - 1].dtEnd || cur[cur.length - 1].dtStart);
-    if (r.dtStart - ref >= SHIFT_GAP) {
-      shifts.push(cur); cur = [r];
-      lastWorkEnd = r.act !== 'Repos' ? (r.dtEnd || r.dtStart) : null;
-    } else {
-      cur.push(r);
-      if (r.act !== 'Repos') lastWorkEnd = r.dtEnd || r.dtStart;
-    }
-  }
-  if (cur.length) shifts.push(cur);
-
-  // Calculer par shift (date = début du shift)
-  for (const shift of shifts) {
-    const key = shift[0].dtStart.toLocaleDateString('fr-FR', {
-      day: '2-digit', month: '2-digit', year: '2-digit',
-    }).replace(/\//g, '.');
-
-    if (!map[key]) map[key] = { travail: 0, travailRaw: 0, conduite: 0, dispo: 0, night: 0, commute: 0 };
-
-    for (const r of shift) {
-      const { act, dtStart, dtEnd, depart, arrivee } = r;
-      const dur = dtEnd ? Math.max(0, Math.round((dtEnd - dtStart) / 60000)) : 0;
-
-      const city = homeCity ? homeCity.toLowerCase() : null;
-      const depot = depotKeyword ? depotKeyword.toLowerCase() : null;
-      // Règle Alex : tout trajet PARTANT du domicile = non payé (trajet aller)
-      // Retour : seulement Albert I-laan → domicile (retour dépôt). Ex: Opwijk→Lebbeke = payé.
-      const isCommuteOut = city && depart.includes(city);
-      const isCommuteReturn = city && depot && depart.includes(depot) && arrivee.includes(city);
-      const isCommute = isCommuteOut || isCommuteReturn;
-
-      if (act === 'Conduite' || act === 'Travail') {
-        map[key].travailRaw += dur;
-        if (isCommute) {
-          map[key].commute += dur;
-          commuteMin += dur;
-        } else {
-          map[key].travail += dur;
-          if (act === 'Conduite') map[key].conduite += dur;
-          if (dtEnd) map[key].night += nightMinutes(dtStart, dtEnd);
-        }
-      } else if (act === 'Disponibilité' || act === 'Repos') {
-        if (isCommute) {
-          // Repos/Dispo dans périmètre domicile → exclu
-          map[key].commute += dur;
-          commuteMin += dur;
-        } else {
-          map[key].dispo += dur;
-          if (dtEnd) map[key].night += nightMinutes(dtStart, dtEnd);
-        }
-      }
-    }
-
-    // Après 4h30 de conduite → déduire 45 min de pause obligatoire (non payée)
-    if (map[key].conduite >= 270) {
-      map[key].dispo = Math.max(0, map[key].dispo - 45);
-    }
-  }
-
-  function dateKey(s) {
-    const [d, m, y] = s.split('.');
-    return `20${y}-${m}-${d}`;
-  }
-
-  const breakdown = Object.entries(map)
-    .sort(([a], [b]) => dateKey(a).localeCompare(dateKey(b)))
-    .map(([date, d]) => ({
-      date,
-      travailAvant: d.commute > 0 ? fmt(d.travailRaw) : null,
-      tempsTravail: fmt(d.travail),
-      trajetExclu: d.commute > 0 ? fmt(d.commute) : null,
-      disponibilite: fmt(d.dispo),
-      heureNuit: fmt(d.night),
-    }));
-
-  return { breakdown, commuteMin };
 }
 
 export default function WebfleetImport() {
