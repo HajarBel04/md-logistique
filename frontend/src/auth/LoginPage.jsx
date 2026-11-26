@@ -43,13 +43,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[#f3efe9] px-5 py-8 sm:px-8">
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-orange-300/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-48 -right-32 h-[560px] w-[560px] rounded-full bg-slate-400/20 blur-3xl" />
-
-      {/* Bloc unique : vidéo (format 9:16, entière) + formulaire, même hauteur */}
-      <div className="relative flex w-full max-w-[420px] overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_-40px_rgba(15,23,42,0.45)] ring-1 ring-slate-900/5 lg:h-[min(86dvh,780px)] lg:w-auto lg:max-w-none">
-      <aside className="relative hidden h-full shrink-0 overflow-hidden bg-[#0f172a] lg:block" style={{ aspectRatio: '9 / 16' }}>
+    <div className="flex min-h-[100dvh] bg-white">
+      {/* Plein écran : vidéo entière (9:16) sur toute la hauteur à gauche, formulaire à droite */}
+      <aside className="sticky top-0 hidden h-[100dvh] max-w-[50vw] shrink-0 overflow-hidden bg-[#0f172a] lg:block" style={{ aspectRatio: '9 / 16' }}>
         {/* Vidéo en fond : le panneau a le même format que la vidéo (9:16) → affichée entière, sans recadrage */}
         <video
           className="pointer-events-none absolute inset-0 h-full w-full object-cover"
@@ -77,10 +73,10 @@ export default function LoginPage() {
       </aside>
 
       {/* Formulaire */}
-      <main className="flex w-full flex-col justify-center p-7 sm:p-9 lg:w-[460px] lg:px-12">
-        <img src={logo} alt="M-D Logistique" className="mx-auto mb-6 h-16 w-auto lg:hidden" />
+      <main className="flex min-h-[100dvh] flex-1 flex-col items-center justify-center px-6 py-10 sm:px-10">
+        <img src={logo} alt="M-D Logistique" className="mb-8 h-16 w-auto lg:hidden" />
 
-        <div className="w-full">
+        <div className="w-full max-w-[380px]">
           <h2 className="text-[26px] font-extrabold tracking-tight text-slate-900">
             {needsSetup ? 'Créer le compte administrateur' : 'Bon retour 👋'}
           </h2>
@@ -166,9 +162,8 @@ export default function LoginPage() {
             </p>
           )}
         </div>
-        <p className="mt-8 text-center text-xs text-slate-400 lg:hidden">© {new Date().getFullYear()} M-D logistique.com sprl</p>
+        <p className="mt-10 text-center text-xs text-slate-400">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
       </main>
-      </div>
     </div>
   );
 }
