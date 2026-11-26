@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import logo from '../assets/logo-md.png';
+import BrandHeader from './BrandHeader';
 
 const I = (paths) => (
   <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -101,8 +101,8 @@ const exploitationItems = [
 export default function Sidebar() {
   return (
     <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-slate-200/80 bg-white/85 px-4 py-6 backdrop-blur-xl shadow-soft dark:border-slate-800/70 dark:bg-slate-950/95 lg:flex lg:flex-col">
-      <div className="mb-6 flex shrink-0 items-center justify-center px-2">
-        <img src={logo} alt="MD Logistique" className="h-auto w-36 object-contain drop-shadow-sm" />
+      <div className="mb-6 shrink-0">
+        <BrandHeader />
       </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto pr-1 scrollbar-none">

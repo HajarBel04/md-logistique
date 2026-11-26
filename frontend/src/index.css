@@ -126,3 +126,27 @@ html {
   cursor: pointer;
   flex-shrink: 0;
 }
+
+/* ─── Camion MD du menu : arrive par la droite, s'arrête, repart vers la gauche ─── */
+.md-truck {
+  transform: translateX(-50%);
+  will-change: transform, opacity;
+  animation: md-truck-drive var(--md-truck-duration, 4200ms) var(--md-truck-delay, 600ms) both;
+}
+
+@keyframes md-truck-drive {
+  0%   { transform: translateX(110%);  opacity: 0; animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1); }
+  10%  { opacity: 1; }
+  30%  { transform: translateX(-50%);  opacity: 1; }
+  55%  { transform: translateX(-50%);  opacity: 1; animation-timing-function: cubic-bezier(0.55, 0, 0.8, 0.25); }
+  85%  { opacity: 1; }
+  100% { transform: translateX(-240%); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-truck {
+    animation: none;
+    transform: translateX(-50%);
+    opacity: 1;
+  }
+}
