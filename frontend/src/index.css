@@ -199,3 +199,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offs
 @media (prefers-reduced-motion: reduce) {
   .md-fade-in, .md-pop-in, .md-sheet-in, .md-drawer-in, .md-skeleton { animation: none; }
 }
+
+/* Vidéos décoratives : jamais de contrôles natifs (bouton ▶ affiché par Safari / Chrome mobile) */
+.md-bg-video::-webkit-media-controls,
+.md-bg-video::-webkit-media-controls-panel,
+.md-bg-video::-webkit-media-controls-play-button,
+.md-bg-video::-webkit-media-controls-start-playback-button,
+.md-bg-video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0;
+}

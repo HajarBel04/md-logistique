@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import logo from '../assets/logo-md.png';
+import BackgroundVideo from '../components/BackgroundVideo';
 
 const input =
   'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-500 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/15';
@@ -58,16 +59,11 @@ export default function LoginPage() {
     <div className="relative min-h-[100dvh] bg-white lg:bg-[#0f172a]">
       {/* Fond (ordinateur) : vidéo plein écran, sobre, légèrement assombrie */}
       {isDesktop && (
-        <video
-          className="pointer-events-none fixed inset-0 h-full w-full object-cover"
+        <BackgroundVideo
+          className="fixed inset-0 h-full w-full object-cover"
           src="/login-animation.mp4"
           poster="/login-animation-poster.jpg"
-          autoPlay={!reducedMotion}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
+          reducedMotion={reducedMotion}
         />
       )}
       <div className="pointer-events-none fixed inset-0 hidden bg-[#0f172a]/30 lg:block" />
@@ -87,16 +83,11 @@ export default function LoginPage() {
         {/* Mobile : la vidéo en bandeau, entière (16:9), au-dessus du formulaire */}
         {!isDesktop && (
           <div className="relative -mx-6 -mt-8 mb-8 overflow-hidden bg-[#0f172a] sm:-mx-12">
-            <video
-              className="pointer-events-none block aspect-video w-full object-cover"
+            <BackgroundVideo
+              className="block aspect-video w-full object-cover"
               src="/login-animation-mobile.mp4"
               poster="/login-animation-poster.jpg"
-              autoPlay={!reducedMotion}
-              muted
-              loop
-              playsInline
-              preload="auto"
-              aria-hidden="true"
+              reducedMotion={reducedMotion}
             />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
           </div>
