@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
 import logo from '../assets/logo-md.png';
-import logoWhite from '../assets/logo-md-white.png';
 
 const input =
   'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/15';
@@ -59,21 +58,22 @@ export default function LoginPage() {
       {/* Voiles légers : logo (haut), phrase (bas), formulaire (droite) */}
       <div className="pointer-events-none fixed inset-x-0 top-0 hidden h-40 bg-gradient-to-b from-[#0f172a]/75 to-transparent lg:block" />
       <div className="pointer-events-none fixed inset-x-0 bottom-0 hidden h-48 bg-gradient-to-t from-[#0f172a]/85 to-transparent lg:block" />
-      <div className="pointer-events-none fixed inset-y-0 right-0 hidden w-[45%] bg-gradient-to-l from-[#0f172a]/55 to-transparent lg:block" />
+      <div className="pointer-events-none fixed inset-y-0 left-0 hidden w-[45%] bg-gradient-to-r from-[#0f172a]/55 to-transparent lg:block" />
+      {/* Zone du téléphone de la vidéo : floutée et assombrie, derrière le formulaire */}
+      <div className="pointer-events-none fixed inset-y-0 left-0 hidden w-[calc(4vw+520px)] bg-[#0f172a]/35 backdrop-blur-lg [mask-image:linear-gradient(to_right,black_75%,transparent)] lg:block" />
 
-      <img src={logoWhite} alt="M-D Logistique" className="fixed left-10 top-8 z-10 hidden h-16 w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] lg:block xl:h-20" />
-      <div className="fixed bottom-9 left-10 z-10 hidden max-w-[46%] [text-shadow:0_2px_10px_rgba(0,0,0,0.5)] lg:block">
+      <div className="fixed bottom-9 right-10 z-10 hidden max-w-[46%] text-right [text-shadow:0_2px_10px_rgba(0,0,0,0.5)] lg:block">
         <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-orange-300">Transport & logistique · Belgique</p>
         <p className="mt-2 text-2xl font-extrabold leading-tight text-white xl:text-[2rem]">
           Toute l'exploitation, <span className="text-amber-300">en un seul endroit.</span>
         </p>
       </div>
 
-      {/* Formulaire : panneau verre dépoli à droite (carte blanche sur téléphone) */}
-      <main className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center px-5 py-10 lg:items-end lg:pr-[6vw]">
-        <img src={logo} alt="M-D Logistique" className="mb-8 h-16 w-auto lg:hidden" />
+      {/* Formulaire : panneau verre dépoli à gauche, par-dessus le téléphone de la vidéo (carte blanche sur téléphone) */}
+      <main className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center px-5 py-10 lg:items-start lg:pl-[4vw]">
 
         <div className="w-full max-w-[420px] rounded-[28px] bg-white p-7 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.45)] ring-1 ring-slate-900/5 sm:p-9 lg:bg-white/85 lg:ring-white/50 lg:backdrop-blur-xl">
+          <img src={logo} alt="M-D Logistique" className="mb-6 h-14 w-auto" />
           <h2 className="text-[26px] font-extrabold tracking-tight text-slate-900">
             {needsSetup ? 'Créer le compte administrateur' : 'Bon retour 👋'}
           </h2>
