@@ -19,7 +19,7 @@ for (const k of TW_KEYS) {
 // Tailles de texte : [taille, interligne] — légende 13/21, texte 16/26 (≈ φ), titres 21/34, 34/34, 55/55
 const fibFontSize = {
   xs: ['13px', { lineHeight: '21px' }],
-  sm: ['16px', { lineHeight: '1.618' }],
+  sm: ['14px', { lineHeight: '1.618' }],   // 14px : densité de lecture (choix explicite, hors suite)
   base: ['16px', { lineHeight: '1.618' }],
   lg: ['21px', { lineHeight: '34px' }],
   xl: ['21px', { lineHeight: '34px' }],
