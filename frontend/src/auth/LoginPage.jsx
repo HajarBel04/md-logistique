@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import logo from '../assets/logo-md.png';
 
 const input =
-  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/15';
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-500 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/15';
 
 function Label({ children, htmlFor }) {
   return <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-semibold text-slate-700">{children}</label>;
@@ -162,7 +162,7 @@ export default function LoginPage() {
                   {show ? 'Masquer' : 'Afficher'}
                 </button>
               </div>
-              {needsSetup && <p className="mt-1.5 text-xs text-slate-400">8 caractères minimum.</p>}
+              {needsSetup && <p className="mt-1.5 text-xs text-slate-500">8 caractères minimum.</p>}
             </div>
             {needsSetup && (
               <div>
@@ -172,7 +172,7 @@ export default function LoginPage() {
             )}
 
             <button type="submit" disabled={busy}
-              className="group relative mt-2 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-600/25 transition hover:shadow-orange-600/40 active:scale-[0.99] disabled:opacity-60">
+              className="group relative mt-2 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-orange-700 to-orange-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-600/25 transition hover:shadow-orange-600/40 active:scale-[0.99] disabled:opacity-60">
               {busy ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : (
                 <>
                   {needsSetup ? 'Créer le compte' : 'Se connecter'}
@@ -190,7 +190,7 @@ export default function LoginPage() {
           )}
         </div>
 
-        <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-5 text-xs text-slate-400">
+        <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-5 text-xs text-slate-500">
           <span>© {new Date().getFullYear()} M-D logistique.com sprl</span>
           <span>Saint-Gilles, Bruxelles</span>
         </footer>

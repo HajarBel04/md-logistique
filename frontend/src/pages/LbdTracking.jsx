@@ -30,7 +30,7 @@ function FileInput({ label, hint, value, onChange }) {
       {value ? (
         <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">{value.name}</span>
       ) : (
-        <span className="text-sm text-slate-400 dark:text-slate-500">{hint}</span>
+        <span className="text-sm text-slate-500 dark:text-slate-500">{hint}</span>
       )}
     </div>
   );
@@ -52,13 +52,13 @@ function MultiFileInput({ label, hint, value, onChange }) {
       <input ref={ref} type="file" accept=".xlsx,.xls" multiple className="sr-only" onChange={addFiles} />
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{label}</span>
       {value.length === 0 ? (
-        <button onClick={() => ref.current?.click()} className="text-left text-sm text-slate-400 dark:text-slate-500">{hint}</button>
+        <button onClick={() => ref.current?.click()} className="text-left text-sm text-slate-500 dark:text-slate-500">{hint}</button>
       ) : (
         <div className="flex flex-col gap-1">
           {value.map(f => (
             <div key={f.name} className="flex items-center justify-between gap-2">
               <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">{f.name}</span>
-              <button onClick={() => remove(f.name)} className="shrink-0 text-slate-400 hover:text-red-500">✕</button>
+              <button onClick={() => remove(f.name)} className="shrink-0 text-slate-500 hover:text-red-500">✕</button>
             </div>
           ))}
           <button onClick={() => ref.current?.click()} className="mt-1 text-left text-xs text-orange-600 hover:underline dark:text-orange-400">
@@ -194,7 +194,7 @@ export default function LbdTracking() {
 
         {files.lbd && (
           <div className="mt-4 flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/60">
-            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M3 12h18M3 18h18"/>
             </svg>
             <span className="flex-1 text-sm text-slate-600 dark:text-slate-400">
@@ -239,7 +239,7 @@ export default function LbdTracking() {
             {loading ? 'Traitement…' : 'Analyser'}
           </button>
           {!allFilesReady && !loading && (
-            <span className="text-sm text-slate-400">Sélectionne les 5 fichiers et une date</span>
+            <span className="text-sm text-slate-500">Sélectionne les 5 fichiers et une date</span>
           )}
         </div>
 

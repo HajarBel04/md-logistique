@@ -179,7 +179,7 @@ export default function Comptes() {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {list.map((u) => (
                 <tr key={u.id} className={u.active ? '' : 'opacity-50'}>
-                  <td className="px-4 py-3 font-semibold">{u.nom || '—'}{u.id === me?.id && <span className="ml-2 text-xs text-slate-400">(vous)</span>}</td>
+                  <td className="px-4 py-3 font-semibold">{u.nom || '—'}{u.id === me?.id && <span className="ml-2 text-xs text-slate-500">(vous)</span>}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{[u.email, u.telephone].filter(Boolean).join(' · ')}</td>
                   <td className="px-4 py-3 text-slate-500">{u.lastLogin ? formatDateTime(u.lastLogin) : 'Jamais'}</td>
                   <td className="px-4 py-3">

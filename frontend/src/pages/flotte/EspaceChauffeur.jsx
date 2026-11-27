@@ -224,10 +224,10 @@ function Messages() {
           return (
             <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
               <div className={`min-w-0 max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${mine ? 'rounded-br-md bg-orange-600 text-white' : 'rounded-bl-md bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800'}`}>
-                {!mine && <p className="mb-0.5 text-xs font-semibold text-slate-400">Bureau</p>}
+                {!mine && <p className="mb-0.5 text-xs font-semibold text-slate-500">Bureau</p>}
                 {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                 {m.attachment && <Attachment attachment={m.attachment} mine={mine} />}
-                <p className={`mt-1 text-xs ${mine ? 'text-white/70' : 'text-slate-400'}`}>{formatDateTime(m.createdAt)}</p>
+                <p className={`mt-1 text-xs ${mine ? 'text-white/70' : 'text-slate-500'}`}>{formatDateTime(m.createdAt)}</p>
               </div>
             </div>
           );

@@ -38,7 +38,7 @@ function AutoDateField({ label, value, deadline, onSave, hint }) {
       </div>
       <input type="date" value={v} onChange={(e) => setV(e.target.value)} onBlur={commit}
         onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()} className={inputClass} aria-label={label} />
-      {hint && <p className="mt-1.5 text-xs text-slate-400">{hint}</p>}
+      {hint && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
     </div>
   );
 }
@@ -132,7 +132,7 @@ function VehicleDrawer({ vehicleId, onClose, onChanged }) {
               <AutoDateField label="Étalonnage tachygraphe" value={v.etalonnageTachygrapheExpiration} deadline={item(v, 'ETALONNAGE_TACHYGRAPHE')}
                 onSave={(d) => patch({ etalonnageTachygrapheExpiration: d }, 'Étalonnage mis à jour')} />
             ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-400 dark:border-slate-800">
+              <div className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-slate-800">
                 Étalonnage tachygraphe : non applicable aux remorques.
               </div>
             )}

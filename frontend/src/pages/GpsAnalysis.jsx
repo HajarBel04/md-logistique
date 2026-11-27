@@ -13,7 +13,7 @@ const STATUS_FILTERS = [
 
 /* ─── Badge distance GPS → adresse de livraison (même ligne) ─── */
 function DistBadge({ distM }) {
-  if (distM === null || distM === undefined) return <span className="text-slate-400">—</span>;
+  if (distM === null || distM === undefined) return <span className="text-slate-500">—</span>;
   const d = Number(distM);
   const fmt = d < 1000 ? `≈${Math.round(d)} m` : `≈${(d / 1000).toFixed(2)} km`;
   const title = 'Distance entre la position GPS du scan (Trigger 3) et l\'adresse de livraison de cette ligne.';
@@ -80,7 +80,7 @@ function GpsModal({ gps, onClose }) {
           <div>
             <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">📍 Position GPS au scan</p>
             {label && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{label}</p>}
-            <p className="font-mono text-xs text-slate-400 dark:text-slate-500 mt-0.5">{lat}, {lon}</p>
+            <p className="font-mono text-xs text-slate-500 dark:text-slate-500 mt-0.5">{lat}, {lon}</p>
           </div>
           <button
             onClick={onClose}
@@ -114,7 +114,7 @@ function GpsModal({ gps, onClose }) {
             className="flex items-center gap-1.5 rounded-xl bg-green-50 dark:bg-green-900/30 px-4 py-2 text-xs font-semibold text-green-700 dark:text-green-300 hover:bg-green-100 transition">
             📍 Google Maps
           </a>
-          <span className="ml-auto flex items-center text-xs text-slate-400 italic">Trigger 3 GPS</span>
+          <span className="ml-auto flex items-center text-xs text-slate-500 italic">Trigger 3 GPS</span>
         </div>
       </div>
     </div>
@@ -134,7 +134,7 @@ function FileInput({ label, hint, value, onChange }) {
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{label}</span>
       {value
         ? <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">{value.name}</span>
-        : <span className="text-sm text-slate-400 dark:text-slate-500">{hint}</span>}
+        : <span className="text-sm text-slate-500 dark:text-slate-500">{hint}</span>}
     </div>
   );
 }
@@ -245,7 +245,7 @@ export default function GpsAnalysis() {
                 Calculer distances GPS → Adresse
               </span>
             </label>
-            <p className={`text-xs ${geocode ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>
+            <p className={`text-xs ${geocode ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500'}`}>
               {geocode
                 ? '⚠ 1ère exécution : ~15 min (géocodage Nominatim). Instantané ensuite grâce au cache.'
                 : 'Désactivé — distances non calculées.'}
@@ -428,7 +428,7 @@ export default function GpsAnalysis() {
                         <td className="px-2 py-1">
                           {row.is_express
                             ? <span className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${lateExpress ? 'bg-red-700 text-white' : 'bg-orange-100 text-orange-800'}`}>EXP</span>
-                            : <span className={lateExpress ? 'text-white/70' : 'text-slate-400'}>STD</span>}
+                            : <span className={lateExpress ? 'text-white/70' : 'text-slate-500'}>STD</span>}
                         </td>
                         <td className={`px-2 py-1 font-mono whitespace-nowrap ${lateExpress ? 'font-bold text-red-200' : ''}`}>{row.commit_time || '—'}</td>
                         <td className={`px-2 py-1 font-mono whitespace-nowrap ${lateExpress ? 'font-bold text-red-100' : ''}`}>{row.actual_time}</td>
@@ -437,7 +437,7 @@ export default function GpsAnalysis() {
                             ? <span className={`font-bold ${lateExpress ? 'text-red-200' : 'text-red-600 dark:text-red-400'}`}>OUI</span>
                             : row.excused
                               ? <span className="text-xs text-emerald-600 dark:text-emerald-400">excusé</span>
-                              : <span className={lateExpress ? 'text-white/50' : 'text-slate-400'}>—</span>}
+                              : <span className={lateExpress ? 'text-white/50' : 'text-slate-500'}>—</span>}
                         </td>
 
                         {/* Timing < 1min20 */}
@@ -476,7 +476,7 @@ export default function GpsAnalysis() {
                               📍
                             </button>
                           ) : (
-                            <span className={lateExpress ? 'text-white/40' : 'text-slate-400'}>—</span>
+                            <span className={lateExpress ? 'text-white/40' : 'text-slate-500'}>—</span>
                           )}
                         </td>
 
@@ -484,7 +484,7 @@ export default function GpsAnalysis() {
                         <td className="px-2 py-1">
                           {geocode
                             ? <DistBadge distM={row.dist_m} />
-                            : <span className="text-slate-300 dark:text-slate-600 text-xs italic" title="Active le géocodage pour calculer les distances">—</span>}
+                            : <span className="text-slate-500 dark:text-slate-400 text-xs italic" title="Active le géocodage pour calculer les distances">—</span>}
                         </td>
 
                         {/* Itinéraire */}
@@ -494,7 +494,7 @@ export default function GpsAnalysis() {
                                 className={`underline hover:no-underline ${lateExpress ? 'text-red-200 hover:text-white' : 'text-blue-600 dark:text-blue-400'}`}>
                                 🗺
                               </a>
-                            : <span className={lateExpress ? 'text-white/40' : 'text-slate-400'}>—</span>}
+                            : <span className={lateExpress ? 'text-white/40' : 'text-slate-500'}>—</span>}
                         </td>
                       </tr>
                     );
@@ -503,7 +503,7 @@ export default function GpsAnalysis() {
               </table>
             </div>
             {geocode && (
-              <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-500">
                 * Distance (vol d'oiseau) entre la position GPS Trigger 3 (cols Q/R) et l'adresse de livraison géocodée (col H) de la même ligne. 🗺 = itinéraire Google Maps GPS → adresse.
               </p>
             )}

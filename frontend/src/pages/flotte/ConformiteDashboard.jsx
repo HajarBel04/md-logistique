@@ -54,14 +54,14 @@ function DeadlineRow({ row, onRenewed }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <EntityLink row={row} />
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-500">
             {row.entityType === 'VEHICLE' ? CATEGORY_LABELS[row.sub] : TYPE_CHAUFFEUR_LABELS[row.sub]}
           </span>
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
           <span className={priority ? 'font-semibold text-slate-900 dark:text-white' : ''}>{row.label}</span>
           {priority && <span className="rounded bg-orange-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">Préavis 3 mois</span>}
-          <span className="text-slate-400">·</span>
+          <span className="text-slate-500">·</span>
           <span className="tabular-nums">{formatDate(row.date)}</span>
         </div>
       </div>

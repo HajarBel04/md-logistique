@@ -209,7 +209,7 @@ export default function CropperModal({
                   }`}
                 >
                   <span>{p.label}</span>
-                  <span className="text-xs font-normal text-slate-400">{p.hint}</span>
+                  <span className="text-xs font-normal text-slate-500">{p.hint}</span>
                 </button>
               ))}
             </div>

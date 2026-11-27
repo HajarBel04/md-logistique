@@ -155,7 +155,7 @@ export default function Payroll() {
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); removeFile(f.name); }}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/15 dark:hover:text-red-400"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/15 dark:hover:text-red-400"
                 >
                   ×
                 </button>
@@ -204,7 +204,7 @@ export default function Payroll() {
             disabled={!files.length || loading}
             className={`flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-2.5 text-sm font-semibold transition sm:w-auto
               ${!files.length || loading
-                ? 'cursor-not-allowed bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600'
+                ? 'cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-600'
                 : 'bg-orange-600 text-white shadow-sm hover:bg-orange-700 active:scale-[0.98]'
               }`}
           >
@@ -295,7 +295,7 @@ export default function Payroll() {
                       <td className="py-3 pr-4 font-mono text-slate-700 dark:text-slate-200">{c.total_heures_service}h</td>
                       <td className="py-3">
                         {c.anomalies.length === 0 ? (
-                          <span className="text-xs text-slate-400">—</span>
+                          <span className="text-xs text-slate-500">—</span>
                         ) : (
                           <details>
                             <summary className="cursor-pointer list-none rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/25">

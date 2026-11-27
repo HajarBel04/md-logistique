@@ -208,7 +208,7 @@ function Thread({ conv, onActivity }) {
                 {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                 {m.attachment && <Attachment attachment={m.attachment} mine={mine} />}
                 {m.attachment && !mine && <SaveToVault attachment={m.attachment} driver={conv} />}
-                <p className={`mt-1 text-xs ${mine ? 'text-white/60' : 'text-slate-400'}`}>
+                <p className={`mt-1 text-xs ${mine ? 'text-white/60' : 'text-slate-500'}`}>
                   {formatDateTime(m.createdAt)}{mine && m.readAt ? ' · lu' : ''}
                 </p>
               </div>

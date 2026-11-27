@@ -77,7 +77,7 @@ export default {
           50: '#fff7ed',
           100: '#ffedd5',
           500: '#f97316',
-          600: '#ea580c',
+          600: '#cf4a0c',   // assombri pour un contraste AA avec le texte blanc (4,5:1)
           700: '#c2410c',
         },
         sand: '#fdf7ee',

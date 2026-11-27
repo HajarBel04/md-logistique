@@ -117,7 +117,7 @@ export default function Sidebar() {
       <nav className="flex-1 space-y-6 overflow-y-auto pr-1 scrollbar-none">
         {NAV_GROUPS.map((group) => (
           <div key={group.title}>
-            <p className="mb-2 px-2 text-xs font-bold uppercase tracking-[0.13em] text-slate-400 dark:text-slate-500">{group.title}</p>
+            <p className="mb-2 px-2 text-xs font-bold uppercase tracking-[0.13em] text-slate-500 dark:text-slate-500">{group.title}</p>
             <div className="space-y-1">
               {group.items.map((item) => (
                 <NavLink

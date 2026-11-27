@@ -153,7 +153,7 @@ function InvoiceBuilder({ group, period, onCreated }) {
                 <td className={cell}>{t.routeCode}
                   {t.statut === 'ANNULE' && <div className="mt-0.5 inline-block rounded bg-red-600 px-1.5 text-xs font-bold text-white" title="Route annulée sur place : ne pas facturer le tarif plein">ANNULÉ</div>}
                   {t.phase === 'EN_COURS' && <div className="mt-0.5 inline-block rounded bg-orange-100 px-1.5 text-xs font-bold text-orange-700">EN COURS</div>}
-                  <div className="text-xs text-slate-400">{t.driverNom}</div></td>
+                  <div className="text-xs text-slate-500">{t.driverNom}</div></td>
                 <td className={cell}>{t.itineraire}</td>
                 <td className={`${cell} text-right tabular-nums`}>{t.distanceKm}</td>
                 <td className={`${cell} text-center`}>{t.tour}</td>

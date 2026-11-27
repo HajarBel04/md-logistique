@@ -246,11 +246,11 @@ export default function WebfleetImport() {
                 <tr className="border-b border-slate-200">
                   <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date</th>
                   <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Code Abs</th>
-                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Temps de travail<span className="ml-1 text-slate-400 normal-case font-normal">(×0,27)</span></th>
+                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Temps de travail<span className="ml-1 text-slate-500 normal-case font-normal">(×0,27)</span></th>
                   {filtered.some(r => r.trajetExclu) && (
                     <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-blue-500">Trajet exclu</th>
                   )}
-                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Disponibilité<span className="ml-1 text-slate-400 normal-case font-normal">(×0,4)</span></th>
+                  <th className="py-3 pr-6 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Disponibilité<span className="ml-1 text-slate-500 normal-case font-normal">(×0,4)</span></th>
                   <th className="py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Heures de nuit</th>
                 </tr>
               </thead>
@@ -258,11 +258,11 @@ export default function WebfleetImport() {
                 {filtered.map((row) => (
                   <tr key={row.date} className="border-b border-slate-100 hover:bg-slate-50 transition">
                     <td className="py-3 pr-6 font-medium text-slate-800">{row.date}</td>
-                    <td className="py-3 pr-6 text-slate-400">—</td>
+                    <td className="py-3 pr-6 text-slate-500">—</td>
                     <td className="py-3 pr-6">
                       {row.trajetExclu ? (
                         <span className="flex items-center gap-2">
-                          <span className="font-mono text-slate-400 line-through text-xs">{row.travailAvant}</span>
+                          <span className="font-mono text-slate-500 line-through text-xs">{row.travailAvant}</span>
                           <span className="font-mono text-slate-800 font-semibold">{row.tempsTravail}</span>
                         </span>
                       ) : (

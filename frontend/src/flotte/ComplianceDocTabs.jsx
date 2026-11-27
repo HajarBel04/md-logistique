@@ -63,7 +63,7 @@ function Chips({ options, value, onChange, readOnly }) {
           </button>
         );
       })}
-      {readOnly && value.length === 0 && <span className="text-sm text-slate-400">—</span>}
+      {readOnly && value.length === 0 && <span className="text-sm text-slate-500">—</span>}
     </div>
   );
 }

@@ -175,7 +175,7 @@ export default function Trajets() {
                 <tr key={t.id} className="align-top">
                   <td className="whitespace-nowrap px-3 py-3">
                     <p className="font-semibold tabular-nums text-slate-800 dark:text-slate-100">{formatDate(t.date)}</p>
-                    <p className="text-xs text-slate-400">{t.numero}{t.createdByRole === 'ADMIN' ? ' · bureau' : ''}</p>
+                    <p className="text-xs text-slate-500">{t.numero}{t.createdByRole === 'ADMIN' ? ' · bureau' : ''}</p>
                   </td>
                   <td className="px-3 py-3 font-semibold text-slate-800 dark:text-slate-100">{t.driverNom}</td>
                   <td className="px-3 py-3">
@@ -202,7 +202,7 @@ export default function Trajets() {
                   </td>
                   <td className="px-3 py-3 text-right tabular-nums">
                     {euro(t.surcharge)}
-                    {t.fuelRate != null && <p className="text-xs text-slate-400">{t.fuelRate} €/km{t.fuelRateOnRow ? '' : ' (mois)'}</p>}
+                    {t.fuelRate != null && <p className="text-xs text-slate-500">{t.fuelRate} €/km{t.fuelRateOnRow ? '' : ' (mois)'}</p>}
                   </td>
                   <td className="px-3 py-3 text-right"><BasePriceInput trip={t} onSaved={replace} /></td>
                   <td className="px-3 py-3 text-right font-semibold tabular-nums">
