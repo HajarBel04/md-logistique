@@ -42,8 +42,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-[#f3efe9] lg:bg-[#0f172a]">
-      {/* Ordinateur : vidéo 16:9 en fond de tout l'écran (même forme que l'écran → entière) */}
+    <div className="relative min-h-[100dvh] bg-white lg:bg-[#0f172a]">
+      {/* Fond (ordinateur) : vidéo plein écran, sobre, légèrement assombrie */}
       <video
         className="pointer-events-none fixed inset-0 hidden h-full w-full object-cover lg:block"
         src="/login-animation.mp4"
@@ -55,28 +55,24 @@ export default function LoginPage() {
         preload="auto"
         aria-hidden="true"
       />
-      {/* Voiles légers : logo (haut), phrase (bas), formulaire (droite) */}
-      <div className="pointer-events-none fixed inset-x-0 top-0 hidden h-40 bg-gradient-to-b from-[#0f172a]/75 to-transparent lg:block" />
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 hidden h-48 bg-gradient-to-t from-[#0f172a]/85 to-transparent lg:block" />
-      <div className="pointer-events-none fixed inset-y-0 left-0 hidden w-[45%] bg-gradient-to-r from-[#0f172a]/55 to-transparent lg:block" />
-      {/* Zone du téléphone de la vidéo : floutée et assombrie, derrière le formulaire */}
-      <div className="pointer-events-none fixed inset-y-0 left-0 hidden w-[calc(4vw+520px)] bg-[#0f172a]/35 backdrop-blur-lg [mask-image:linear-gradient(to_right,black_75%,transparent)] lg:block" />
+      <div className="pointer-events-none fixed inset-0 hidden bg-[#0f172a]/30 lg:block" />
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 hidden h-56 bg-gradient-to-t from-[#0f172a]/85 to-transparent lg:block" />
 
-      <div className="fixed bottom-9 right-10 z-10 hidden max-w-[46%] text-right [text-shadow:0_2px_10px_rgba(0,0,0,0.5)] lg:block">
-        <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-orange-300">Transport & logistique · Belgique</p>
-        <p className="mt-2 text-2xl font-extrabold leading-tight text-white xl:text-[2rem]">
-          Toute l'exploitation, <span className="text-amber-300">en un seul endroit.</span>
+      <div className="fixed bottom-10 right-12 z-10 hidden max-w-md text-right lg:block">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/70">Transport & logistique · Bruxelles</p>
+        <p className="mt-2 text-[22px] font-semibold leading-snug text-white">
+          La plateforme d'exploitation de M-D Logistique : flotte, chauffeurs, trajets et facturation.
         </p>
       </div>
 
-      {/* Formulaire : panneau verre dépoli à gauche, par-dessus le téléphone de la vidéo (carte blanche sur téléphone) */}
-      <main className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center px-5 py-10 lg:items-start lg:pl-[4vw]">
+      {/* Panneau de connexion : blanc plein, toute la hauteur, à gauche */}
+      <main className="relative z-10 flex min-h-[100dvh] w-full flex-col bg-white px-6 py-8 sm:px-12 lg:w-[480px] lg:shadow-[24px_0_60px_-20px_rgba(15,23,42,0.45)] xl:w-[520px] xl:px-16">
+        <img src={logo} alt="M-D Logistique" className="h-12 w-auto self-start" />
 
-        <div className="w-full max-w-[420px] rounded-[28px] bg-white p-7 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.45)] ring-1 ring-slate-900/5 sm:p-9 lg:bg-white/85 lg:ring-white/50 lg:backdrop-blur-xl">
-          <img src={logo} alt="M-D Logistique" className="mb-6 h-14 w-auto" />
-          <h2 className="text-[26px] font-extrabold tracking-tight text-slate-900">
-            {needsSetup ? 'Créer le compte administrateur' : 'Bon retour 👋'}
-          </h2>
+        <div className="my-auto w-full max-w-[380px] py-10">
+          <h1 className="text-[28px] font-bold tracking-tight text-slate-900">
+            {needsSetup ? 'Créer le compte administrateur' : 'Connexion'}
+          </h1>
           <p className="mt-1.5 text-sm leading-6 text-slate-500">
             {needsSetup
               ? 'Première connexion : ce compte gérera ensuite les chauffeurs et les accès.'
@@ -158,8 +154,12 @@ export default function LoginPage() {
               Chauffeurs : utilisez le numéro de téléphone communiqué au bureau.
             </p>
           )}
-          <p className="mt-8 text-center text-xs text-slate-400">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
         </div>
+
+        <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-5 text-xs text-slate-400">
+          <span>© {new Date().getFullYear()} M-D logistique.com sprl</span>
+          <span>Saint-Gilles, Bruxelles</span>
+        </footer>
       </main>
     </div>
   );
