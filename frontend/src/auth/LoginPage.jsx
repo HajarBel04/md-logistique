@@ -43,38 +43,37 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] bg-white">
-      {/* Moitié gauche remplie par la vidéo (recadrée sur les côtés), logo et phrase par-dessus */}
-      <aside className="sticky top-0 hidden h-[100dvh] w-1/2 shrink-0 overflow-hidden bg-[#0f172a] lg:block">
-        <video
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
-          src="/login-animation.mp4"
-          poster="/login-animation-poster.jpg"
-          autoPlay={!reducedMotion}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-        />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#0f172a]/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#0f172a]/90 to-transparent" />
+    <div className="relative min-h-[100dvh] overflow-hidden bg-[#f3efe9] lg:bg-[#0f172a]">
+      {/* Ordinateur : vidéo 16:9 en fond de tout l'écran (même forme que l'écran → entière) */}
+      <video
+        className="pointer-events-none fixed inset-0 hidden h-full w-full object-cover lg:block"
+        src="/login-animation.mp4"
+        poster="/login-animation-poster.jpg"
+        autoPlay={!reducedMotion}
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+      />
+      {/* Voiles légers : logo (haut), phrase (bas), formulaire (droite) */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 hidden h-40 bg-gradient-to-b from-[#0f172a]/75 to-transparent lg:block" />
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 hidden h-48 bg-gradient-to-t from-[#0f172a]/85 to-transparent lg:block" />
+      <div className="pointer-events-none fixed inset-y-0 right-0 hidden w-[45%] bg-gradient-to-l from-[#0f172a]/55 to-transparent lg:block" />
 
-        <img src={logoWhite} alt="M-D Logistique" className="absolute left-10 top-8 h-16 w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] xl:h-20" />
+      <img src={logoWhite} alt="M-D Logistique" className="fixed left-10 top-8 z-10 hidden h-16 w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] lg:block xl:h-20" />
+      <div className="fixed bottom-9 left-10 z-10 hidden max-w-[46%] [text-shadow:0_2px_10px_rgba(0,0,0,0.5)] lg:block">
+        <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-orange-300">Transport & logistique · Belgique</p>
+        <p className="mt-2 text-2xl font-extrabold leading-tight text-white xl:text-[2rem]">
+          Toute l'exploitation, <span className="text-amber-300">en un seul endroit.</span>
+        </p>
+      </div>
 
-        <div className="absolute inset-x-10 bottom-9 [text-shadow:0_2px_10px_rgba(0,0,0,0.5)]">
-          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-orange-300">Transport & logistique · Belgique</p>
-          <p className="mt-2 text-2xl font-extrabold leading-tight text-white xl:text-[1.9rem]">
-            Toute l'exploitation, <span className="text-amber-300">en un seul endroit.</span>
-          </p>
-        </div>
-      </aside>
-
-      {/* Formulaire */}
-      <main className="flex min-h-[100dvh] w-full flex-col lg:w-1/2 items-center justify-center px-6 py-10 sm:px-10">
+      {/* Formulaire : panneau verre dépoli à droite (carte blanche sur téléphone) */}
+      <main className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center px-5 py-10 lg:items-end lg:pr-[6vw]">
         <img src={logo} alt="M-D Logistique" className="mb-8 h-16 w-auto lg:hidden" />
 
-        <div className="w-full max-w-[380px]">
+        <div className="w-full max-w-[420px] rounded-[28px] bg-white p-7 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.45)] ring-1 ring-slate-900/5 sm:p-9 lg:bg-white/85 lg:ring-white/50 lg:backdrop-blur-xl">
           <h2 className="text-[26px] font-extrabold tracking-tight text-slate-900">
             {needsSetup ? 'Créer le compte administrateur' : 'Bon retour 👋'}
           </h2>
@@ -159,8 +158,8 @@ export default function LoginPage() {
               Chauffeurs : utilisez le numéro de téléphone communiqué au bureau.
             </p>
           )}
+          <p className="mt-8 text-center text-xs text-slate-400">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
         </div>
-        <p className="mt-10 text-center text-xs text-slate-400">© {new Date().getFullYear()} M-D logistique.com sprl · Saint-Gilles</p>
       </main>
     </div>
   );
