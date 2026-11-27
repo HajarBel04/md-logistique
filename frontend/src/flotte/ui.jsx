@@ -106,7 +106,7 @@ export function Drawer({ title, subtitle, badge, onClose, children, actions }) {
   useEscape(onClose);
   return (
     <div className="fixed inset-0 z-[70] flex justify-end bg-slate-950/40 backdrop-blur-[2px]" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
-      <aside className="flex h-full w-full max-w-3xl flex-col bg-slate-50 shadow-2xl dark:bg-slate-950">
+      <aside className="flex h-full w-full max-w-4xl flex-col bg-slate-50 shadow-2xl dark:bg-slate-950">
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900 sm:px-6">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">

@@ -14,7 +14,7 @@ const Logo = ({ className = 'h-4 w-4' }) => (
  * props: phone (facultatif : sinon WhatsApp demande le contact), text, label, size, className
  */
 export function WhatsAppButton({ phone, text, label = 'WhatsApp', size = 'sm', className = '', title }) {
-  const sizes = { xs: 'px-2 py-1 text-[11px]', sm: 'px-3 py-1.5 text-xs', md: 'px-4 py-2 text-sm' };
+  const sizes = { xs: 'px-2 py-1 text-xs', sm: 'px-3 py-1.5 text-xs', md: 'px-4 py-2 text-sm' };
   const n = waNumber(phone);
   return (
     <a

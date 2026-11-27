@@ -224,10 +224,10 @@ function Messages() {
           return (
             <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
               <div className={`min-w-0 max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${mine ? 'rounded-br-md bg-orange-600 text-white' : 'rounded-bl-md bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800'}`}>
-                {!mine && <p className="mb-0.5 text-[11px] font-semibold text-slate-400">Bureau</p>}
+                {!mine && <p className="mb-0.5 text-xs font-semibold text-slate-400">Bureau</p>}
                 {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                 {m.attachment && <Attachment attachment={m.attachment} mine={mine} />}
-                <p className={`mt-1 text-[11px] ${mine ? 'text-white/70' : 'text-slate-400'}`}>{formatDateTime(m.createdAt)}</p>
+                <p className={`mt-1 text-xs ${mine ? 'text-white/70' : 'text-slate-400'}`}>{formatDateTime(m.createdAt)}</p>
               </div>
             </div>
           );
@@ -284,11 +284,11 @@ function Space() {
       <nav className="grid grid-cols-4 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-slate-800 dark:bg-slate-900">
         {NAV.map((n) => (
           <button key={n.key} type="button" onClick={() => setTab(n.key)} aria-current={tab === n.key ? 'page' : undefined}
-            className={`relative flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold ${tab === n.key ? 'text-orange-600' : 'text-slate-500'}`}>
+            className={`relative flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${tab === n.key ? 'text-orange-600' : 'text-slate-500'}`}>
             <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={n.d} /></svg>
             {n.label}
             {n.key === 'documents' && docAlerts > 0 && (
-              <span className="absolute right-[28%] top-1.5 rounded-full bg-red-500 px-1.5 text-[10px] text-white">{docAlerts}</span>
+              <span className="absolute right-[28%] top-1.5 rounded-full bg-red-500 px-1.5 text-xs text-white">{docAlerts}</span>
             )}
           </button>
         ))}

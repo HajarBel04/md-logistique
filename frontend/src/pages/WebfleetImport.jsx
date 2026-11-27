@@ -163,7 +163,7 @@ export default function WebfleetImport() {
       />
 
       {error ? (
-        <div className="rounded-[32px] border border-red-200 bg-red-50 p-5 text-sm text-red-700 shadow-soft">
+        <div className="rounded-3xl border border-red-200 bg-red-50 p-5 text-sm text-red-700 shadow-soft">
           {error}
         </div>
       ) : null}
@@ -281,7 +281,7 @@ export default function WebfleetImport() {
                 { label: 'Total travail', value: totals.travailHeures },
                 { label: 'Total repos', value: totals.reposHeures },
               ].map((item) => (
-                <div key={item.label} className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                <div key={item.label} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{item.label}</p>
                   <p className="mt-2 text-2xl font-semibold text-slate-900">{item.value ?? '-'} h</p>
                 </div>

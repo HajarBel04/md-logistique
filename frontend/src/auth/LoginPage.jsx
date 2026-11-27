@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import logo from '../assets/logo-md.png';
 
 const input =
-  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/15';
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/15';
 
 function Label({ children, htmlFor }) {
   return <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-semibold text-slate-700">{children}</label>;
@@ -60,19 +60,19 @@ export default function LoginPage() {
 
       <div className="fixed bottom-12 right-12 z-10 hidden max-w-xl text-right lg:block">
         <div className="ml-auto mb-5 h-1 w-14 rounded-full bg-gradient-to-r from-orange-600 to-orange-500" />
-        <p className="text-[42px] font-extrabold leading-[1.05] tracking-tight text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.35)] xl:text-[52px]">
+        <p className="text-3xl font-extrabold leading-[1.05] tracking-tight text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.35)] xl:text-5xl">
           Toute l'exploitation,<br />
           <span className="bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent [filter:drop-shadow(0_2px_12px_rgba(0,0,0,0.45))] [text-shadow:none]">en un seul endroit.</span>
         </p>
-        <p className="mt-4 text-[15px] font-medium text-white/80">Flotte · Chauffeurs · Trajets · Facturation</p>
+        <p className="mt-4 text-sm font-medium text-white/80">Flotte · Chauffeurs · Trajets · Facturation</p>
       </div>
 
       {/* Panneau de connexion : blanc plein, toute la hauteur, à gauche */}
       <main className="relative z-10 flex min-h-[100dvh] w-full flex-col bg-white px-6 py-8 sm:px-12 lg:w-[480px] lg:shadow-[24px_0_60px_-20px_rgba(15,23,42,0.45)] xl:w-[520px] xl:px-16">
         <img src={logo} alt="M-D Logistique" className="h-20 w-auto self-start xl:h-24" />
 
-        <div className="my-auto w-full max-w-[380px] py-10">
-          <h1 className="text-[28px] font-bold tracking-tight text-slate-900">
+        <div className="my-auto w-full max-w-[377px] py-10">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             {needsSetup ? 'Créer le compte administrateur' : 'Connexion'}
           </h1>
           <p className="mt-1.5 text-sm leading-6 text-slate-500">
@@ -140,7 +140,7 @@ export default function LoginPage() {
             )}
 
             <button type="submit" disabled={busy}
-              className="group relative mt-2 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-orange-600/25 transition hover:shadow-orange-600/40 active:scale-[0.99] disabled:opacity-60">
+              className="group relative mt-2 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-600/25 transition hover:shadow-orange-600/40 active:scale-[0.99] disabled:opacity-60">
               {busy ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : (
                 <>
                   {needsSetup ? 'Créer le compte' : 'Se connecter'}

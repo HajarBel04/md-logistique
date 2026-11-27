@@ -100,7 +100,7 @@ const exploitationItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-slate-200/80 bg-white/85 px-4 py-6 backdrop-blur-xl shadow-soft dark:border-slate-800/70 dark:bg-slate-950/95 lg:flex lg:flex-col">
+    <aside className="sticky top-0 hidden h-screen w-[233px] shrink-0 border-r border-slate-200/80 bg-white/85 px-2 py-6 backdrop-blur-xl shadow-soft dark:border-slate-800/70 dark:bg-slate-950/95 lg:flex lg:flex-col">
       <div className="mb-6 shrink-0">
         <BrandHeader />
       </div>
@@ -112,7 +112,7 @@ export default function Sidebar() {
           { title: 'Paie & analyses', items: exploitationItems },
         ].map((group) => (
           <div key={group.title}>
-            <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{group.title}</p>
+            <p className="mb-2 px-2 text-xs font-bold uppercase tracking-[0.13em] text-slate-400 dark:text-slate-500">{group.title}</p>
             <div className="space-y-1">
               {group.items.map((item) => (
                 <NavLink
@@ -120,7 +120,7 @@ export default function Sidebar() {
                   to={item.path}
                   end={item.path === '/'}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold transition ${
+                    `flex items-center gap-2 rounded-2xl px-2 py-2 text-xs font-semibold transition ${
                       isActive
                         ? 'bg-orange-50 text-orange-700 ring-1 ring-orange-200/70 dark:bg-orange-500/10 dark:text-orange-200 dark:ring-orange-500/20'
                         : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'

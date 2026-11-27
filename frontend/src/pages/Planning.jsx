@@ -67,14 +67,14 @@ export default function Planning() {
       >
         <div className="space-y-4 py-5">
           {error ? (
-            <div className="rounded-[32px] border border-red-200 bg-red-50 p-6 text-sm text-red-700 shadow-soft dark:border-red-500/40 dark:bg-red-900/50 dark:text-red-200">
+            <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 shadow-soft dark:border-red-500/40 dark:bg-red-900/50 dark:text-red-200">
               {error}
             </div>
           ) : null}
 
           {Object.entries(groupedSchedule).length > 0 ? (
             Object.entries(groupedSchedule).map(([date, tours]) => (
-              <div key={date} className="rounded-[28px] border border-slate-200 bg-slate-50 p-5">
+              <div key={date} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-slate-900 capitalize">{date}</p>

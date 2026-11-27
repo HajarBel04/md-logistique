@@ -38,7 +38,7 @@ export default function UploadDropzone({ file, onSelectFile, onUpload, loading }
         </div>
       </div>
 
-      <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950/90 dark:text-slate-300">
+      <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950/90 dark:text-slate-300">
         {file ? (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>

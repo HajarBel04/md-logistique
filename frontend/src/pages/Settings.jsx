@@ -16,11 +16,11 @@ export default function Settings() {
           description="Gérez les points de livraison les plus importants et les clients récurrents."
         >
           <div className="space-y-4">
-            <div className="rounded-[28px] bg-slate-50 p-5">
+            <div className="rounded-3xl bg-slate-50 p-5">
               <h3 className="text-sm font-semibold text-slate-900">Rayon domicile</h3>
               <p className="mt-2 text-sm text-slate-600">15 km</p>
             </div>
-            <div className="rounded-[28px] bg-slate-50 p-5">
+            <div className="rounded-3xl bg-slate-50 p-5">
               <h3 className="text-sm font-semibold text-slate-900">Adresses de base</h3>
               <p className="mt-2 text-sm text-slate-600">Bruxelles, Louvain, Herdecke</p>
             </div>
@@ -33,11 +33,11 @@ export default function Settings() {
           action={<button type="button" className="btn-secondary">Modifier</button>}
         >
           <div className="grid gap-4">
-            <div className="rounded-[28px] bg-slate-50 p-5">
+            <div className="rounded-3xl bg-slate-50 p-5">
               <h3 className="text-sm font-semibold text-slate-900">Période de calcul</h3>
               <p className="mt-2 text-sm text-slate-600">Hebdomadaire avec ajustement automatique.</p>
             </div>
-            <div className="rounded-[28px] bg-slate-50 p-5">
+            <div className="rounded-3xl bg-slate-50 p-5">
               <h3 className="text-sm font-semibold text-slate-900">Mode de validation</h3>
               <p className="mt-2 text-sm text-slate-600">Validation automatique des rapports importés.</p>
             </div>

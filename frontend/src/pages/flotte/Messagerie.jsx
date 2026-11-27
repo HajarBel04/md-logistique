@@ -208,7 +208,7 @@ function Thread({ conv, onActivity }) {
                 {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                 {m.attachment && <Attachment attachment={m.attachment} mine={mine} />}
                 {m.attachment && !mine && <SaveToVault attachment={m.attachment} driver={conv} />}
-                <p className={`mt-1 text-[11px] ${mine ? 'text-white/60' : 'text-slate-400'}`}>
+                <p className={`mt-1 text-xs ${mine ? 'text-white/60' : 'text-slate-400'}`}>
                   {formatDateTime(m.createdAt)}{mine && m.readAt ? ' · lu' : ''}
                 </p>
               </div>
@@ -247,7 +247,7 @@ export default function Messagerie() {
         <h1 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white sm:text-3xl">Messagerie</h1>
       </div>
       <ErrorBanner message={error} onRetry={load} />
-      <div className="grid h-[calc(100vh-260px)] min-h-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 md:grid-cols-[300px_1fr]">
+      <div className="grid h-[calc(100vh-260px)] min-h-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 md:grid-cols-fib-5-13">
         <div className={`flex min-h-0 flex-col border-r border-slate-200 dark:border-slate-800 ${selected ? 'hidden md:flex' : 'flex'}`}>
           <div className="border-b border-slate-200 p-3 dark:border-slate-800">
             <SearchInput value={search} onChange={setSearch} placeholder="Rechercher un chauffeur" />

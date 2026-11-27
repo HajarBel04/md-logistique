@@ -138,7 +138,7 @@ function InvoiceBuilder({ group, period, onCreated }) {
       )}
       {!group.companyId && <p className="px-5 pt-4 text-sm text-amber-700">Attribuez un client à ces lignes (page « Formulaires chauffeurs ») pour pouvoir les facturer.</p>}
       <div className="overflow-x-auto p-4">
-        <table className="min-w-full border-collapse text-[13px]">
+        <table className="min-w-full border-collapse text-xs">
           <thead className="bg-slate-50 text-left text-xs font-bold dark:bg-slate-800">
             <tr>
               {['Date', 'Job# /Schedule#', 'Routing (city)', 'km per job', 'Tour', 'Rate/Tour', 'Fuel Surch/KM', 'Tot Fuel surch', 'Total Rate', 'CMR'].map((h) => (
@@ -151,9 +151,9 @@ function InvoiceBuilder({ group, period, onCreated }) {
               <tr key={t.id} className={t.statut === 'ANNULE' ? 'bg-red-50 dark:bg-red-500/10' : ''}>
                 <td className={`${cell} tabular-nums`}>{formatDate(t.date)}</td>
                 <td className={cell}>{t.routeCode}
-                  {t.statut === 'ANNULE' && <div className="mt-0.5 inline-block rounded bg-red-600 px-1.5 text-[10px] font-bold text-white" title="Route annulée sur place : ne pas facturer le tarif plein">ANNULÉ</div>}
-                  {t.phase === 'EN_COURS' && <div className="mt-0.5 inline-block rounded bg-orange-100 px-1.5 text-[10px] font-bold text-orange-700">EN COURS</div>}
-                  <div className="text-[11px] text-slate-400">{t.driverNom}</div></td>
+                  {t.statut === 'ANNULE' && <div className="mt-0.5 inline-block rounded bg-red-600 px-1.5 text-xs font-bold text-white" title="Route annulée sur place : ne pas facturer le tarif plein">ANNULÉ</div>}
+                  {t.phase === 'EN_COURS' && <div className="mt-0.5 inline-block rounded bg-orange-100 px-1.5 text-xs font-bold text-orange-700">EN COURS</div>}
+                  <div className="text-xs text-slate-400">{t.driverNom}</div></td>
                 <td className={cell}>{t.itineraire}</td>
                 <td className={`${cell} text-right tabular-nums`}>{t.distanceKm}</td>
                 <td className={`${cell} text-center`}>{t.tour}</td>

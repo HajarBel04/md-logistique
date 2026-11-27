@@ -126,7 +126,7 @@ function FileInput({ label, hint, value, onChange }) {
   const ref = useRef();
   return (
     <div
-      className="flex cursor-pointer flex-col gap-1.5 rounded-[20px] border border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-orange-400 hover:bg-orange-50/40 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-orange-500 dark:hover:bg-orange-500/10"
+      className="flex cursor-pointer flex-col gap-1.5 rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-orange-400 hover:bg-orange-50/40 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-orange-500 dark:hover:bg-orange-500/10"
       onClick={() => ref.current?.click()}
     >
       <input ref={ref} type="file" accept=".xlsx,.xls" className="sr-only"
@@ -141,7 +141,7 @@ function FileInput({ label, hint, value, onChange }) {
 
 function SummaryTile({ label, count, colorClass }) {
   return (
-    <div className={`flex flex-col items-center rounded-[20px] px-5 py-4 ${colorClass}`}>
+    <div className={`flex flex-col items-center rounded-3xl px-5 py-4 ${colorClass}`}>
       <span className="text-2xl font-bold">{count ?? '—'}</span>
       <span className="mt-1 text-center text-xs font-semibold uppercase tracking-wider opacity-80">{label}</span>
     </div>
@@ -237,7 +237,7 @@ export default function GpsAnalysis() {
       <GlassCard title="Fichier GPS" tag="Upload">
         <div className="grid gap-3 sm:grid-cols-2">
           <FileInput label="Fichier GPS (.xlsx)" hint="GPS MD1 M-D Logistique.xlsx" value={file} onChange={setFile} />
-          <div className="flex flex-col justify-center gap-3 rounded-[20px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/60">
+          <div className="flex flex-col justify-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/60">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={geocode} onChange={e => setGeocode(e.target.checked)}
                 className="h-4 w-4 rounded border-slate-300 accent-orange-500" />
@@ -253,7 +253,7 @@ export default function GpsAnalysis() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-[16px] border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
           ℹ️ Distance entre la position GPS du scan (Trigger 3, cols Q/R) et l'adresse de livraison (col H) de la <strong>même ligne</strong>. L'itinéraire 🗺 ouvre Google Maps depuis le point GPS vers l'adresse.
         </div>
 
@@ -277,7 +277,7 @@ export default function GpsAnalysis() {
 
         {/* Barre de progression géocodage */}
         {loading && geocode && (
-          <div className="mt-4 rounded-[16px] border border-orange-200 bg-orange-50 dark:border-orange-500/30 dark:bg-orange-900/20 p-4">
+          <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 dark:border-orange-500/30 dark:bg-orange-900/20 p-4">
             {progress && progress.total > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-2">
@@ -312,7 +312,7 @@ export default function GpsAnalysis() {
         )}
 
         {error && (
-          <div className="mt-4 rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-900/30 dark:text-red-300">
+          <div className="mt-4 rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-900/30 dark:text-red-300">
             {error}
           </div>
         )}
@@ -395,18 +395,18 @@ export default function GpsAnalysis() {
           </GlassCard>
 
           <GlassCard title="Colis analysés" tag={`${filteredRows.length} résultats`}>
-            <div className="overflow-x-auto rounded-[20px] border border-slate-200 dark:border-slate-700">
+            <div className="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-700">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
                     {['Seq','Loop','Barcode','Express?','Commit','Réel','RETARD','Timing','Statut (T)','Rue','CP','Destinataire','GPS'].map(h => (
-                      <th key={h} className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-[10px]">{h}</th>
+                      <th key={h} className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-xs">{h}</th>
                     ))}
-                    <th className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-[10px] cursor-help"
+                    <th className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-xs cursor-help"
                         title="Distance entre la position GPS du scan (Trigger 3) et l'adresse de livraison de cette même ligne.">
                       GPS→Adr. ℹ
                     </th>
-                    <th className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-[10px]"
+                    <th className="px-2 py-1.5 text-left font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-xs"
                         title="Google Maps : depuis la position GPS vers l'adresse de livraison">Itinéraire</th>
                   </tr>
                 </thead>
@@ -424,10 +424,10 @@ export default function GpsAnalysis() {
                       >
                         <td className={`px-2 py-1 ${lateExpress ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`}>{row.seq}</td>
                         <td className={`px-2 py-1 ${lateExpress ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`}>{row.loop}</td>
-                        <td className={`px-2 py-1 font-mono max-w-[120px] truncate ${lateExpress ? 'font-bold text-red-200' : 'text-slate-800 dark:text-slate-200'}`} title={row.barcode}>{row.barcode}</td>
+                        <td className={`px-2 py-1 font-mono max-w-[144px] truncate ${lateExpress ? 'font-bold text-red-200' : 'text-slate-800 dark:text-slate-200'}`} title={row.barcode}>{row.barcode}</td>
                         <td className="px-2 py-1">
                           {row.is_express
-                            ? <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${lateExpress ? 'bg-red-700 text-white' : 'bg-orange-100 text-orange-800'}`}>EXP</span>
+                            ? <span className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${lateExpress ? 'bg-red-700 text-white' : 'bg-orange-100 text-orange-800'}`}>EXP</span>
                             : <span className={lateExpress ? 'text-white/70' : 'text-slate-400'}>STD</span>}
                         </td>
                         <td className={`px-2 py-1 font-mono whitespace-nowrap ${lateExpress ? 'font-bold text-red-200' : ''}`}>{row.commit_time || '—'}</td>
@@ -436,27 +436,27 @@ export default function GpsAnalysis() {
                           {row.is_late && !row.excused
                             ? <span className={`font-bold ${lateExpress ? 'text-red-200' : 'text-red-600 dark:text-red-400'}`}>OUI</span>
                             : row.excused
-                              ? <span className="text-[10px] text-emerald-600 dark:text-emerald-400">excusé</span>
+                              ? <span className="text-xs text-emerald-600 dark:text-emerald-400">excusé</span>
                               : <span className={lateExpress ? 'text-white/50' : 'text-slate-400'}>—</span>}
                         </td>
 
                         {/* Timing < 1min20 */}
                         <td className="px-2 py-1">
                           {row.timing_warn
-                            ? <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 whitespace-nowrap" title="Moins de 1min20 avec le stop précédent">⚡&lt;1'20</span>
+                            ? <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 whitespace-nowrap" title="Moins de 1min20 avec le stop précédent">⚡&lt;1'20</span>
                             : <span className="text-slate-300 dark:text-slate-600">—</span>}
                         </td>
                         <td className="px-2 py-1 whitespace-nowrap">
-                          <span className={`rounded px-1 py-0.5 text-[10px] ${
+                          <span className={`rounded px-1 py-0.5 text-xs ${
                             lateExpress ? 'bg-red-800 text-red-100' :
                             row.status?.startsWith('CLOSED') ? 'bg-blue-100 text-blue-800' :
                             row.status === 'SIG OBTAINED' ? 'bg-emerald-100 text-emerald-800' :
                             'bg-slate-100 text-slate-700'
                           }`}>{row.status}</span>
                         </td>
-                        <td className={`px-2 py-1 max-w-[160px] truncate ${lateExpress ? 'font-bold text-red-100' : 'text-slate-700 dark:text-slate-300'}`} title={row.street}>{row.street}</td>
+                        <td className={`px-2 py-1 max-w-[144px] truncate ${lateExpress ? 'font-bold text-red-100' : 'text-slate-700 dark:text-slate-300'}`} title={row.street}>{row.street}</td>
                         <td className={`px-2 py-1 whitespace-nowrap ${lateExpress ? 'font-bold text-red-100' : ''}`}>{row.postal}</td>
-                        <td className={`px-2 py-1 max-w-[130px] truncate ${lateExpress ? 'text-red-100' : 'text-slate-700 dark:text-slate-300'}`} title={row.consignee}>{row.consignee}</td>
+                        <td className={`px-2 py-1 max-w-[144px] truncate ${lateExpress ? 'text-red-100' : 'text-slate-700 dark:text-slate-300'}`} title={row.consignee}>{row.consignee}</td>
 
                         {/* GPS preview button */}
                         <td className="px-2 py-1">
@@ -503,7 +503,7 @@ export default function GpsAnalysis() {
               </table>
             </div>
             {geocode && (
-              <p className="mt-3 text-[11px] text-slate-400 dark:text-slate-500">
+              <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
                 * Distance (vol d'oiseau) entre la position GPS Trigger 3 (cols Q/R) et l'adresse de livraison géocodée (col H) de la même ligne. 🗺 = itinéraire Google Maps GPS → adresse.
               </p>
             )}

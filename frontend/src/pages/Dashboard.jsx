@@ -137,7 +137,7 @@ export default function Dashboard() {
             />
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+          <section className="grid gap-6 xl:grid-cols-fib-8-5">
             <div className="surface-card p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -154,19 +154,19 @@ export default function Dashboard() {
               </div>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-[28px] border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950/70">
+                <div className="rounded-3xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950/70">
                   <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Repos total</p>
                   <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{Number(dashboard.totalRestHours ?? 0).toFixed(2)} h</p>
                 </div>
-                <div className="rounded-[28px] border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950/70">
+                <div className="rounded-3xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950/70">
                   <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Conduite</p>
                   <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{Number(dashboard.totalDrivingHours ?? 0).toFixed(2)} h</p>
                 </div>
-                <div className="rounded-[28px] border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950/70">
+                <div className="rounded-3xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950/70">
                   <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Travail</p>
                   <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{Number(dashboard.totalWorkedHours ?? 0).toFixed(2)} h</p>
                 </div>
-                <div className="rounded-[28px] border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950/70">
+                <div className="rounded-3xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950/70">
                   <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Disponibilité</p>
                   <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{dashboard.totalAvailableHours?.toFixed(2) ?? '—'} h</p>
                 </div>
@@ -214,7 +214,7 @@ export default function Dashboard() {
                   Suivi des échéances des documents chauffeurs.
                 </p>
               </div>
-              <div className="mt-6 overflow-hidden rounded-[28px] border border-slate-200/70 dark:border-slate-700/70">
+              <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200/70 dark:border-slate-700/70">
                 <DataTable
                   columns={[
                     { header: 'Chauffeur', accessor: 'driverName' },
@@ -248,7 +248,7 @@ export default function Dashboard() {
                   Les prochains créneaux planifiés dans la base.
                 </p>
               </div>
-              <div className="mt-6 overflow-hidden rounded-[28px] border border-slate-200/70 dark:border-slate-700/70">
+              <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200/70 dark:border-slate-700/70">
                 <DataTable
                   columns={[
                     { header: 'Date', accessor: (row) => new Date(row.date).toLocaleDateString('fr-FR') },
@@ -278,7 +278,7 @@ export default function Dashboard() {
                   Les derniers rapports Webfleet traités.
                 </p>
               </div>
-              <div className="mt-6 overflow-hidden rounded-[28px] border border-slate-200/70 dark:border-slate-700/70">
+              <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200/70 dark:border-slate-700/70">
                 <DataTable columns={dashboardColumns} data={dashboard.lastImports} rowKey={(row) => row.id} />
               </div>
             </div>

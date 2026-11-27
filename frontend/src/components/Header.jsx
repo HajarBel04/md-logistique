@@ -66,9 +66,9 @@ export default function Header({ theme, onToggleTheme }) {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-400 text-sm font-semibold text-white">
               {initial}
             </div>
-            <div className="hidden max-w-[160px] lg:block">
+            <div className="hidden max-w-[144px] lg:block">
               <div className="truncate font-semibold text-slate-900 dark:text-slate-50">{user?.nom || user?.email}</div>
-              <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Admin</div>
+              <div className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Admin</div>
             </div>
             <button type="button" onClick={logout} className="ml-1 text-xs font-semibold text-slate-500 hover:text-orange-600" title="Se déconnecter">
               Déconnexion

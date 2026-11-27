@@ -182,7 +182,7 @@ export default function CropperModal({
         </>
       }
     >
-      <div className="grid gap-5 lg:grid-cols-[1fr_260px]">
+      <div className="grid gap-5 lg:grid-cols-[1fr_233px]">
         <div className="flex min-h-[320px] items-center justify-center overflow-hidden rounded-2xl bg-slate-100 p-3 dark:bg-slate-900">
           {error && <p className="max-w-sm text-center text-sm text-red-600 dark:text-red-300">{error}</p>}
           {!error && loading && <Loader label="Préparation du document…" />}

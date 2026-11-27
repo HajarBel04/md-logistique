@@ -116,7 +116,7 @@ export default function Payroll() {
           onDragLeave={onDragLeave}
           onDrop={onDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`cursor-pointer rounded-[20px] border-2 border-dashed p-6 text-center transition-all sm:p-10
+          className={`cursor-pointer rounded-3xl border-2 border-dashed p-6 text-center transition-all sm:p-10
             ${dragging
               ? 'border-orange-400 bg-orange-50 dark:bg-orange-500/10'
               : 'border-slate-300 bg-slate-50/60 hover:border-orange-300 hover:bg-orange-50/40 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-orange-500/50'
@@ -231,7 +231,7 @@ export default function Payroll() {
 
       {/* ── Erreur ───────────────────────────────────────────────────────── */}
       {error && (
-        <div className="rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 sm:p-5">
+        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 sm:p-5">
           <strong>Erreur :</strong> {error}
         </div>
       )}
@@ -264,7 +264,7 @@ export default function Payroll() {
                 text: totalAnomalies > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500',
               },
             ].map(c => (
-              <div key={c.label} className={`rounded-[20px] p-4 sm:p-6 ${c.color}`}>
+              <div key={c.label} className={`rounded-3xl p-4 sm:p-6 ${c.color}`}>
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">{c.label}</p>
                 <p className={`mt-2 text-3xl font-extrabold sm:text-4xl ${c.text}`}>{c.value}</p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{c.sub}</p>
@@ -275,7 +275,7 @@ export default function Payroll() {
           {/* Tableau conducteurs — scrollable sur mobile */}
           <GlassCard title="Récapitulatif par conducteur" tag="Résultats">
             <div className="-mx-2 overflow-x-auto sm:mx-0">
-              <table className="w-full min-w-[560px] text-sm">
+              <table className="w-full min-w-[610px] text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700">
                     {['Conducteur', 'Statut', 'Jours', 'Travail', 'Service', 'Anomalies'].map(h => (

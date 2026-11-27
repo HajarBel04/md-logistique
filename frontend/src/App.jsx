@@ -24,6 +24,7 @@ import EspaceChauffeur from './pages/flotte/EspaceChauffeur';
 import { ToastProvider } from './flotte/ui';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import LoginPage from './auth/LoginPage';
+import FibonacciDebug from './components/FibonacciDebug';
 
 const navItems = [
   { path: '/conformite',      label: 'Conformité'      },
@@ -45,11 +46,14 @@ const navItems = [
 
 export default function App() {
   return (
+    <>
     <Routes>
       {/* Lien personnel du chauffeur : page autonome, sans menu */}
       <Route path="/portail/:token" element={<PortailChauffeur />} />
       <Route path="*" element={<AuthProvider><Gate /></AuthProvider>} />
     </Routes>
+    <FibonacciDebug />
+    </>
   );
 }
 

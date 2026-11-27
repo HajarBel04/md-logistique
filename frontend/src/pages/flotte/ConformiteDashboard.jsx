@@ -60,7 +60,7 @@ function DeadlineRow({ row, onRenewed }) {
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
           <span className={priority ? 'font-semibold text-slate-900 dark:text-white' : ''}>{row.label}</span>
-          {priority && <span className="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">Préavis 3 mois</span>}
+          {priority && <span className="rounded bg-orange-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">Préavis 3 mois</span>}
           <span className="text-slate-400">·</span>
           <span className="tabular-nums">{formatDate(row.date)}</span>
         </div>
@@ -156,7 +156,7 @@ export default function ConformiteDashboard() {
         <Kpi label="Messages non lus" value={kpis.unreadMessages} tone={kpis.unreadMessages ? 'amber' : 'slate'} to="/messagerie" />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+      <div className="grid gap-6 xl:grid-cols-fib-13-8">
         <Card
           padded={false}
           title="Renouvellements à prévoir (3 mois)"

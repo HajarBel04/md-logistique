@@ -46,7 +46,7 @@ export default function DonutChart({ data }) {
       </div>
       <div className="grid w-full gap-3 sm:grid-cols-3">
         {data.map((segment, index) => (
-          <div key={segment.label} className="rounded-[26px] border border-slate-200/70 bg-white/90 px-4 py-3 text-sm dark:border-slate-800/70 dark:bg-slate-950/95">
+          <div key={segment.label} className="rounded-3xl border border-slate-200/70 bg-white/90 px-4 py-3 text-sm dark:border-slate-800/70 dark:bg-slate-950/95">
             <div className="flex items-center gap-3">
               <span className="inline-flex h-3.5 w-3.5 rounded-full" style={{ backgroundColor: segmentColors[index % segmentColors.length] }} />
               <span className="font-semibold text-slate-700 dark:text-slate-200">{segment.label}</span>

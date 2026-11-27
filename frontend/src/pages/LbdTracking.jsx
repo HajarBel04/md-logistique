@@ -16,7 +16,7 @@ function FileInput({ label, hint, value, onChange }) {
   const ref = useRef();
   return (
     <div
-      className="flex cursor-pointer flex-col gap-1.5 rounded-[20px] border border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-orange-400 hover:bg-orange-50/40 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-orange-500 dark:hover:bg-orange-500/10"
+      className="flex cursor-pointer flex-col gap-1.5 rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-orange-400 hover:bg-orange-50/40 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-orange-500 dark:hover:bg-orange-500/10"
       onClick={() => ref.current?.click()}
     >
       <input
@@ -48,7 +48,7 @@ function MultiFileInput({ label, hint, value, onChange }) {
   };
   const remove = (name) => onChange(prev => prev.filter(f => f.name !== name));
   return (
-    <div className="flex flex-col gap-1.5 rounded-[20px] border border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-orange-400 hover:bg-orange-50/40 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-orange-500 dark:hover:bg-orange-500/10">
+    <div className="flex flex-col gap-1.5 rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-orange-400 hover:bg-orange-50/40 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-orange-500 dark:hover:bg-orange-500/10">
       <input ref={ref} type="file" accept=".xlsx,.xls" multiple className="sr-only" onChange={addFiles} />
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{label}</span>
       {value.length === 0 ? (
@@ -76,7 +76,7 @@ function KcRetoursInput({ value, onChange }) {
 
 function SummaryTile({ label, count, colorClass }) {
   return (
-    <div className={`flex flex-col items-center rounded-[20px] px-6 py-5 ${colorClass}`}>
+    <div className={`flex flex-col items-center rounded-3xl px-6 py-5 ${colorClass}`}>
       <span className="text-3xl font-bold">{count}</span>
       <span className="mt-1 text-xs font-semibold uppercase tracking-wider opacity-80">{label}</span>
     </div>
@@ -179,7 +179,7 @@ export default function LbdTracking() {
           <MultiFileInput label="Retours chauffeur(s)"   hint="Retours_270726.xlsx…"    value={retours}     onChange={setRetours}      />
           <MultiFileInput label="KC Fermetures (optionnel)" hint="KC_270726.xlsx…"      value={kcs}         onChange={setKcs}          />
           <FileInput label="Future summer"            hint="Future_summer_2026.xlsx" value={files.future}  onChange={setFile('future')}   />
-          <div className="flex flex-col gap-1.5 rounded-[20px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/60">
+          <div className="flex flex-col gap-1.5 rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/60">
             <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
               Date cible
             </label>
@@ -193,7 +193,7 @@ export default function LbdTracking() {
         </div>
 
         {files.lbd && (
-          <div className="mt-4 flex items-center gap-3 rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/60">
+          <div className="mt-4 flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/60">
             <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M3 12h18M3 18h18"/>
             </svg>
@@ -244,7 +244,7 @@ export default function LbdTracking() {
         </div>
 
         {error && (
-          <div className="mt-4 rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-900/30 dark:text-red-300">
+          <div className="mt-4 rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-900/30 dark:text-red-300">
             {error}
           </div>
         )}
@@ -279,7 +279,7 @@ export default function LbdTracking() {
           </GlassCard>
 
           <GlassCard title={`Colis analysés — ${targetDate}`} tag={`${s.total} colis`}>
-            <div className="overflow-x-auto rounded-[20px] border border-slate-200 dark:border-slate-700">
+            <div className="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-700">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">

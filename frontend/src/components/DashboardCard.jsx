@@ -10,7 +10,7 @@ export default function DashboardCard({ icon, label, value, subtitle, status, ac
   const accentClass = accentMap[accent] ?? accentMap.orange;
 
   return (
-    <article className={`group surface-card rounded-[30px] border border-white/70 bg-white/85 p-6 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700/70 dark:bg-slate-950/90 ${className}`}>
+    <article className={`group surface-card rounded-3xl border border-white/70 bg-white/85 p-6 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700/70 dark:bg-slate-950/90 ${className}`}>
       <div className="flex items-center justify-between gap-4">
         <div className={`flex h-14 w-14 items-center justify-center rounded-3xl shadow-sm ${accentClass}`}>
           <span className="text-xl">{icon}</span>

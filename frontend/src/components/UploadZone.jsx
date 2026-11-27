@@ -1,6 +1,6 @@
 export default function UploadZone({ file, onSelectFile, onUpload, loading }) {
   return (
-    <div className="rounded-[32px] border border-dashed border-slate-300 bg-white p-6 text-slate-700 shadow-premium">
+    <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-slate-700 shadow-premium">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Importer un fichier Webfleet</h2>

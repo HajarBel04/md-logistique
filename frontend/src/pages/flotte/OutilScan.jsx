@@ -164,7 +164,7 @@ function QuickTool() {
       {!result ? (
         <DropZone onFile={(f) => f && setSource(f)} label="Déposez une carte ou un scan" />
       ) : (
-        <div className="grid gap-5 md:grid-cols-[1fr_220px]">
+        <div className="grid gap-5 md:grid-cols-[1fr_233px]">
           <div className="flex items-center justify-center rounded-2xl bg-slate-100 p-4 dark:bg-slate-900">
             <img src={result.url} alt="Document recadré" className="max-h-[420px] rounded-md shadow-md ring-1 ring-slate-200 dark:ring-slate-700" />
           </div>

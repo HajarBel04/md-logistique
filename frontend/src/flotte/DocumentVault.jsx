@@ -177,7 +177,7 @@ export default function DocumentVault({ driver, onChange, mode = 'admin', only, 
                     : isRequired ? 'Manquant — glissez un fichier ici' : 'Facultatif'}
                 </p>
                 {pendingCheck && (
-                  <span className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-bold text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">
+                  <span className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">
                     {isDriver ? 'En attente de vérification par le bureau' : 'À vérifier'}
                   </span>
                 )}

@@ -12,7 +12,7 @@ export default function DataTable({ columns, data: rawData, rowKey, className = 
   };
 
   return (
-    <div className={`overflow-x-auto rounded-[32px] border border-slate-200/80 bg-white text-slate-700 shadow-soft dark:border-slate-800/80 dark:bg-slate-950 dark:text-slate-200 ${className}`}>
+    <div className={`overflow-x-auto rounded-3xl border border-slate-200/80 bg-white text-slate-700 shadow-soft dark:border-slate-800/80 dark:bg-slate-950 dark:text-slate-200 ${className}`}>
       <table className="min-w-full table-auto text-left text-sm">
         <thead className="bg-slate-50 text-slate-600 dark:bg-slate-900 dark:text-slate-400">
           <tr>

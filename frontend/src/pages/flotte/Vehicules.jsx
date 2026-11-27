@@ -424,7 +424,7 @@ export default function Vehicules() {
                   <td className="px-4 py-3"><DeadlineCell item={item(v, 'ETALONNAGE_TACHYGRAPHE')} compact /></td>
                   <td className="px-4 py-3"><DeadlineCell item={item(v, 'CERTIFICAT_ADR_VEHICULE')} compact /></td>
                   <td className="px-4 py-3"><DeadlineCell item={item(v, 'ASSURANCE')} compact /></td>
-                  <td className="max-w-[220px] px-4 py-3 text-xs text-slate-500 dark:text-slate-400"><span className="line-clamp-2">{v.remarque || ''}</span></td>
+                  <td className="max-w-[233px] px-4 py-3 text-xs text-slate-500 dark:text-slate-400"><span className="line-clamp-2">{v.remarque || ''}</span></td>
                 </tr>
               ))}
             </tbody>

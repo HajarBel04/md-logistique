@@ -478,7 +478,7 @@ export default function Chauffeurs() {
                       <p className="text-xs text-slate-500">
                         {TYPE_CHAUFFEUR_LABELS[d.typeChauffeur]}
                         {d.permisCategories.length > 0 && ` · ${d.permisCategories.join(' ')}`}
-                        {d.unreadMessages > 0 && <span className="ml-2 rounded-full bg-orange-600 px-1.5 py-0.5 text-[10px] font-bold text-white">{d.unreadMessages} msg</span>}
+                        {d.unreadMessages > 0 && <span className="ml-2 rounded-full bg-orange-600 px-1.5 py-0.5 text-xs font-bold text-white">{d.unreadMessages} msg</span>}
                       </p>
                     </td>
                     <td className="px-4 py-3"><DeadlineCell item={item(d, 'SELECTION_MEDICALE')} compact /></td>

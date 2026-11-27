@@ -167,7 +167,7 @@ function SettingsForm() {
             <input type="checkbox" checked={s.email.enabled} onChange={(e) => setEmail({ enabled: e.target.checked })} className="h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500" />
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">Envoyer le récapitulatif quotidien</span>
           </label>
-          <div className="grid gap-4 sm:grid-cols-[1fr_160px]">
+          <div className="grid gap-4 sm:grid-cols-[1fr_144px]">
             <Field label="Destinataires" hint="Séparez les adresses par une virgule.">
               <input className={inputClass} value={recipients} onChange={(e) => setRecipients(e.target.value)} placeholder="dispatch@…, rh@…" />
             </Field>
