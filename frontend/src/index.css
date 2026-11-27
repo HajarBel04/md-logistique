@@ -53,23 +53,24 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus { outline: none; } /* les champs ont leur propre anneau orange (focus:ring) */
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-full bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-card transition duration-200 hover:bg-orange-700;
+  @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 lg:min-h-0;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-slate-800;
+  @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 lg:min-h-0;
 }
 
+/* Carte générique (anciennes pages) : même style que Card (Flotte) */
 .surface-card {
-  @apply rounded-[32px] border border-slate-200/80 bg-white shadow-soft;
+  @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
 }
 
 .dark .surface-card {
-  @apply border-slate-800/80 bg-slate-950/95 text-slate-100;
+  @apply border-slate-800 bg-slate-900 text-slate-100;
 }
 
 .dark .btn-secondary {
-  @apply bg-slate-900 text-slate-100 hover:bg-slate-800;
+  @apply bg-slate-900 text-slate-200 ring-slate-700 hover:bg-slate-800;
 }
 
 

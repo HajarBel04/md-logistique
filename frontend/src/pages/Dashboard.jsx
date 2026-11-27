@@ -5,6 +5,7 @@ import DashboardCard from '../components/DashboardCard';
 import DataTable from '../components/DataTable';
 import DonutChart from '../components/DonutChart';
 import ModuleNotice from '../components/ModuleNotice';
+import { Loader } from '../flotte/ui';
 import { getAlexDashboard } from '../services/api';
 
 const dashboardColumns = [
@@ -80,9 +81,7 @@ export default function Dashboard() {
       />
 
       {loading ? (
-        <div className="surface-card p-10 text-center text-slate-600 dark:text-slate-300">
-          Chargement des données...
-        </div>
+<Loader label="Chargement des données…" />
       ) : error === 'unavailable' ? (
         <ModuleNotice links={[['/import-webfleet', 'Import Webfleet'], ['/payroll', 'Fiches de paie']]}>
           Le tableau de bord de la paie sera disponible en ligne prochainement. En attendant, le calcul des heures

@@ -87,8 +87,8 @@ export function Modal({ title, subtitle, onClose, children, footer, size = 'md' 
   useEscape(onClose);
   const width = { sm: 'max-w-md', md: 'max-w-2xl', lg: 'max-w-4xl', xl: 'max-w-6xl' }[size];
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
-      <div className={`flex max-h-[94vh] w-full ${width} flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800 sm:rounded-3xl`}>
+    <div className="md-fade-in fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
+      <div className={`md-pop-in flex max-h-[94vh] w-full ${width} flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800 sm:rounded-3xl`}>
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
           <div className="min-w-0">
             <h2 className="truncate text-lg font-bold text-slate-900 dark:text-slate-50">{title}</h2>
@@ -106,8 +106,8 @@ export function Modal({ title, subtitle, onClose, children, footer, size = 'md' 
 export function Drawer({ title, subtitle, badge, onClose, children, actions }) {
   useEscape(onClose);
   return (
-    <div className="fixed inset-0 z-[70] flex justify-end bg-slate-950/40 backdrop-blur-[2px]" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
-      <aside className="flex h-full w-full max-w-4xl flex-col bg-slate-50 shadow-2xl dark:bg-slate-950">
+    <div className="md-fade-in fixed inset-0 z-[70] flex justify-end bg-slate-950/40 backdrop-blur-[2px]" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
+      <aside className="md-drawer-in flex h-full w-full max-w-4xl flex-col bg-slate-50 shadow-2xl dark:bg-slate-950">
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900 sm:px-6">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -130,7 +130,7 @@ export function Drawer({ title, subtitle, badge, onClose, children, actions }) {
 /* ─── Boutons & champs ───────────────────────────────────────────────── */
 
 export function Button({ variant = 'primary', size = 'md', className = '', children, ...props }) {
-  const base = 'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/60';
+  const base = 'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/60';
   const sizes = { sm: 'min-h-[44px] px-3 py-1.5 text-xs lg:min-h-0', md: 'min-h-[44px] px-4 py-2 text-sm lg:min-h-0', lg: 'min-h-[44px] px-5 py-2.5 text-sm' };
   const variants = {
     primary: 'bg-orange-600 text-white shadow-sm hover:bg-orange-700',
@@ -164,12 +164,17 @@ export const inputBase =
   'rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100';
 export const inputClass = `w-full ${inputBase}`;
 
-export function Field({ label, hint, children, className = '' }) {
+export function Field({ label, hint, error, required = false, children, className = '' }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</span>
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {label}
+        {required && <span className="ml-0.5 text-red-600 dark:text-red-400" aria-hidden="true">*</span>}
+      </span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-slate-500 dark:text-slate-500">{hint}</span>}
+      {error
+        ? <span className="mt-1 block text-xs font-medium text-red-700 dark:text-red-300" role="alert">{error}</span>
+        : hint && <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{hint}</span>}
     </label>
   );
 }
@@ -217,11 +222,21 @@ export function Tabs({ tabs, value, onChange, className = '' }) {
   );
 }
 
-export function Loader({ label = 'Chargement…' }) {
+export function Loader({ label = 'Chargement…', rows = 5 }) {
+  // Squelette : la forme du contenu apparaît tout de suite (moins de « saut » à l'affichage)
   return (
-    <div className="flex items-center justify-center gap-3 py-16 text-sm text-slate-500">
-      <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-orange-600" />
-      {label}
+    <div role="status" aria-live="polite" className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <span className="sr-only">{label}</span>
+      <div className="md-skeleton mb-4 h-4 w-1/3" aria-hidden="true" />
+      <div className="space-y-3" aria-hidden="true">
+        {Array.from({ length: rows }, (_, i) => (
+          <div key={i} className="flex items-center gap-4">
+            <div className="md-skeleton h-8 w-8 shrink-0 rounded-full" />
+            <div className="md-skeleton h-3 flex-1" style={{ maxWidth: `${55 + ((i * 13) % 34)}%` }} />
+            <div className="md-skeleton hidden h-5 w-24 rounded-full sm:block" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -229,8 +244,11 @@ export function Loader({ label = 'Chargement…' }) {
 export function ErrorBanner({ message, onRetry }) {
   if (!message) return null;
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
-      <span>{message}</span>
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+      <span className="flex items-start gap-2">
+        <svg viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.5" /></svg>
+        <span>{message}</span>
+      </span>
       {onRetry && <Button size="sm" variant="danger" onClick={onRetry}>Réessayer</Button>}
     </div>
   );
@@ -238,7 +256,7 @@ export function ErrorBanner({ message, onRetry }) {
 
 export function Empty({ title, children, action }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-12 text-center dark:border-slate-700">
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-900/40">
       <p className="font-semibold text-slate-700 dark:text-slate-200">{title}</p>
       {children && <p className="mx-auto mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">{children}</p>}
       {action && <div className="mt-4">{action}</div>}

@@ -66,14 +66,13 @@ function Gate() {
 }
 
 function Platform() {
-  const [theme, setTheme] = useState('light');
-
-  useEffect(() => {
-    const storedTheme = window.localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const nextTheme = storedTheme || (prefersDark ? 'dark' : 'light');
-    setTheme(nextTheme);
-  }, []);
+  // Thème lu une seule fois au démarrage (préférence enregistrée, sinon celle du système)
+  const [theme, setTheme] = useState(() => {
+    try {
+      return window.localStorage.getItem('theme')
+        || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    } catch { return 'light'; }
+  });
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
