@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { flotteApi } from '../../flotte/api';
 import CropperModal from '../../flotte/CropperModal';
 import DocumentVault from '../../flotte/DocumentVault';
@@ -10,6 +10,7 @@ import { isPdf } from '../../flotte/docTools';
 import {
   Button, DeadlineCell, Drawer, Empty, ErrorBanner, Field, LinkIcon, Loader, Modal, PlusIcon,
   SearchInput, StatusPill, Tabs, TrashIcon, inputBase, inputClass, useToast,
+  useUrlState, useOpenId, useSort, SortTh, urgency,
 } from '../../flotte/ui';
 import {
   ADR_CATEGORIES, PERMIS_CATEGORIES, SLOT_BY_KEY, STATUT_LABELS, slotsFor, TYPE_CHAUFFEUR_LABELS, countdown,
@@ -381,20 +382,19 @@ function DriverDrawer({ driverId, onClose, onChanged }) {
 export default function Chauffeurs() {
   const [drivers, setDrivers] = useState(null);
   const [error, setError] = useState('');
-  const [statut, setStatut] = useState('ACTIF');
-  const [type, setType] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [search, setSearch] = useState('');
+  // Filtres conservés dans l'adresse (lien partageable, retour arrière)
+  const [statut, setStatut] = useUrlState('statut', 'ACTIF');
+  const [type, setType] = useUrlState('type', 'all');
+  const [statusFilter, setStatusFilter] = useUrlState('echeance', 'all');
+  const [search, setSearch] = useUrlState('q', '');
   const [adding, setAdding] = useState(false);
-  const [params, setParams] = useSearchParams();
-  const openId = params.get('id');
+  const { openId, open, close } = useOpenId();
 
   const load = useCallback(() => {
     flotteApi.drivers().then((d) => { setDrivers(d); setError(''); }).catch((e) => setError(e.message));
   }, []);
   useEffect(load, [load]);
 
-  const close = useCallback(() => setParams({}), [setParams]);
 
   const counts = useMemo(() => {
     const c = { all: drivers?.length || 0 };
@@ -411,6 +411,16 @@ export default function Chauffeurs() {
       && (statusFilter === 'all' || (statusFilter === 'docs' ? d.documentsCount < d.documentsTotal : d.compliance.some((c) => c.status === statusFilter)))
       && (!q || d.nomComplet.toLowerCase().includes(q) || (d.permisNumero || '').includes(q)));
   }, [drivers, statut, type, statusFilter, search]);
+
+  const sort = useSort(filtered, {
+    nom: (d) => `${d.nom} ${d.prenom || ''}`,
+    medical: (d) => urgency(item(d, 'SELECTION_MEDICALE')),
+    code95: (d) => urgency(item(d, 'CODE_95')),
+    carte: (d) => urgency(item(d, 'CARTE_CONDUCTEUR')),
+    adr: (d) => urgency(item(d, 'ADR_CHAUFFEUR')),
+    permis: (d) => urgency(item(d, 'PERMIS')),
+    docs: (d) => d.documentsCount / (d.documentsTotal || 1),
+  }, 'nom');
 
   return (
     <div className="space-y-5">
@@ -455,24 +465,25 @@ export default function Chauffeurs() {
       {!drivers ? <Loader /> : filtered.length === 0 ? (
         <Empty title="Aucun chauffeur ne correspond" action={<Button onClick={() => setAdding(true)}><PlusIcon /> Ajouter un chauffeur</Button>} />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+<>
+        <div className="hidden max-h-[calc(100dvh-233px)] overflow-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 md:block">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
+            <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
               <tr>
-                <th className="px-4 py-3">Chauffeur</th>
-                <th className="px-4 py-3">Sélection médicale</th>
-                <th className="px-4 py-3">Code 95</th>
-                <th className="px-4 py-3">Carte conducteur</th>
-                <th className="px-4 py-3">ADR</th>
-                <th className="px-4 py-3">Permis</th>
-                <th className="px-4 py-3">Documents</th>
+                <SortTh k="nom" label="Chauffeur" sort={sort} />
+                <SortTh k="medical" label="Sélection médicale" sort={sort} />
+                <SortTh k="code95" label="Code 95" sort={sort} />
+                <SortTh k="carte" label="Carte conducteur" sort={sort} />
+                <SortTh k="adr" label="ADR" sort={sort} />
+                <SortTh k="permis" label="Permis" sort={sort} />
+                <SortTh k="docs" label="Documents" sort={sort} />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((d) => {
+              {sort.sorted.map((d) => {
                 const complete = d.documentsCount === d.documentsTotal;
                 return (
-                  <tr key={d.id} onClick={() => setParams({ id: d.id })} className="cursor-pointer align-top transition hover:bg-orange-50/40 dark:hover:bg-slate-800/50">
+                  <tr key={d.id} onClick={() => open(d.id)} className="cursor-pointer align-top transition hover:bg-orange-50/40 dark:hover:bg-slate-800/50">
                     <td className="px-4 py-3">
                       <p className="font-semibold text-slate-900 dark:text-white">{d.nom} <span className="font-normal">{d.prenom}</span></p>
                       <p className="text-xs text-slate-500">
@@ -502,10 +513,42 @@ export default function Chauffeurs() {
             </tbody>
           </table>
         </div>
+        {/* Mobile : une carte par chauffeur (échéances lisibles sans défilement horizontal) */}
+        <ul className="space-y-2 md:hidden">
+          {sort.sorted.map((d) => {
+            const complete = d.documentsCount === d.documentsTotal;
+            const rows = [['Médicale', 'SELECTION_MEDICALE'], ['Code 95', 'CODE_95'], ['Carte cond.', 'CARTE_CONDUCTEUR'], ['ADR', 'ADR_CHAUFFEUR'], ['Permis', 'PERMIS']]
+              .map(([l, t]) => [l, item(d, t)]).filter(([, it]) => it && it.status !== 'na');
+            return (
+              <li key={d.id}>
+                <button type="button" onClick={() => open(d.id)} className="w-full rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition active:scale-[0.99] dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-slate-900 dark:text-white">{d.nom} <span className="font-normal">{d.prenom}</span></p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{TYPE_CHAUFFEUR_LABELS[d.typeChauffeur]}{d.permisCategories.length > 0 && ` · ${d.permisCategories.join(' ')}`}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 text-xs font-bold leading-5 tabular-nums ${complete ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>
+                      {d.documentsCount}/{d.documentsTotal} doc.
+                    </span>
+                  </div>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
+                    {rows.map(([l, it]) => (
+                      <div key={l} className="min-w-0">
+                        <dt className="text-xs text-slate-500 dark:text-slate-400">{l}</dt>
+                        <dd className="mt-0.5"><DeadlineCell item={it} compact /></dd>
+                      </div>
+                    ))}
+                  </dl>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        </>
       )}
 
       {adding && (
-        <NewDriverModal onClose={() => setAdding(false)} onCreated={(d) => { setAdding(false); load(); setParams({ id: d.id }); }} />
+        <NewDriverModal onClose={() => setAdding(false)} onCreated={(d) => { setAdding(false); load(); open(d.id); }} />
       )}
       {openId && <DriverDrawer key={openId} driverId={openId} onClose={close} onChanged={load} />}
     </div>

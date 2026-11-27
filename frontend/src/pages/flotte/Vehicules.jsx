@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { flotteApi, fileUrl } from '../../flotte/api';
 import CropperModal from '../../flotte/CropperModal';
 import { DocumentActions } from '../../flotte/DocumentVault';
@@ -7,6 +6,7 @@ import { isPdf } from '../../flotte/docTools';
 import {
   Button, Card, DeadlineCell, Drawer, Empty, ErrorBanner, Field, Loader, Modal, PlusIcon,
   SearchInput, StatusPill, Tabs, TrashIcon, UploadIcon, inputBase, inputClass, useToast,
+  useUrlState, useOpenId, useSort, SortTh, urgency,
 } from '../../flotte/ui';
 import {
   ADR_VEHICLES, CATEGORY_LABELS, CATEGORY_PLURAL, MOTORISES, countdown, formatDateTime, normalizePlate,
@@ -330,12 +330,12 @@ function NewVehicleModal({ defaultCategory, onClose, onCreated }) {
 export default function Vehicules() {
   const [vehicles, setVehicles] = useState(null);
   const [error, setError] = useState('');
-  const [category, setCategory] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [search, setSearch] = useState('');
+  // Filtres conservés dans l'adresse (lien partageable, retour arrière)
+  const [category, setCategory] = useUrlState('categorie', 'all');
+  const [statusFilter, setStatusFilter] = useUrlState('echeance', 'all');
+  const [search, setSearch] = useUrlState('q', '');
   const [adding, setAdding] = useState(false);
-  const [params, setParams] = useSearchParams();
-  const openId = params.get('id');
+  const { openId, open, close } = useOpenId();
   const searchRef = useRef(null);
 
   const load = useCallback(() => {
@@ -343,8 +343,6 @@ export default function Vehicules() {
   }, []);
   useEffect(load, [load]);
 
-  const open = (id) => setParams(id ? { id } : {});
-  const close = useCallback(() => setParams({}), [setParams]);
 
   const counts = useMemo(() => {
     const c = { all: vehicles?.length || 0 };
@@ -360,6 +358,15 @@ export default function Vehicules() {
       && (statusFilter === 'all' || v.compliance.some((c) => c.status === statusFilter))
       && (!q || v.plaque.includes(q)));
   }, [vehicles, category, statusFilter, search]);
+
+  const sort = useSort(filtered, {
+    plaque: (v) => v.plaque,
+    categorie: (v) => CATEGORY_LABELS[v.categorie],
+    ct: (v) => urgency(item(v, 'CONTROLE_TECHNIQUE')),
+    tachy: (v) => urgency(item(v, 'ETALONNAGE_TACHYGRAPHE')),
+    adr: (v) => urgency(item(v, 'CERTIFICAT_ADR_VEHICULE')),
+    assurance: (v) => urgency(item(v, 'ASSURANCE')),
+  }, 'plaque');
 
   const onSearchEnter = (e) => {
     if (e.key === 'Enter' && filtered.length === 1) open(filtered[0].id);
@@ -400,21 +407,22 @@ export default function Vehicules() {
           : <Button onClick={() => setAdding(true)}><PlusIcon /> Ajouter un véhicule</Button>}
         />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+<>
+        <div className="hidden max-h-[calc(100dvh-233px)] overflow-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 md:block">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
+            <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
               <tr>
-                <th className="px-4 py-3">Plaque</th>
-                <th className="px-4 py-3">Catégorie</th>
-                <th className="px-4 py-3">Contrôle technique</th>
-                <th className="px-4 py-3">Étalonnage tachy.</th>
-                <th className="px-4 py-3">ADR</th>
-                <th className="px-4 py-3">Assurance</th>
+                <SortTh k="plaque" label="Plaque" sort={sort} />
+                <SortTh k="categorie" label="Catégorie" sort={sort} />
+                <SortTh k="ct" label="Contrôle technique" sort={sort} />
+                <SortTh k="tachy" label="Étalonnage tachy." sort={sort} />
+                <SortTh k="adr" label="ADR" sort={sort} />
+                <SortTh k="assurance" label="Assurance" sort={sort} />
                 <th className="px-4 py-3">Remarque</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((v) => (
+              {sort.sorted.map((v) => (
                 <tr key={v.id} onClick={() => open(v.id)} className="cursor-pointer align-top transition hover:bg-orange-50/40 dark:hover:bg-slate-800/50">
                   <td className="px-4 py-3">
                     <span className="inline-block rounded-md border-2 border-red-700/80 bg-white px-2 py-0.5 font-mono text-sm font-bold tracking-wider text-red-800 dark:bg-slate-950 dark:text-red-300">{v.plaque}</span>
@@ -430,6 +438,33 @@ export default function Vehicules() {
             </tbody>
           </table>
         </div>
+        {/* Mobile : une carte par véhicule */}
+        <ul className="space-y-2 md:hidden">
+          {sort.sorted.map((v) => {
+            const rows = [['Contrôle tech.', 'CONTROLE_TECHNIQUE'], ['Tachygraphe', 'ETALONNAGE_TACHYGRAPHE'], ['ADR', 'CERTIFICAT_ADR_VEHICULE'], ['Assurance', 'ASSURANCE']]
+              .map(([l, k]) => [l, item(v, k)]).filter(([, it]) => it && it.status !== 'na');
+            return (
+              <li key={v.id}>
+                <button type="button" onClick={() => open(v.id)} className="w-full rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition active:scale-[0.99] dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="inline-block rounded-md border-2 border-red-700/80 bg-white px-2 py-0.5 font-mono text-sm font-bold tracking-wider text-red-800 dark:bg-slate-950 dark:text-red-300">{v.plaque}</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">{CATEGORY_LABELS[v.categorie]}</span>
+                  </div>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
+                    {rows.map(([l, it]) => (
+                      <div key={l} className="min-w-0">
+                        <dt className="text-xs text-slate-500 dark:text-slate-400">{l}</dt>
+                        <dd className="mt-0.5"><DeadlineCell item={it} compact /></dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {v.remarque && <p className="mt-2 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{v.remarque}</p>}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        </>
       )}
 
       {adding && (

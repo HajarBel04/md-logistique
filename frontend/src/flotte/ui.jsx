@@ -1,5 +1,6 @@
 // Composants d'interface partagés du module Flotte & Conformité
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { STATUS_META, TONE_CLASSES, countdown, formatDate, addYearsIso } from './utils';
 
 /* ─── Badges de statut ──────────────────────────────────────────────── */
@@ -25,7 +26,7 @@ export function StatusPill({ status, children, className = '' }) {
 /** Cellule d'échéance : date + badge compte à rebours. */
 export function DeadlineCell({ item, compact = false }) {
   if (!item || item.status === 'na') {
-    return <span className="text-xs text-slate-500 dark:text-slate-600">Non applicable</span>;
+    return <span className="text-xs text-slate-500 dark:text-slate-400">Non applicable</span>;
   }
   if (!item.date) {
     return <StatusPill status={item.status} />;
@@ -130,7 +131,7 @@ export function Drawer({ title, subtitle, badge, onClose, children, actions }) {
 
 export function Button({ variant = 'primary', size = 'md', className = '', children, ...props }) {
   const base = 'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/60';
-  const sizes = { sm: 'px-3 py-1.5 text-xs', md: 'px-4 py-2 text-sm', lg: 'px-5 py-2.5 text-sm' };
+  const sizes = { sm: 'min-h-[44px] px-3 py-1.5 text-xs lg:min-h-0', md: 'min-h-[44px] px-4 py-2 text-sm lg:min-h-0', lg: 'min-h-[44px] px-5 py-2.5 text-sm' };
   const variants = {
     primary: 'bg-orange-600 text-white shadow-sm hover:bg-orange-700',
     dark: 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white',
@@ -151,7 +152,7 @@ export function IconButton({ label, children, className = '', ...props }) {
       type="button"
       title={label}
       aria-label={label}
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white ${className}`}
+      className={`inline-flex h-11 w-11 items-center lg:h-9 lg:w-9 justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white ${className}`}
       {...props}
     >
       {children}
@@ -313,3 +314,78 @@ export const PaperclipIcon = icon(['M21 11.5 12.5 20a5 5 0 0 1-7-7L14 4.5a3.5 3.
 export const LinkIcon = icon(['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1']);
 export const BellIcon = icon(['M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2Z', 'M10 21h4']);
 export const EditIcon = icon(['M4 20h4L19 9l-4-4L4 16v4Z', 'M13.5 6.5l4 4']);
+
+
+/* ─── Filtres et tri conservés dans l'adresse ──────────────────────────
+   Un lien partagé ou un retour arrière retrouve la même vue.            */
+
+/** Valeur lue/écrite dans l'URL (?clé=valeur). La valeur par défaut n'est pas écrite. */
+export function useUrlState(key, defaultValue) {
+  const [params, setParams] = useSearchParams();
+  const value = params.get(key) ?? defaultValue;
+  const setValue = useCallback((next) => {
+    setParams((p) => {
+      const n = new URLSearchParams(p);
+      if (next === defaultValue || next === '' || next == null) n.delete(key); else n.set(key, next);
+      return n;
+    }, { replace: true });
+  }, [key, defaultValue, setParams]);
+  return [value, setValue];
+}
+
+/** Ouvre / ferme une fiche (?id=…) sans effacer les filtres. */
+export function useOpenId() {
+  const [params, setParams] = useSearchParams();
+  const openId = params.get('id');
+  const open = useCallback((id) => setParams((p) => { const n = new URLSearchParams(p); if (id) n.set('id', id); else n.delete('id'); return n; }), [setParams]);
+  const close = useCallback(() => open(null), [open]);
+  return { openId, open, close };
+}
+
+/** Rang d'urgence d'une échéance pour le tri : expiré < à compléter < bientôt < valide < non applicable. */
+export const urgency = (it) => {
+  if (!it || it.status === 'na') return 1e9;
+  if (!it.date) return -1e6;
+  return it.daysRemaining ?? 1e8;
+};
+
+/** Tri par colonne (clé et sens dans l'URL). getters : { clé: (ligne) => valeur comparable }. */
+export function useSort(rows, getters, defaultKey) {
+  const [key, setKey] = useUrlState('tri', defaultKey);
+  const [dir, setDir] = useUrlState('ordre', 'asc');
+  const sorted = useMemo(() => {
+    const get = getters[key];
+    if (!rows || !get) return rows || [];
+    const coll = new Intl.Collator('fr', { numeric: true, sensitivity: 'base' });
+    const out = [...rows].sort((a, b) => {
+      const x = get(a), y = get(b);
+      return typeof x === 'number' && typeof y === 'number' ? x - y : coll.compare(String(x ?? ''), String(y ?? ''));
+    });
+    return dir === 'desc' ? out.reverse() : out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, key, dir]);
+  const toggle = (k) => {
+    if (k === key) setDir(dir === 'asc' ? 'desc' : 'asc');
+    else { setKey(k); setDir('asc'); }
+  };
+  return { sorted, sortKey: key, sortDir: dir, toggle };
+}
+
+/** En-tête de colonne triable (bouton accessible, aria-sort). */
+export function SortTh({ k, label, sort, className = '' }) {
+  const active = sort.sortKey === k;
+  return (
+    <th className={`px-4 py-3 ${className}`} aria-sort={active ? (sort.sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+      <button
+        type="button"
+        onClick={() => sort.toggle(k)}
+        className={`-mx-1 inline-flex items-center gap-1 rounded px-1 uppercase tracking-wide transition hover:text-slate-900 dark:hover:text-white ${active ? 'text-slate-900 dark:text-white' : ''}`}
+      >
+        {label}
+        <svg viewBox="0 0 12 12" className={`h-3 w-3 transition ${active ? 'opacity-100' : 'opacity-30'} ${active && sort.sortDir === 'desc' ? 'rotate-180' : ''}`} fill="currentColor" aria-hidden="true">
+          <path d="M6 2 10 8H2z" />
+        </svg>
+      </button>
+    </th>
+  );
+}

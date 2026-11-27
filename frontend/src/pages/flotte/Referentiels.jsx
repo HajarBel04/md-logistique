@@ -159,7 +159,8 @@ export default function Referentiels() {
       {!data ? <Loader /> : items.length === 0 ? (
         <Empty title={`Aucun élément dans « ${def.label} »`} action={<Button onClick={() => setEditing('new')}><PlusIcon /> Ajouter</Button>} />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+<>
+        <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 md:block">
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900/60">
               <tr>
@@ -178,7 +179,7 @@ export default function Referentiels() {
                   ))}
                   <td className="px-4 py-3">
                     <button type="button" role="switch" aria-checked={it.active} onClick={() => toggle(it)}
-                      className={`relative h-5 w-9 rounded-full transition ${it.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                      className={`relative h-5 w-9 rounded-full transition before:absolute before:-inset-3 before:content-[''] ${it.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
                       title={it.active ? 'Désactiver (masqué pour les chauffeurs)' : 'Activer'}>
                       <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition ${it.active ? 'left-[18px]' : 'left-0.5'}`} />
                     </button>
@@ -194,6 +195,41 @@ export default function Referentiels() {
             </tbody>
           </table>
         </div>
+        {/* Mobile : une carte par élément, actions accessibles au pouce */}
+        <ul className="space-y-2 md:hidden">
+          {items.map((it) => (
+            <li key={it.id} className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 ${it.active ? '' : 'opacity-60'}`}>
+              <dl className="space-y-1">
+                {def.columns.map((c, i) => (
+                  <div key={c.key} className={i === 0 ? '' : 'flex justify-between gap-3 text-sm'}>
+                    {i === 0 ? (
+                      <dd className={`text-base font-semibold text-slate-900 dark:text-white ${c.mono ? 'font-mono' : ''}`}>{c.render ? c.render(it[c.key]) : it[c.key]}</dd>
+                    ) : (
+                      <>
+                        <dt className="text-slate-500 dark:text-slate-400">{c.label}</dt>
+                        <dd className={`text-right text-slate-800 dark:text-slate-200 ${c.mono ? 'font-mono font-bold' : ''}`}>{(c.render ? c.render(it[c.key]) : it[c.key]) || '—'}</dd>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
+                <label className="flex min-h-[44px] items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+                  <button type="button" role="switch" aria-checked={it.active} onClick={() => toggle(it)}
+                    className={`relative h-5 w-9 rounded-full transition before:absolute before:-inset-3 before:content-[''] ${it.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition ${it.active ? 'left-[18px]' : 'left-0.5'}`} />
+                  </button>
+                  {it.active ? 'Actif' : 'Inactif'}
+                </label>
+                <div className="flex">
+                  <IconButton label="Modifier" onClick={() => setEditing(it)}><EditIcon /></IconButton>
+                  <IconButton label="Supprimer" onClick={() => remove(it)} className="hover:!text-red-600"><TrashIcon /></IconButton>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+        </>
       )}
 
       {editing && (

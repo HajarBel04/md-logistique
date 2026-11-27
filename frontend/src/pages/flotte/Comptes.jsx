@@ -184,7 +184,7 @@ export default function Comptes() {
                   <td className="px-4 py-3 text-slate-500">{u.lastLogin ? formatDateTime(u.lastLogin) : 'Jamais'}</td>
                   <td className="px-4 py-3">
                     <button type="button" role="switch" aria-checked={u.active} onClick={() => toggle(u)} disabled={u.id === me?.id}
-                      className={`relative h-5 w-9 rounded-full transition disabled:opacity-40 ${u.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                      className={`relative h-5 w-9 rounded-full transition before:absolute before:-inset-3 before:content-[''] disabled:opacity-40 ${u.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
                       <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition ${u.active ? 'left-[18px]' : 'left-0.5'}`} />
                     </button>
                   </td>
