@@ -69,7 +69,7 @@ export default function LoginPage() {
 
       {/* Panneau de connexion : blanc plein, toute la hauteur, à gauche */}
       <main className="relative z-10 flex min-h-[100dvh] w-full flex-col bg-white px-6 py-8 sm:px-12 lg:w-[480px] lg:shadow-[24px_0_60px_-20px_rgba(15,23,42,0.45)] xl:w-[520px] xl:px-16">
-        <img src={logo} alt="M-D Logistique" className="h-12 w-auto self-start" />
+        <img src={logo} alt="M-D Logistique" className="h-20 w-auto self-start xl:h-24" />
 
         <div className="my-auto w-full max-w-[380px] py-10">
           <h1 className="text-[28px] font-bold tracking-tight text-slate-900">
