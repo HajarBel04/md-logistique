@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import logo from '../assets/logo-md.png';
 
@@ -7,6 +7,18 @@ const input =
 
 function Label({ children, htmlFor }) {
   return <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-semibold text-slate-700">{children}</label>;
+}
+
+function useMediaQuery(query) {
+  const get = () => typeof window !== 'undefined' && window.matchMedia(query).matches;
+  const [match, setMatch] = useState(get);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setMatch(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return match;
 }
 
 export default function LoginPage() {
@@ -22,6 +34,7 @@ export default function LoginPage() {
   const phone = mode === 'phone' && !needsSetup;
   // « Réduire les animations » : la vidéo reste sur son image fixe
   const reducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const submit = async (e) => {
     e.preventDefault();
@@ -44,17 +57,19 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-[100dvh] bg-white lg:bg-[#0f172a]">
       {/* Fond (ordinateur) : vidéo plein écran, sobre, légèrement assombrie */}
-      <video
-        className="pointer-events-none fixed inset-0 hidden h-full w-full object-cover lg:block"
-        src="/login-animation.mp4"
-        poster="/login-animation-poster.jpg"
-        autoPlay={!reducedMotion}
-        muted
-        loop
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-      />
+      {isDesktop && (
+        <video
+          className="pointer-events-none fixed inset-0 h-full w-full object-cover"
+          src="/login-animation.mp4"
+          poster="/login-animation-poster.jpg"
+          autoPlay={!reducedMotion}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        />
+      )}
       <div className="pointer-events-none fixed inset-0 hidden bg-[#0f172a]/30 lg:block" />
       <div className="pointer-events-none fixed inset-x-0 bottom-0 hidden h-56 bg-gradient-to-t from-[#0f172a]/85 to-transparent lg:block" />
 
@@ -69,7 +84,24 @@ export default function LoginPage() {
 
       {/* Panneau de connexion : blanc plein, toute la hauteur, à gauche */}
       <main className="relative z-10 flex min-h-[100dvh] w-full flex-col bg-white px-6 py-8 sm:px-12 lg:w-[480px] lg:shadow-[24px_0_60px_-20px_rgba(15,23,42,0.45)] xl:w-[520px] xl:px-16">
-        <img src={logo} alt="M-D Logistique" className="h-20 w-auto self-start xl:h-24" />
+        {/* Mobile : la vidéo en bandeau, entière (16:9), au-dessus du formulaire */}
+        {!isDesktop && (
+          <div className="relative -mx-6 -mt-8 mb-8 overflow-hidden bg-[#0f172a] sm:-mx-12">
+            <video
+              className="pointer-events-none block aspect-video w-full object-cover"
+              src="/login-animation-mobile.mp4"
+              poster="/login-animation-poster.jpg"
+              autoPlay={!reducedMotion}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
+          </div>
+        )}
+        <img src={logo} alt="M-D Logistique" className="h-16 w-auto self-start sm:h-20 xl:h-24" />
 
         <div className="my-auto w-full max-w-[377px] py-10">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
