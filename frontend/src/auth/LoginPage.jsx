@@ -58,11 +58,13 @@ export default function LoginPage() {
       <div className="pointer-events-none fixed inset-0 hidden bg-[#0f172a]/30 lg:block" />
       <div className="pointer-events-none fixed inset-x-0 bottom-0 hidden h-56 bg-gradient-to-t from-[#0f172a]/85 to-transparent lg:block" />
 
-      <div className="fixed bottom-10 right-12 z-10 hidden max-w-md text-right lg:block">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/70">Transport & logistique · Bruxelles</p>
-        <p className="mt-2 text-[22px] font-semibold leading-snug text-white">
-          La plateforme d'exploitation de M-D Logistique : flotte, chauffeurs, trajets et facturation.
+      <div className="fixed bottom-12 right-12 z-10 hidden max-w-xl text-right lg:block">
+        <div className="ml-auto mb-5 h-1 w-14 rounded-full bg-gradient-to-r from-orange-600 to-orange-500" />
+        <p className="text-[42px] font-extrabold leading-[1.05] tracking-tight text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.35)] xl:text-[52px]">
+          Toute l'exploitation,<br />
+          <span className="bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent [filter:drop-shadow(0_2px_12px_rgba(0,0,0,0.45))] [text-shadow:none]">en un seul endroit.</span>
         </p>
+        <p className="mt-4 text-[15px] font-medium text-white/80">Flotte · Chauffeurs · Trajets · Facturation</p>
       </div>
 
       {/* Panneau de connexion : blanc plein, toute la hauteur, à gauche */}
