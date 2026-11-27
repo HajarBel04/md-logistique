@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, NavLink } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
@@ -25,24 +25,9 @@ import { ToastProvider } from './flotte/ui';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import LoginPage from './auth/LoginPage';
 import FibonacciDebug from './components/FibonacciDebug';
-
-const navItems = [
-  { path: '/conformite',      label: 'Conformité'      },
-  { path: '/vehicules',       label: 'Véhicules'       },
-  { path: '/chauffeurs',      label: 'Chauffeurs'      },
-  { path: '/documents',       label: 'Documents & scan' },
-  { path: '/messagerie',      label: 'Messagerie'      },
-  { path: '/alertes',         label: 'Alertes'         },
-  { path: '/trajets',         label: 'Formulaires'     },
-  { path: '/facturation',     label: 'Facturation'     },
-  { path: '/referentiels',    label: 'Référentiels'    },
-  { path: '/comptes',         label: 'Comptes'         },
-  { path: '/',                label: 'Dashboard paie'  },
-  { path: '/import-webfleet', label: 'Import Webfleet' },
-  { path: '/planning',        label: 'Planning'        },
-  { path: '/payroll',         label: 'Fiches de paie'  },
-  { path: '/parametres',      label: 'Paramètres'      },
-];
+import MobileNav from './components/MobileNav';
+import { NavBadgesProvider } from './components/NavBadges';
+import { CommandPaletteProvider } from './components/CommandPalette';
 
 export default function App() {
   return (
@@ -69,7 +54,15 @@ function Gate() {
   }
   if (!user) return <LoginPage />;
   if (user.role === 'CHAUFFEUR') return <EspaceChauffeur />;
-  return <ToastProvider><Platform /></ToastProvider>;
+  return (
+    <ToastProvider>
+      <NavBadgesProvider>
+        <CommandPaletteProvider>
+          <Platform />
+        </CommandPaletteProvider>
+      </NavBadgesProvider>
+    </ToastProvider>
+  );
 }
 
 function Platform() {
@@ -92,41 +85,21 @@ function Platform() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-orange-50 via-white to-slate-100 text-slate-900 transition-colors duration-500 dark:text-slate-100">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-orange-50 via-white to-slate-100 text-slate-900 transition-colors duration-500 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100">
       <div className="relative flex min-h-screen">
         <Sidebar />
         <div className="min-w-0 flex-1">
           <Header theme={theme} onToggleTheme={toggleTheme} />
-          <div className="border-b border-slate-200/80 bg-white/80 px-4 py-3 backdrop-blur-md transition-colors duration-300 dark:border-slate-800/70 dark:bg-slate-950/80 lg:hidden">
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.path === '/'}
-                  className={({ isActive }) =>
-                    `shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
-                      isActive
-                        ? 'bg-orange-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-          </div>
           <Routes>
             {/* GPS Analysis — pleine largeur pour le tableau */}
             <Route path="/gps" element={
-              <main className="w-full px-3 pb-10 pt-6 sm:px-4">
+              <main className="w-full px-3 pb-[89px] pt-6 sm:px-4 lg:pb-10">
                 <GpsAnalysis />
               </main>
             } />
             {/* Toutes les autres pages — largeur normale */}
             <Route path="*" element={
-              <main className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+              <main className="mx-auto max-w-7xl px-4 pb-[89px] pt-6 sm:px-6 lg:px-8 lg:pb-10">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/import-webfleet" element={<WebfleetImport />} />
@@ -149,6 +122,7 @@ function Platform() {
             } />
           </Routes>
         </div>
+        <MobileNav />
       </div>
     </div>
   );

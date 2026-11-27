@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useNavBadges } from './NavBadges';
 import BrandHeader from './BrandHeader';
 
 const I = (paths) => (
@@ -98,7 +99,15 @@ const exploitationItems = [
   },
 ];
 
+/** Groupes du menu, partagés avec la navigation mobile et la recherche ⌘K. */
+export const NAV_GROUPS = [
+  { title: 'Flotte & conformité', items: flotteItems },
+  { title: 'Exploitation & facturation', items: operationsItems },
+  { title: 'Paie & analyses', items: exploitationItems },
+];
+
 export default function Sidebar() {
+  const badges = useNavBadges();
   return (
     <aside className="sticky top-0 hidden h-screen w-[233px] shrink-0 border-r border-slate-200/80 bg-white/85 px-2 py-6 backdrop-blur-xl shadow-soft dark:border-slate-800/70 dark:bg-slate-950/95 lg:flex lg:flex-col">
       <div className="mb-6 shrink-0">
@@ -106,11 +115,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto pr-1 scrollbar-none">
-        {[
-          { title: 'Flotte & conformité', items: flotteItems },
-          { title: 'Exploitation & facturation', items: operationsItems },
-          { title: 'Paie & analyses', items: exploitationItems },
-        ].map((group) => (
+        {NAV_GROUPS.map((group) => (
           <div key={group.title}>
             <p className="mb-2 px-2 text-xs font-bold uppercase tracking-[0.13em] text-slate-400 dark:text-slate-500">{group.title}</p>
             <div className="space-y-1">
@@ -134,7 +139,17 @@ export default function Sidebar() {
                       }`}>
                         {item.icon}
                       </span>
-                      <span className="leading-tight">{item.label}</span>
+                      <span className="min-w-0 flex-1 leading-tight">{item.label}</span>
+                      {badges[item.path] > 0 && (
+                        <span
+                          className={`ml-auto shrink-0 rounded-full px-2 text-xs font-bold leading-5 tabular-nums ${
+                            item.path === '/messagerie' ? 'bg-orange-600 text-white' : 'bg-red-600 text-white'
+                          }`}
+                          aria-label={item.path === '/messagerie' ? `${badges[item.path]} message(s) non lu(s)` : `${badges[item.path]} échéance(s) expirée(s)`}
+                        >
+                          {badges[item.path] > 99 ? '99+' : badges[item.path]}
+                        </span>
+                      )}
                     </>
                   )}
                 </NavLink>

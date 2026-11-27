@@ -47,13 +47,10 @@ button, input, select, textarea {
   @apply transition duration-200 ease-in-out;
 }
 
-button {
-  @apply outline-none;
-}
-
 input, select, textarea {
-  @apply appearance-none outline-none;
+  @apply appearance-none;
 }
+input:focus, select:focus, textarea:focus { outline: none; } /* les champs ont leur propre anneau orange (focus:ring) */
 
 .btn-primary {
   @apply inline-flex items-center justify-center rounded-full bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-card transition duration-200 hover:bg-orange-700;
@@ -168,4 +165,36 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .md-brand-logo { animation: none; transform: translate(-50%, -50%); }
   .md-brand-truck { display: none; }
+}
+
+/* ─── Focus clavier visible partout (WCAG 2.4.7), invisible au clic de souris ─── */
+:focus-visible {
+  outline: 2px solid #ea580c;
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offset: 0; }
+
+/* ─── Micro-animations (fenêtres, panneaux, recherche) ─── */
+@keyframes md-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes md-pop-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes md-sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes md-drawer-in { from { transform: translateX(34px); opacity: 0; } to { transform: none; opacity: 1; } }
+.md-fade-in { animation: md-fade-in .18s ease-out both; }
+.md-pop-in { animation: md-pop-in .2s cubic-bezier(.2,.8,.3,1) both; }
+.md-sheet-in { animation: md-sheet-in .25s cubic-bezier(.2,.8,.3,1) both; }
+.md-drawer-in { animation: md-drawer-in .22s cubic-bezier(.2,.8,.3,1) both; }
+
+/* Squelette de chargement */
+@keyframes md-shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+.md-skeleton {
+  background: linear-gradient(90deg, rgb(241 245 249) 0, rgb(226 232 240) 50%, rgb(241 245 249) 100%);
+  background-size: 800px 100%;
+  animation: md-shimmer 1.3s linear infinite;
+  border-radius: 8px;
+}
+.dark .md-skeleton { background-image: linear-gradient(90deg, rgb(30 41 59) 0, rgb(51 65 85) 50%, rgb(30 41 59) 100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .md-fade-in, .md-pop-in, .md-sheet-in, .md-drawer-in, .md-skeleton { animation: none; }
 }

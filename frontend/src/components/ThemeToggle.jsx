@@ -3,7 +3,7 @@ export default function ThemeToggle({ theme, onToggleTheme }) {
     <button
       type="button"
       onClick={onToggleTheme}
-      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-700 shadow-sm transition hover:border-orange-300 hover:text-orange-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-orange-400"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-700 shadow-sm transition hover:border-orange-300 hover:text-orange-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-orange-400"
       aria-label={theme === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre'}
       title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
     >
