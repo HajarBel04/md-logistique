@@ -4,6 +4,14 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_NODE_API_URL ?? '/api',
 });
 
+// Ces routes appartiennent à l'ancien serveur Node, pas encore en ligne :
+// une réponse 404/502/503 (ou l'absence de réponse) signifie « module pas encore disponible ».
+api.interceptors.response.use(undefined, (err) => {
+  const status = err.response?.status;
+  err.moduleUnavailable = !err.response || [404, 502, 503].includes(status);
+  return Promise.reject(err);
+});
+
 export function uploadWebfleet(formData) {
   return api.post('/upload-webfleet', formData, {
     headers: {

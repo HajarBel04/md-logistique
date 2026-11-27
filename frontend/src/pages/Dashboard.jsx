@@ -4,6 +4,7 @@ import PageHeader from '../components/PageHeader';
 import DashboardCard from '../components/DashboardCard';
 import DataTable from '../components/DataTable';
 import DonutChart from '../components/DonutChart';
+import ModuleNotice from '../components/ModuleNotice';
 import { getAlexDashboard } from '../services/api';
 
 const dashboardColumns = [
@@ -45,7 +46,9 @@ export default function Dashboard() {
         const status = err.response?.status;
         const raw = err.response?.data?.error || err.message || '';
         const isNetwork = raw === 'Network Error' || raw === 'Load failed' || raw.includes('Failed to fetch');
-        if (isNetwork) {
+        if (err.moduleUnavailable) {
+          setError('unavailable');
+        } else if (isNetwork) {
           setError('Impossible de joindre le serveur. Vérifiez votre connexion.');
         } else if (status === 503) {
           setError('Base de données non configurée (Prisma). Le dashboard sera disponible après la configuration.');
@@ -80,8 +83,13 @@ export default function Dashboard() {
         <div className="surface-card p-10 text-center text-slate-600 dark:text-slate-300">
           Chargement des données...
         </div>
+      ) : error === 'unavailable' ? (
+        <ModuleNotice links={[['/import-webfleet', 'Import Webfleet'], ['/payroll', 'Fiches de paie']]}>
+          Le tableau de bord de la paie sera disponible en ligne prochainement. En attendant, le calcul des heures
+          (Import Webfleet) et les fiches de paie CP 140 fonctionnent normalement.
+        </ModuleNotice>
       ) : error ? (
-        <div className="surface-card border-red-200 bg-red-50 p-6 text-center text-red-700 dark:border-red-500/40 dark:bg-red-900/50 dark:text-red-200">
+        <div className="surface-card border-red-200 bg-red-50 p-6 text-center text-red-700 dark:border-red-500/40 dark:bg-red-900/50 dark:text-red-200" role="alert">
           {error}
         </div>
       ) : (

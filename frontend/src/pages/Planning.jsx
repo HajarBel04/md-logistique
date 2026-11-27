@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import PageHeader from '../components/PageHeader';
 import GlassCard from '../components/GlassCard';
 import StatusBadge from '../components/StatusBadge';
+import ModuleNotice from '../components/ModuleNotice';
 import { getAlexPlanning } from '../services/api';
 
 const statusMap = {
@@ -33,8 +34,7 @@ export default function Planning() {
         const response = await getAlexPlanning();
         setPlanning(response.data);
       } catch (err) {
-        console.error(err);
-        setError('Impossible de charger le planning.');
+        setError(err.moduleUnavailable ? 'unavailable' : 'Impossible de charger le planning.');
       } finally {
         setLoading(false);
       }
@@ -55,6 +55,12 @@ export default function Planning() {
         badge="Opérations"
       />
 
+      {error === 'unavailable' ? (
+        <ModuleNotice links={[['/trajets', 'Formulaires chauffeurs'], ['/conformite', 'Tableau de bord']]}>
+          Le planning des tournées sera disponible en ligne prochainement. Les routes déclarées par les chauffeurs
+          sont déjà visibles dans « Formulaires chauffeurs ».
+        </ModuleNotice>
+      ) : (<>
       <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         <GlassCard title="Tournées prévues" description="Visibilité sur les missions à venir.">{planning.length}</GlassCard>
         <GlassCard title="Confirmées" description="Tournées validées pour le dispatch.">{confirmedCount}</GlassCard>
@@ -113,6 +119,7 @@ export default function Planning() {
       {loading ? (
         <div className="surface-card p-8 text-center text-slate-600 dark:text-slate-300">Chargement du planning...</div>
       ) : null}
+      </>)}
     </div>
   );
 }

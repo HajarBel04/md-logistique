@@ -6,6 +6,7 @@ import GlassCard from '../components/GlassCard';
 import EmptyState from '../components/EmptyState';
 import { uploadWebfleet } from '../services/api';
 import DRIVER_CONFIGS from '../driverConfigs';
+import ModuleNotice from '../components/ModuleNotice';
 import { computeDaily } from '../utils/timesheet';
 
 
@@ -113,6 +114,10 @@ export default function WebfleetImport() {
         });
       }
     } catch (err) {
+      if (err.moduleUnavailable) {
+        setError('unavailable');
+        return;
+      }
       const raw = err.response?.data?.error || err.message || '';
       const isNetwork = raw === 'Network Error' || raw.includes('Failed to fetch') || raw === 'Load failed';
       setError(
@@ -162,8 +167,13 @@ export default function WebfleetImport() {
         loading={loading}
       />
 
-      {error ? (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-5 text-sm text-red-700 shadow-soft">
+      {error === 'unavailable' ? (
+        <ModuleNotice title="Calcul affiché, historique pas encore enregistré">
+          Les heures de ce fichier sont calculées ci-dessous et exportables en Excel. L'enregistrement de
+          l'historique des imports sera disponible en ligne prochainement.
+        </ModuleNotice>
+      ) : error ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-900/40 dark:text-red-200" role="alert">
           {error}
         </div>
       ) : null}
